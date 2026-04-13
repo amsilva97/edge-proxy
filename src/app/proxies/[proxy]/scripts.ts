@@ -18,7 +18,7 @@ function defaultConfig(): BlockData {
             [
                 BlockKey.Server,
                 [
-                    [BlockKey.Listen,     ['443', 'ssl']],
+                    [BlockKey.Listen,     ['', '443', 'ssl']],
                     [BlockKey.ServerName, ['example.com']],
                 ],
             ],

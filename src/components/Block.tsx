@@ -10,9 +10,20 @@ export type { BlockData };
 interface BlockProps {
     data: BlockData;
     onChange?: (data: BlockData) => void;
+    onDelete?: () => void;
 }
 
-export default function Block({ data, onChange }: BlockProps): JSX.Element {
+const Del = ({ onClick }: { onClick: () => void }) => (
+    <button
+        onClick={onClick}
+        className="text-xs text-red-400 hover:text-red-600 px-1"
+        aria-label="Delete"
+    >
+        ✕
+    </button>
+);
+
+export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Element {
     const blockKey = data[0];
     const content: any[] = data[1] ?? [];
 
@@ -24,6 +35,10 @@ export default function Block({ data, onChange }: BlockProps): JSX.Element {
         const next = [...content];
         next[index] = value;
         updateContent(next);
+    }
+
+    function removeItem(index: number) {
+        updateContent(content.filter((_, i) => i !== index));
     }
 
     function addItem(item: any) {
@@ -43,13 +58,17 @@ export default function Block({ data, onChange }: BlockProps): JSX.Element {
 
             return (
                 <div>
-                    <div className="font-semibold">{label}</div>
+                    <div className="flex items-center gap-1">
+                        <span className="font-semibold">{label}</span>
+                        {onDelete && <Del onClick={onDelete} />}
+                    </div>
                     <div className="ml-4 flex flex-col gap-2 mt-1">
                         {content.map((child: BlockData, index: number) => (
                             <Block
                                 key={index}
                                 data={child}
                                 onChange={(updated) => updateChild(index, updated)}
+                                onDelete={() => removeItem(index)}
                             />
                         ))}
                         <div className="flex gap-2 mt-1">
@@ -69,50 +88,55 @@ export default function Block({ data, onChange }: BlockProps): JSX.Element {
         }
 
         case BlockKey.Listen: {
-            const hasSsl = content.includes('ssl');
-            const ports = content.filter((v: any) => v !== 'ssl');
+            // content layout: [ip, port, ...flags]
+            const ip     = content[0] ?? '';
+            const port   = content[1] ?? '80';
+            const hasSsl = content.slice(2).includes('ssl');
+
+            function setIp(val: string)   { updateChild(0, val); }
+            function setPort(val: string) { updateChild(1, val); }
+            function setSsl(on: boolean) {
+                const flags = content.slice(2).filter((f: string) => f !== 'ssl');
+                if (on) flags.push('ssl');
+                updateContent([ip, port, ...flags]);
+            }
 
             return (
                 <div className="flex items-start gap-2">
-                    <div className="font-semibold w-24">Listen</div>
+                    <div className="flex items-center gap-1">
+                        <span className="font-semibold w-24">Listen</span>
+                        {onDelete && <Del onClick={onDelete} />}
+                    </div>
                     <div className="flex flex-col gap-1">
-                        {ports.map((value: string, portIdx: number) => {
-                            // Map back to the real index in content
-                            const realIdx = content.indexOf(value, portIdx === 0 ? 0 : content.indexOf(ports[portIdx - 1]) + 1);
-                            return (
-                                <label key={realIdx} className="flex items-center gap-2">
-                                    <span className="text-sm">Port</span>
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        max={65535}
-                                        value={Number(value)}
-                                        onChange={(e) => updateChild(realIdx, e.target.value)}
-                                        className="border rounded px-1 w-24"
-                                    />
-                                </label>
-                            );
-                        })}
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm w-8">IP</span>
+                            <input
+                                type="text"
+                                value={ip}
+                                onChange={(e) => setIp(e.target.value)}
+                                className="border rounded px-1 w-36"
+                                placeholder="0.0.0.0"
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm w-8">Port</span>
+                            <input
+                                type="number"
+                                min={1}
+                                max={65535}
+                                value={Number(port)}
+                                onChange={(e) => setPort(e.target.value)}
+                                className="border rounded px-1 w-24"
+                            />
+                        </div>
                         <label className="flex items-center gap-2 mt-0.5">
                             <input
                                 type="checkbox"
                                 checked={hasSsl}
-                                onChange={(e) => {
-                                    if (e.target.checked) {
-                                        addItem('ssl');
-                                    } else {
-                                        updateContent(content.filter((c: any) => c !== 'ssl'));
-                                    }
-                                }}
+                                onChange={(e) => setSsl(e.target.checked)}
                             />
                             <span className="text-sm">ssl</span>
                         </label>
-                        <button
-                            onClick={() => addItem('80')}
-                            className="text-xs border rounded px-2 py-0.5 text-blue-600 border-blue-400 hover:bg-blue-50 self-start mt-0.5"
-                        >
-                            + Port
-                        </button>
                     </div>
                 </div>
             );
@@ -121,16 +145,21 @@ export default function Block({ data, onChange }: BlockProps): JSX.Element {
         case BlockKey.ServerName: {
             return (
                 <div className="flex items-start gap-2">
-                    <div className="font-semibold w-24">ServerName</div>
+                    <div className="flex items-center gap-1">
+                        <span className="font-semibold w-24">ServerName</span>
+                        {onDelete && <Del onClick={onDelete} />}
+                    </div>
                     <div className="flex flex-col gap-1">
                         {content.map((value: string, index: number) => (
-                            <input
-                                key={index}
-                                value={value}
-                                onChange={(e) => updateChild(index, e.target.value)}
-                                className="border rounded px-1"
-                                placeholder="example.com"
-                            />
+                            <div key={index} className="flex items-center gap-1">
+                                <input
+                                    value={value}
+                                    onChange={(e) => updateChild(index, e.target.value)}
+                                    className="border rounded px-1"
+                                    placeholder="example.com"
+                                />
+                                <Del onClick={() => removeItem(index)} />
+                            </div>
                         ))}
                         <button
                             onClick={() => addItem('')}
