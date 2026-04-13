@@ -1,26 +1,63 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --background: #ffffff;
+    --foreground: #09090b;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+    :root {
+        --background: #09090b;
+        --foreground: #fafafa;
+    }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    background: var(--background);
+    color: var(--foreground);
+}
+
+/* ── base input style ─────────────────────────────────────────────────────── */
+input[type="text"],
+input[type="number"] {
+    background: transparent;
+    border: 1px solid theme(colors.zinc.200);
+    border-radius: theme(borderRadius.md);
+    padding: theme(spacing.1) theme(spacing.2);
+    font-size: theme(fontSize.sm);
+    color: inherit;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus {
+    border-color: theme(colors.blue.500);
+    box-shadow: 0 0 0 2px theme(colors.blue.500 / 20%);
+}
+
+@media (prefers-color-scheme: dark) {
+    input[type="text"],
+    input[type="number"] {
+        border-color: theme(colors.zinc.700);
+    }
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+        border-color: theme(colors.blue.500);
+    }
+}
+
+/* ── scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: theme(colors.zinc.300); border-radius: 99px; }
+@media (prefers-color-scheme: dark) {
+    ::-webkit-scrollbar-thumb { background: theme(colors.zinc.700); }
 }

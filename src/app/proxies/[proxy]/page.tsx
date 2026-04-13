@@ -22,21 +22,35 @@ function ProxyEditor({ proxy }: { proxy: string }) {
         });
     }
 
-    if (!data) return null;
-
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-                <h1 className="text-lg font-semibold">Proxy: {proxy}</h1>
+        <div className="flex flex-col h-full">
+
+            {/* ── toolbar ── */}
+            <div className="shrink-0 flex items-center justify-between gap-4 px-6 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                <div className="flex items-center gap-2 text-sm min-w-0">
+                    <a href="/" className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors shrink-0">
+                        Proxies
+                    </a>
+                    <span className="text-zinc-300 dark:text-zinc-600">/</span>
+                    <span className="font-medium truncate">{proxy}</span>
+                </div>
                 <button
                     onClick={handleSave}
-                    disabled={isPending}
-                    className="px-4 py-1.5 rounded bg-blue-600 text-white text-sm disabled:opacity-50"
+                    disabled={isPending || !data}
+                    className="shrink-0 px-4 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
                 >
                     {isPending ? 'Saving…' : saved ? 'Saved ✓' : 'Save'}
                 </button>
             </div>
-            <Block data={data} onChange={setData} />
+
+            {/* ── content ── */}
+            <div className="flex-1 overflow-auto p-6">
+                {data
+                    ? <Block data={data} onChange={setData} />
+                    : <div className="flex items-center justify-center h-32 text-sm text-zinc-400">Loading…</div>
+                }
+            </div>
+
         </div>
     );
 }
@@ -48,10 +62,14 @@ function ProxiesPageInner({ params }: { params: Promise<{ proxy: string }> }) {
 
 export default function ProxiesPage({ params }: { params: Promise<{ proxy: string }> }) {
     return (
-        <main className="p-6">
-            <Suspense fallback={<div>Loading…</div>}>
+        <div className="h-full flex flex-col">
+            <Suspense fallback={
+                <div className="flex items-center justify-center flex-1 text-sm text-zinc-400">
+                    Loading…
+                </div>
+            }>
                 <ProxiesPageInner params={params} />
             </Suspense>
-        </main>
+        </div>
     );
 }

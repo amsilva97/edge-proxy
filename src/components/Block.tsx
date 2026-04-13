@@ -7,6 +7,31 @@ import type { BlockData } from "@/libs/block";
 export { BlockKey };
 export type { BlockData };
 
+// ── per-type style tokens ──────────────────────────────────────────────────
+
+const typeStyle = {
+    [BlockKey.Root]: {
+        border:  'border-zinc-200 dark:border-zinc-700',
+        header:  'bg-zinc-50 dark:bg-zinc-800',
+        label:   'text-zinc-500 dark:text-zinc-400',
+    },
+    [BlockKey.Server]: {
+        border:  'border-blue-200 dark:border-blue-800',
+        header:  'bg-blue-50 dark:bg-blue-950',
+        label:   'text-blue-600 dark:text-blue-400',
+    },
+    [BlockKey.Listen]: {
+        border:  'border-emerald-200 dark:border-emerald-800',
+        header:  'bg-emerald-50 dark:bg-emerald-950',
+        label:   'text-emerald-600 dark:text-emerald-400',
+    },
+    [BlockKey.ServerName]: {
+        border:  'border-violet-200 dark:border-violet-800',
+        header:  'bg-violet-50 dark:bg-violet-950',
+        label:   'text-violet-600 dark:text-violet-400',
+    },
+} satisfies Record<BlockKey, { border: string; header: string; label: string }>;
+
 // ── helpers ────────────────────────────────────────────────────────────────
 
 function defaultContent(key: BlockKey): any[] {
@@ -22,8 +47,8 @@ function defaultContent(key: BlockKey): any[] {
 const Del = ({ onClick }: { onClick: () => void }) => (
     <button
         onClick={onClick}
-        className="text-xs text-red-400 hover:text-red-600 px-1"
         aria-label="Delete"
+        className="opacity-0 group-hover/card:opacity-100 text-zinc-400 hover:text-red-500 transition-all text-sm leading-none px-1"
     >
         ✕
     </button>
@@ -48,31 +73,75 @@ function InsertBar({ options }: { options: InsertOption[] }) {
     }, [open]);
 
     return (
-        <div ref={ref} className="relative group h-4 flex items-center">
-            {/* hover bar */}
+        <div ref={ref} className="relative group/bar h-5 flex items-center px-1 my-0.5">
+            {/* hit area + bar */}
             <div
-                className="w-full h-0.5 bg-transparent group-hover:bg-blue-400 cursor-pointer rounded transition-colors flex items-center justify-center"
+                className="w-full h-px bg-transparent group-hover/bar:bg-blue-400 dark:group-hover/bar:bg-blue-600 cursor-pointer rounded-full transition-colors flex items-center justify-center"
                 onClick={() => setOpen(o => !o)}
             >
-                <span className="opacity-0 group-hover:opacity-100 bg-blue-500 text-white text-xs leading-none rounded-full w-4 h-4 flex items-center justify-center select-none">
+                <span className="opacity-0 group-hover/bar:opacity-100 transition-opacity bg-blue-500 text-white text-xs leading-none rounded-full w-4 h-4 flex items-center justify-center select-none shrink-0">
                     +
                 </span>
             </div>
 
             {/* popover */}
             {open && (
-                <div className="absolute left-4 top-5 z-20 bg-white border rounded shadow-lg py-1 min-w-32">
+                <div className="absolute left-4 top-5 z-30 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg shadow-black/10 py-1 min-w-36">
                     {options.map(({ label, onClick }) => (
                         <button
                             key={label}
                             onClick={() => { onClick(); setOpen(false); }}
-                            className="w-full px-3 py-1.5 text-sm hover:bg-blue-50 text-left"
+                            className="w-full px-3 py-1.5 text-sm text-left hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                         >
                             {label}
                         </button>
                     ))}
                 </div>
             )}
+        </div>
+    );
+}
+
+// ── Card wrapper ───────────────────────────────────────────────────────────
+
+function Card({
+    blockKey,
+    label,
+    onDelete,
+    children,
+    inline = false,
+}: {
+    blockKey: BlockKey;
+    label: string;
+    onDelete?: () => void;
+    children: React.ReactNode;
+    inline?: boolean;
+}) {
+    const s = typeStyle[blockKey];
+    if (inline) {
+        return (
+            <div className={`group/card flex items-center gap-2 rounded-md border ${s.border} px-2 py-1 bg-white dark:bg-zinc-900`}>
+                <span className={`text-xs font-semibold uppercase tracking-wider shrink-0 ${s.label}`}>
+                    {label}
+                </span>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {children}
+                </div>
+                {onDelete && <Del onClick={onDelete} />}
+            </div>
+        );
+    }
+    return (
+        <div className={`group/card rounded-lg border ${s.border} overflow-hidden`}>
+            <div className={`flex items-center justify-between px-3 py-1 ${s.header} border-b ${s.border}`}>
+                <span className={`text-xs font-semibold uppercase tracking-wider ${s.label}`}>
+                    {label}
+                </span>
+                {onDelete && <Del onClick={onDelete} />}
+            </div>
+            <div className="p-2 bg-white dark:bg-zinc-900">
+                {children}
+            </div>
         </div>
     );
 }
@@ -115,20 +184,16 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
                     { key: BlockKey.ServerName, label: 'ServerName' },
                 ];
 
-            function barOptions(insertIdx: number): InsertOption[] {
-                return childOptions.map(({ key, label: optLabel }) => ({
-                    label: optLabel,
-                    onClick: () => insertAt(insertIdx, [key, defaultContent(key)]),
+            function barOptions(idx: number): InsertOption[] {
+                return childOptions.map(({ key, label: l }) => ({
+                    label: l,
+                    onClick: () => insertAt(idx, [key, defaultContent(key)]),
                 }));
             }
 
             return (
-                <div>
-                    <div className="flex items-center gap-1">
-                        <span className="font-semibold">{label}</span>
-                        {onDelete && <Del onClick={onDelete} />}
-                    </div>
-                    <div className="ml-4 flex flex-col mt-1">
+                <Card blockKey={blockKey} label={label} onDelete={onDelete}>
+                    <div className="flex flex-col">
                         <InsertBar options={barOptions(0)} />
                         {content.map((child: BlockData, index: number) => (
                             <div key={index}>
@@ -141,7 +206,7 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
                             </div>
                         ))}
                     </div>
-                </div>
+                </Card>
             );
         }
 
@@ -159,80 +224,76 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
             }
 
             return (
-                <div className="flex items-start gap-2">
-                    <div className="flex items-center gap-1">
-                        <span className="font-semibold w-24">Listen</span>
-                        {onDelete && <Del onClick={onDelete} />}
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm w-8">IP</span>
-                            <input
-                                type="text"
-                                value={ip}
-                                onChange={(e) => setIp(e.target.value)}
-                                className="border rounded px-1 w-36"
-                                placeholder="0.0.0.0"
-                            />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm w-8">Port</span>
-                            <input
-                                type="number"
-                                min={1}
-                                max={65535}
-                                value={Number(port)}
-                                onChange={(e) => setPort(e.target.value)}
-                                className="border rounded px-1 w-24"
-                            />
-                        </div>
-                        <label className="flex items-center gap-2 mt-0.5">
-                            <input
-                                type="checkbox"
-                                checked={hasSsl}
-                                onChange={(e) => setSsl(e.target.checked)}
-                            />
-                            <span className="text-sm">ssl</span>
-                        </label>
-                    </div>
-                </div>
+                <Card blockKey={blockKey} label="Listen" onDelete={onDelete} inline>
+                    <input
+                        type="text"
+                        value={ip}
+                        onChange={(e) => setIp(e.target.value)}
+                        className="w-32"
+                        placeholder="0.0.0.0"
+                    />
+                    <span className="text-zinc-400 text-xs select-none">:</span>
+                    <input
+                        type="number"
+                        min={1}
+                        max={65535}
+                        value={Number(port)}
+                        onChange={(e) => setPort(e.target.value)}
+                        className="w-20"
+                    />
+                    <label className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer select-none ml-1">
+                        <input
+                            type="checkbox"
+                            checked={hasSsl}
+                            onChange={(e) => setSsl(e.target.checked)}
+                            className="accent-emerald-500"
+                        />
+                        SSL
+                    </label>
+                </Card>
             );
         }
 
         case BlockKey.ServerName: {
-            const nameBarOptions = (idx: number): InsertOption[] => [{
-                label: 'Name',
-                onClick: () => insertAt(idx, ''),
-            }];
-
             return (
-                <div className="flex items-start gap-2">
-                    <div className="flex items-center gap-1">
-                        <span className="font-semibold w-24">ServerName</span>
-                        {onDelete && <Del onClick={onDelete} />}
-                    </div>
-                    <div className="flex flex-col">
-                        <InsertBar options={nameBarOptions(0)} />
+                <Card blockKey={blockKey} label="Server Name" onDelete={onDelete} inline>
+                    <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0">
                         {content.map((value: string, index: number) => (
-                            <div key={index}>
-                                <div className="flex items-center gap-1">
-                                    <input
-                                        value={value}
-                                        onChange={(e) => updateChild(index, e.target.value)}
-                                        className="border rounded px-1"
-                                        placeholder="example.com"
-                                    />
-                                    <Del onClick={() => removeItem(index)} />
-                                </div>
-                                <InsertBar options={nameBarOptions(index + 1)} />
+                            <div key={index} className="flex items-center gap-0.5 group/name">
+                                <input
+                                    type="text"
+                                    value={value}
+                                    onChange={(e) => updateChild(index, e.target.value)}
+                                    className="w-32 min-w-0"
+                                    placeholder="example.com"
+                                />
+                                <button
+                                    onClick={() => removeItem(index)}
+                                    aria-label="Delete"
+                                    className="opacity-0 group-hover/name:opacity-100 text-zinc-400 hover:text-red-500 transition-all text-xs leading-none px-0.5"
+                                >
+                                    ✕
+                                </button>
                             </div>
                         ))}
+                        <button
+                            onClick={() => insertAt(content.length, '')}
+                            className="text-xs text-zinc-400 hover:text-violet-500 transition-colors px-1 leading-none"
+                            aria-label="Add name"
+                        >
+                            +
+                        </button>
                     </div>
-                </div>
+                </Card>
             );
         }
 
         default:
-            return <pre>{BlockKey[blockKey]} {JSON.stringify(content)}</pre>;
+            return (
+                <pre className="text-xs text-zinc-500 font-mono p-2 rounded border border-zinc-200 dark:border-zinc-700">
+                    {BlockKey[blockKey]} {JSON.stringify(content)}
+                </pre>
+            );
     }
 }
+
