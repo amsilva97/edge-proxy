@@ -26,7 +26,7 @@ function ProxyEditor({ proxy }: { proxy: string }) {
         <div className="flex flex-col h-full">
 
             {/* ── toolbar ── */}
-            <div className="shrink-0 flex items-center justify-between gap-4 px-6 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+            <div className="shrink-0 flex items-center justify-between gap-4 px-3 py-1.5 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
                 <div className="flex items-center gap-2 text-sm min-w-0">
                     <a href="/" className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors shrink-0">
                         Proxies
@@ -44,7 +44,7 @@ function ProxyEditor({ proxy }: { proxy: string }) {
             </div>
 
             {/* ── content ── */}
-            <div className="flex-1 overflow-auto p-6">
+            <div className="flex-1 overflow-auto p-2">
                 {data
                     ? <Block data={data} onChange={setData} />
                     : <div className="flex items-center justify-center h-32 text-sm text-zinc-400">Loading…</div>

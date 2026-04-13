@@ -48,7 +48,7 @@ const Del = ({ onClick }: { onClick: () => void }) => (
     <button
         onClick={onClick}
         aria-label="Delete"
-        className="opacity-0 group-hover/card:opacity-100 text-zinc-400 hover:text-red-500 transition-all text-sm leading-none px-1"
+        className="opacity-0 group-hover/card:opacity-100 text-zinc-400 hover:text-red-500 transition-all text-xs leading-none"
     >
         ✕
     </button>
@@ -73,25 +73,23 @@ function InsertBar({ options }: { options: InsertOption[] }) {
     }, [open]);
 
     return (
-        <div ref={ref} className="relative group/bar h-5 flex items-center px-1 my-0.5">
-            {/* hit area + bar */}
+        <div ref={ref} className="relative group/bar h-3 flex items-center">
             <div
                 className="w-full h-px bg-transparent group-hover/bar:bg-blue-400 dark:group-hover/bar:bg-blue-600 cursor-pointer rounded-full transition-colors flex items-center justify-center"
                 onClick={() => setOpen(o => !o)}
             >
-                <span className="opacity-0 group-hover/bar:opacity-100 transition-opacity bg-blue-500 text-white text-xs leading-none rounded-full w-4 h-4 flex items-center justify-center select-none shrink-0">
+                <span className="opacity-0 group-hover/bar:opacity-100 transition-opacity bg-blue-500 text-white text-xs leading-none rounded-full w-3 h-3 flex items-center justify-center select-none shrink-0">
                     +
                 </span>
             </div>
 
-            {/* popover */}
             {open && (
-                <div className="absolute left-4 top-5 z-30 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg shadow-black/10 py-1 min-w-36">
+                <div className="absolute left-3 top-4 z-30 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded shadow-lg shadow-black/10 py-0.5 min-w-28">
                     {options.map(({ label, onClick }) => (
                         <button
                             key={label}
                             onClick={() => { onClick(); setOpen(false); }}
-                            className="w-full px-3 py-1.5 text-sm text-left hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                            className="w-full px-2 py-1 text-xs text-left hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                         >
                             {label}
                         </button>
@@ -120,11 +118,11 @@ function Card({
     const s = typeStyle[blockKey];
     if (inline) {
         return (
-            <div className={`group/card flex items-center gap-2 rounded-md border ${s.border} px-2 py-1 bg-white dark:bg-zinc-900`}>
-                <span className={`text-xs font-semibold uppercase tracking-wider shrink-0 ${s.label}`}>
+            <div className={`group/card flex items-center gap-1.5 rounded border ${s.border} px-1.5 py-0.5 bg-white dark:bg-zinc-900`}>
+                <span className={`text-xs font-semibold uppercase tracking-wide shrink-0 ${s.label}`}>
                     {label}
                 </span>
-                <div className="flex items-center gap-2 flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
                     {children}
                 </div>
                 {onDelete && <Del onClick={onDelete} />}
@@ -132,14 +130,14 @@ function Card({
         );
     }
     return (
-        <div className={`group/card rounded-lg border ${s.border} overflow-hidden`}>
-            <div className={`flex items-center justify-between px-3 py-1 ${s.header} border-b ${s.border}`}>
-                <span className={`text-xs font-semibold uppercase tracking-wider ${s.label}`}>
+        <div className={`group/card rounded border ${s.border} overflow-hidden`}>
+            <div className={`flex items-center justify-between px-1.5 py-0.5 ${s.header} border-b ${s.border}`}>
+                <span className={`text-xs font-semibold uppercase tracking-wide ${s.label}`}>
                     {label}
                 </span>
                 {onDelete && <Del onClick={onDelete} />}
             </div>
-            <div className="p-2 bg-white dark:bg-zinc-900">
+            <div className="p-1 bg-white dark:bg-zinc-900">
                 {children}
             </div>
         </div>
@@ -193,7 +191,7 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
 
             return (
                 <Card blockKey={blockKey} label={label} onDelete={onDelete}>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-px">
                         <InsertBar options={barOptions(0)} />
                         {content.map((child: BlockData, index: number) => (
                             <div key={index}>
@@ -229,7 +227,7 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
                         type="text"
                         value={ip}
                         onChange={(e) => setIp(e.target.value)}
-                        className="w-32"
+                        className="w-28"
                         placeholder="0.0.0.0"
                     />
                     <span className="text-zinc-400 text-xs select-none">:</span>
@@ -239,9 +237,9 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
                         max={65535}
                         value={Number(port)}
                         onChange={(e) => setPort(e.target.value)}
-                        className="w-20"
+                        className="w-16"
                     />
-                    <label className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer select-none ml-1">
+                    <label className="flex items-center gap-1 text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer select-none">
                         <input
                             type="checkbox"
                             checked={hasSsl}
@@ -257,20 +255,20 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
         case BlockKey.ServerName: {
             return (
                 <Card blockKey={blockKey} label="Server Name" onDelete={onDelete} inline>
-                    <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-1 flex-1 min-w-0">
                         {content.map((value: string, index: number) => (
                             <div key={index} className="flex items-center gap-0.5 group/name">
                                 <input
                                     type="text"
                                     value={value}
                                     onChange={(e) => updateChild(index, e.target.value)}
-                                    className="w-32 min-w-0"
+                                    className="w-28 min-w-0"
                                     placeholder="example.com"
                                 />
                                 <button
                                     onClick={() => removeItem(index)}
                                     aria-label="Delete"
-                                    className="opacity-0 group-hover/name:opacity-100 text-zinc-400 hover:text-red-500 transition-all text-xs leading-none px-0.5"
+                                    className="opacity-0 group-hover/name:opacity-100 text-zinc-400 hover:text-red-500 transition-all text-xs leading-none"
                                 >
                                     ✕
                                 </button>
@@ -278,7 +276,7 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
                         ))}
                         <button
                             onClick={() => insertAt(content.length, '')}
-                            className="text-xs text-zinc-400 hover:text-violet-500 transition-colors px-1 leading-none"
+                            className="text-xs text-zinc-400 hover:text-violet-500 transition-colors leading-none"
                             aria-label="Add name"
                         >
                             +
@@ -290,10 +288,9 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
 
         default:
             return (
-                <pre className="text-xs text-zinc-500 font-mono p-2 rounded border border-zinc-200 dark:border-zinc-700">
+                <pre className="text-xs text-zinc-500 font-mono px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
                     {BlockKey[blockKey]} {JSON.stringify(content)}
                 </pre>
             );
     }
 }
-

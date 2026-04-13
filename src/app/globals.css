@@ -30,7 +30,7 @@ input[type="number"] {
     background: transparent;
     border: 1px solid theme(colors.zinc.200);
     border-radius: theme(borderRadius.md);
-    padding: theme(spacing.1) theme(spacing.2);
+    padding: 1px theme(spacing.1);
     font-size: theme(fontSize.sm);
     color: inherit;
     outline: none;
