@@ -2,43 +2,43 @@
 
 import { JSX, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { BlockKey } from "@/libs/block";
-import type { BlockData } from "@/libs/block";
+import { EdgeProxyBlockKey } from "@/libs/EdgeProxyBlock";
+import type { EdgeProxyBlock } from "@/libs/EdgeProxyBlock";
 
-export { BlockKey };
-export type { BlockData };
+export { EdgeProxyBlockKey as BlockKey };
+export type { EdgeProxyBlock as BlockData };
 
 // ── per-type style tokens ──────────────────────────────────────────────────
 
 const typeStyle = {
-    [BlockKey.Root]: {
+    [EdgeProxyBlockKey.Root]: {
         border:  'border-zinc-200 dark:border-zinc-700',
         header:  'bg-zinc-50 dark:bg-zinc-800',
         label:   'text-zinc-500 dark:text-zinc-400',
     },
-    [BlockKey.Server]: {
+    [EdgeProxyBlockKey.Server]: {
         border:  'border-blue-200 dark:border-blue-800',
         header:  'bg-blue-50 dark:bg-blue-950',
         label:   'text-blue-600 dark:text-blue-400',
     },
-    [BlockKey.Listen]: {
+    [EdgeProxyBlockKey.Listen]: {
         border:  'border-emerald-200 dark:border-emerald-800',
         header:  'bg-emerald-50 dark:bg-emerald-950',
         label:   'text-emerald-600 dark:text-emerald-400',
     },
-    [BlockKey.ServerName]: {
+    [EdgeProxyBlockKey.ServerName]: {
         border:  'border-violet-200 dark:border-violet-800',
         header:  'bg-violet-50 dark:bg-violet-950',
         label:   'text-violet-600 dark:text-violet-400',
     },
-} satisfies Record<BlockKey, { border: string; header: string; label: string }>;
+} satisfies Record<EdgeProxyBlockKey, { border: string; header: string; label: string }>;
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
-function defaultContent(key: BlockKey): any[] {
+function defaultContent(key: EdgeProxyBlockKey): any[] {
     switch (key) {
-        case BlockKey.Listen:     return ['', '80'];
-        case BlockKey.ServerName: return [''];
+        case EdgeProxyBlockKey.Listen:     return ['', '80'];
+        case EdgeProxyBlockKey.ServerName: return [''];
         default:                  return [];
     }
 }
@@ -128,7 +128,7 @@ function Card({
     children,
     inline = false,
 }: {
-    blockKey: BlockKey;
+    blockKey: EdgeProxyBlockKey;
     label: string;
     onDelete?: () => void;
     children: React.ReactNode;
@@ -166,8 +166,8 @@ function Card({
 // ── Block ──────────────────────────────────────────────────────────────────
 
 interface BlockProps {
-    data: BlockData;
-    onChange?: (data: BlockData) => void;
+    data: EdgeProxyBlock;
+    onChange?: (data: EdgeProxyBlock) => void;
     onDelete?: () => void;
 }
 
@@ -191,14 +191,14 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
     }
 
     switch (blockKey) {
-        case BlockKey.Root:
-        case BlockKey.Server: {
-            const label = BlockKey[blockKey];
-            const childOptions = blockKey === BlockKey.Root
-                ? [{ key: BlockKey.Server,     label: 'Server'     }]
+        case EdgeProxyBlockKey.Root:
+        case EdgeProxyBlockKey.Server: {
+            const label = EdgeProxyBlockKey[blockKey];
+            const childOptions = blockKey === EdgeProxyBlockKey.Root
+                ? [{ key: EdgeProxyBlockKey.Server,     label: 'Server'     }]
                 : [
-                    { key: BlockKey.Listen,     label: 'Listen'     },
-                    { key: BlockKey.ServerName, label: 'ServerName' },
+                    { key: EdgeProxyBlockKey.Listen,     label: 'Listen'     },
+                    { key: EdgeProxyBlockKey.ServerName, label: 'ServerName' },
                 ];
 
             function barOptions(idx: number): InsertOption[] {
@@ -212,7 +212,7 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
                 <Card blockKey={blockKey} label={label} onDelete={onDelete}>
                     <div className="flex flex-col gap-px">
                         <InsertBar options={barOptions(0)} />
-                        {content.map((child: BlockData, index: number) => (
+                        {content.map((child: EdgeProxyBlock, index: number) => (
                             <div key={index}>
                                 <Block
                                     data={child}
@@ -227,7 +227,7 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
             );
         }
 
-        case BlockKey.Listen: {
+        case EdgeProxyBlockKey.Listen: {
             const ip     = content[0] ?? '';
             const port   = content[1] ?? '80';
             const hasSsl = content.slice(2).includes('ssl');
@@ -271,7 +271,7 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
             );
         }
 
-        case BlockKey.ServerName: {
+        case EdgeProxyBlockKey.ServerName: {
             return (
                 <Card blockKey={blockKey} label="Server Name" onDelete={onDelete} inline>
                     <div className="flex flex-wrap items-center gap-1 flex-1 min-w-0">
@@ -308,7 +308,7 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
         default:
             return (
                 <pre className="text-xs text-zinc-500 font-mono px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
-                    {BlockKey[blockKey]} {JSON.stringify(content)}
+                    {EdgeProxyBlockKey[blockKey]} {JSON.stringify(content)}
                 </pre>
             );
     }
