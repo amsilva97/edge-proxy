@@ -9,8 +9,7 @@ import fs from 'fs/promises';
 const execAsync = promisify(exec);
 
 export class EdgeProxyBlockHelper {
-    constructor(private data: EdgeProxyBlock) { }
-
+    /** Retrieves the list of available proxies */
     public static async getListAsync(): Promise<string[]> {
         try {
             const files = await fs.readdir(PROXIES_DIR);
@@ -43,6 +42,7 @@ export class EdgeProxyBlockHelper {
         await fs.rm(path.join(nginxBasePath, 'sites-available', proxy), { force: true });
     }
 
+    /** Checks if the proxy JSON file exists */
     public static async existsAsync(proxy: string): Promise<boolean> {
         try {
             await fs.access(this.proxyFile(proxy));
