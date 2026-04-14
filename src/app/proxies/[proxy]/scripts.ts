@@ -19,8 +19,8 @@ function defaultConfig(): BlockData {
             [
                 BlockKey.Server,
                 [
-                    [BlockKey.Listen,     ['', '443', 'ssl']],
-                    [BlockKey.ServerName, ['example.com']],
+                    [BlockKey.Listen,     ['', '80', '']],
+                    [BlockKey.ServerName, ['']],
                 ],
             ],
         ],
@@ -33,6 +33,15 @@ export async function loadConfig(proxy: string): Promise<BlockData> {
         return JSON.parse(raw) as BlockData;
     } catch {
         return defaultConfig();
+    }
+}
+
+export async function proxyExists(proxy: string): Promise<boolean> {
+    try {
+        await fs.access(proxyFile(proxy));
+        return true;
+    } catch {
+        return false;
     }
 }
 
