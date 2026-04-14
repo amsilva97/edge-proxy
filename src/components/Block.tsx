@@ -1,6 +1,7 @@
 'use client'
 
 import { JSX, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { BlockKey } from "@/libs/block";
 import type { BlockData } from "@/libs/block";
 
@@ -60,31 +61,48 @@ interface InsertOption { label: string; onClick: () => void; }
 
 function InsertBar({ options }: { options: InsertOption[] }) {
     const [open, setOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
+    const [pos, setPos] = useState({ top: 0, left: 0 });
+    const triggerRef = useRef<HTMLDivElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!open) return;
         function onDown(e: MouseEvent) {
-            if (ref.current && !ref.current.contains(e.target as Node))
-                setOpen(false);
+            if (
+                menuRef.current && !menuRef.current.contains(e.target as Node) &&
+                triggerRef.current && !triggerRef.current.contains(e.target as Node)
+            ) setOpen(false);
         }
         document.addEventListener('mousedown', onDown);
         return () => document.removeEventListener('mousedown', onDown);
     }, [open]);
 
+    function handleClick() {
+        if (triggerRef.current) {
+            const r = triggerRef.current.getBoundingClientRect();
+            setPos({ top: r.bottom + window.scrollY + 4, left: r.left + window.scrollX + 12 });
+        }
+        setOpen(o => !o);
+    }
+
     return (
-        <div ref={ref} className="relative group/bar h-3 flex items-center">
+        <div className="relative group/bar h-3 flex items-center">
             <div
+                ref={triggerRef}
                 className="w-full h-px bg-transparent group-hover/bar:bg-blue-400 dark:group-hover/bar:bg-blue-600 cursor-pointer rounded-full transition-colors flex items-center justify-center"
-                onClick={() => setOpen(o => !o)}
+                onClick={handleClick}
             >
                 <span className="opacity-0 group-hover/bar:opacity-100 transition-opacity bg-blue-500 text-white text-xs leading-none rounded-full w-3 h-3 flex items-center justify-center select-none shrink-0">
                     +
                 </span>
             </div>
 
-            {open && (
-                <div className="absolute left-3 top-4 z-30 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded shadow-lg shadow-black/10 py-0.5 min-w-28">
+            {open && createPortal(
+                <div
+                    ref={menuRef}
+                    style={{ top: pos.top, left: pos.left }}
+                    className="fixed z-[9999] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded shadow-lg shadow-black/10 py-0.5 min-w-28"
+                >
                     {options.map(({ label, onClick }) => (
                         <button
                             key={label}
@@ -94,7 +112,8 @@ function InsertBar({ options }: { options: InsertOption[] }) {
                             {label}
                         </button>
                     ))}
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
