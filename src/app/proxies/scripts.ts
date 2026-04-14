@@ -1,6 +1,6 @@
 'use server'
 
-import { EdgeProxyBlockHelper } from '@/libs/EdgeProxyBlock';
+import { EdgeProxyBlockHelper } from '@/libs/server/EdgeProxyBlockHelper';
 
 export async function listProxies(): Promise<string[]> {
     return EdgeProxyBlockHelper.getListAsync();

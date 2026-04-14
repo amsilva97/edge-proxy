@@ -1,9 +1,7 @@
 'use server'
 
-import fs from 'fs/promises';
-import path from 'path';
-import { EdgeProxyBlock, EdgeProxyBlockKey, EdgeProxyBlockHelper } from '@/libs/EdgeProxyBlock';
-import { PROXIES_DIR } from '@/libs/constants';
+import { EdgeProxyBlock, EdgeProxyBlockKey } from '@/libs/EdgeProxyBlock';
+import { EdgeProxyBlockHelper } from '@/libs/server/EdgeProxyBlockHelper';
 
 function defaultConfig(): EdgeProxyBlock {
     return [
