@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { listProxies, deleteProxy } from './scripts';
-import { proxyExists } from './[proxy]/scripts';
+import { listProxies, deleteProxy, proxyExists } from './scripts';
 
 function NewProxyForm({ onDone }: { onDone: () => void }) {
     const [name, setName] = useState('');
