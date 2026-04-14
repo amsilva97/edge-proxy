@@ -54,7 +54,7 @@ function NewProxyForm({ onDone }: { onDone: () => void }) {
     );
 }
 
-function ProxyCard({ name, onDeleted }: { name: string; onDeleted: () => void }) {
+function ProxyRow({ name, onDeleted }: { name: string; onDeleted: () => void }) {
     const [confirming, setConfirming] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const router = useRouter();
@@ -67,41 +67,44 @@ function ProxyCard({ name, onDeleted }: { name: string; onDeleted: () => void })
     }
 
     return (
-        <div
-            className="group relative rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-sm transition-all p-4 flex flex-col gap-1 cursor-pointer"
+        <tr
+            className="group border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors"
             onClick={() => !confirming && router.push(`/proxies/${name}`)}
         >
-            <span className="text-sm font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+            <td className="px-4 py-2.5 text-sm font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {name}
-            </span>
-            <span className="text-xs text-zinc-400">proxy</span>
-
-            {confirming ? (
-                <div className="mt-2 flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+            </td>
+            <td className="px-4 py-2.5 text-xs text-zinc-400">
+                proxy
+            </td>
+            <td className="px-4 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
+                {confirming ? (
+                    <div className="flex items-center justify-end gap-1.5">
+                        <button
+                            onClick={handleDelete}
+                            disabled={deleting}
+                            className="px-2 py-0.5 rounded text-xs font-medium bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white transition-colors"
+                        >
+                            {deleting ? 'Deleting…' : 'Confirm'}
+                        </button>
+                        <button
+                            onClick={() => setConfirming(false)}
+                            className="px-2 py-0.5 rounded text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                ) : (
                     <button
-                        onClick={handleDelete}
-                        disabled={deleting}
-                        className="px-2 py-0.5 rounded text-xs font-medium bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white transition-colors"
+                        onClick={() => setConfirming(true)}
+                        className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 transition-all text-xs leading-none"
+                        aria-label="Delete"
                     >
-                        {deleting ? 'Deleting…' : 'Confirm'}
+                        ✕
                     </button>
-                    <button
-                        onClick={(e) => { e.stopPropagation(); setConfirming(false); }}
-                        className="px-2 py-0.5 rounded text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
-                    >
-                        Cancel
-                    </button>
-                </div>
-            ) : (
-                <button
-                    onClick={(e) => { e.stopPropagation(); setConfirming(true); }}
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 transition-all text-xs leading-none"
-                    aria-label="Delete"
-                >
-                    ✕
-                </button>
-            )}
-        </div>
+                )}
+            </td>
+        </tr>
     );
 }
 
@@ -137,17 +140,26 @@ export default function ProxiesPage() {
             </div>
 
             {/* ── content ── */}
-            <div className="flex-1 overflow-auto p-4">
+            <div className="flex-1 overflow-auto">
                 {proxies === null ? (
                     <div className="flex items-center justify-center h-32 text-sm text-zinc-400">Loading…</div>
                 ) : proxies.length === 0 ? (
                     <div className="flex items-center justify-center h-32 text-sm text-zinc-400">No proxies yet. Click New to create one.</div>
                 ) : (
-                    <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
-                        {proxies.map(name => (
-                            <ProxyCard key={name} name={name} onDeleted={() => handleDeleted(name)} />
-                        ))}
-                    </div>
+                    <table className="w-full border-collapse">
+                        <thead>
+                            <tr className="border-b border-zinc-200 dark:border-zinc-800">
+                                <th className="px-4 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Name</th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Type</th>
+                                <th className="px-4 py-2" />
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {proxies.map(name => (
+                                <ProxyRow key={name} name={name} onDeleted={() => handleDeleted(name)} />
+                            ))}
+                        </tbody>
+                    </table>
                 )}
             </div>
 
