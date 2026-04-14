@@ -3,9 +3,9 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { BlockData, BlockKey } from '@/libs/block';
-import { DATA_DIR } from '@/libs/constants';
+import { PROXIES_DIR } from '@/libs/constants';
 
-const CONFIGS_DIR = path.join(DATA_DIR, 'configs');
+const CONFIGS_DIR = PROXIES_DIR;
 
 function proxyFile(proxy: string) {
     const safe = proxy.replace(/[^a-zA-Z0-9_-]/g, '_');
