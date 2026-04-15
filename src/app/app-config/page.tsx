@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { loadAppConfig, saveAppConfig } from './scripts';
-import type { AppConfig } from './scripts';
+import { AppConfig } from '@/libs/AppConfig';
 
 export default function AppConfigPage() {
     const [config, setConfig] = useState<AppConfig | null>(null);
