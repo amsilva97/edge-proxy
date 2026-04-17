@@ -1,0 +1,61 @@
+@reference "tailwindcss";
+
+.layout-body {
+    @apply h-full flex bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 antialiased font-sans;
+}
+
+.nav-sidebar {
+    @apply shrink-0 flex flex-col border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-all duration-200;
+    width: 208px; /* expanded */
+}
+
+.nav-label {
+    @apply whitespace-nowrap overflow-hidden;
+    textWrapMode: 'nowrap';
+}
+
+.nav-sidebar.collapsed {
+    width: 56px; /* collapsed */
+}
+
+.nav-sidebar-header {
+    @apply flex items-center h-14 border-b border-zinc-200 dark:border-zinc-800 px-2 overflow-hidden;
+}
+
+.nav-sidebar-icon-slot {
+    @apply flex items-center justify-center w-8 shrink-0;
+}
+
+.nav-sidebar-title {
+    @apply font-semibold text-sm tracking-tight whitespace-nowrap ml-1;
+}
+
+.nav-sidebar-list {
+    @apply flex-1 py-3 px-2 space-y-0.5;
+}
+
+.nav-sidebar-item {
+    @apply h-9;
+}
+
+.nav-link {
+    @apply flex items-center h-full px-1 rounded-md text-sm transition-colors
+           text-zinc-600 dark:text-zinc-400
+           hover:text-zinc-900 dark:hover:text-zinc-100
+           hover:bg-zinc-100 dark:hover:bg-zinc-800;
+}
+
+.nav-link-active {
+    @apply bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium;
+}
+
+.nav-sidebar-footer {
+    @apply px-2 pb-3;
+}
+
+.nav-collapse-btn {
+    @apply flex items-center justify-center w-full h-9 rounded-md
+           text-zinc-400 dark:text-zinc-500
+           hover:text-zinc-700 dark:hover:text-zinc-300
+           hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors;
+}

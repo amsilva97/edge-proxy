@@ -3,8 +3,8 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { PROXIES_DIR } from '../constants';
 import { EdgeProxyBlock, EdgeProxyBlockKey } from '../EdgeProxyBlock';
-import { AppConfigHelper } from './AppConfigHelper';
 import fs from 'fs/promises';
+import { loadAppSettingAsync } from '../EdgeProxySettings';
 
 const execAsync = promisify(exec);
 
@@ -37,9 +37,9 @@ export class EdgeProxyBlockHelper {
     /** Deletes the proxy JSON and its nginx site files if present */
     public static async deleteAsync(proxy: string): Promise<void> {
         await fs.rm(this.proxyFile(proxy), { force: true });
-        const { nginxBasePath } = await AppConfigHelper.load();
-        await fs.rm(path.join(nginxBasePath, 'sites-enabled', proxy), { force: true });
-        await fs.rm(path.join(nginxBasePath, 'sites-available', proxy), { force: true });
+        const appSettings = await loadAppSettingAsync();
+        await fs.rm(path.join(appSettings.nginxBasePath, 'sites-enabled', proxy), { force: true });
+        await fs.rm(path.join(appSettings.nginxBasePath, 'sites-available', proxy), { force: true });
     }
 
     /** Checks if the proxy JSON file exists */
@@ -58,8 +58,8 @@ export class EdgeProxyBlockHelper {
      */
     public static async generateAsync(proxy: string, data: EdgeProxyBlock): Promise<string> {
         const config = buildNginxConfig(data);
-        const { nginxBasePath } = await AppConfigHelper.load();
-        const sitesAvailable = path.join(nginxBasePath, 'sites-available');
+        const appSettings = await loadAppSettingAsync();
+        const sitesAvailable = path.join(appSettings.nginxBasePath, 'sites-available');
         await fs.mkdir(sitesAvailable, { recursive: true });
         await fs.writeFile(path.join(sitesAvailable, proxy), config, 'utf-8');
         return config;
@@ -67,9 +67,9 @@ export class EdgeProxyBlockHelper {
 
     /** Enables the proxy by creating a symlink in sites-enabled and reloading nginx */
     public static async enableAsync(proxy: string): Promise<void> {
-        const { nginxBasePath } = await AppConfigHelper.load();
-        const target = path.join(nginxBasePath, 'sites-available', proxy);
-        const link = path.join(nginxBasePath, 'sites-enabled', proxy);
+        const appSettings = await loadAppSettingAsync();
+        const target = path.join(appSettings.nginxBasePath, 'sites-available', proxy);
+        const link = path.join(appSettings.nginxBasePath, 'sites-enabled', proxy);
         await fs.mkdir(path.dirname(link), { recursive: true });
         await fs.rm(link, { force: true });
         await fs.symlink(target, link);
@@ -78,8 +78,8 @@ export class EdgeProxyBlockHelper {
 
     /** Disables the proxy by removing its symlink from sites-enabled and reloading nginx */
     public static async disableAsync(proxy: string): Promise<void> {
-        const { nginxBasePath } = await AppConfigHelper.load();
-        const link = path.join(nginxBasePath, 'sites-enabled', proxy);
+        const appSettings = await loadAppSettingAsync();
+        const link = path.join(appSettings.nginxBasePath, 'sites-enabled', proxy);
         await fs.rm(link, { force: true });
         await execAsync('nginx -s reload');
     }
