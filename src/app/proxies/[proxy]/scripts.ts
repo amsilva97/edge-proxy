@@ -1,9 +1,5 @@
-'use server'
-
-import path from 'path';
-import fs from 'fs/promises';
+'use client';
 import { EdgeBlock } from '@/libs/edgeBlock';
-import { AppConfig } from '@/libs/appConfig';
 import { EdgeProxyBlock, EdgeProxyBlockKey } from '@/types/types';
 
 function defaultConfig(): EdgeProxyBlock {
@@ -22,35 +18,28 @@ function defaultConfig(): EdgeProxyBlock {
 }
 
 export async function loadConfig(proxy: string): Promise<EdgeProxyBlock> {
-    if (!await EdgeBlock.existsAsync(proxy)) {
-        await EdgeBlock.saveAsync(proxy, defaultConfig());
+    if (!await EdgeBlock.DoExistsAsync(proxy)) {
+        await EdgeBlock.SaveAsync(proxy, defaultConfig());
     }
-    return EdgeBlock.loadAsync(proxy);
+    return EdgeBlock.LoadAsync(proxy);
 }
 
 export async function saveConfig(proxy: string, data: EdgeProxyBlock): Promise<void> {
-    await EdgeBlock.saveAsync(proxy, data);
+    await EdgeBlock.SaveAsync(proxy, data);
 }
 
 export async function deleteProxy(proxy: string): Promise<void> {
-    await EdgeBlock.deleteAsync(proxy);
+    await EdgeBlock.DeleteAsync(proxy);
 }
 
 export async function enableProxy(proxy: string): Promise<void> {
-    await EdgeBlock.enableAsync(proxy);
+    await EdgeBlock.EnableAsync(proxy);
 }
 
 export async function disableProxy(proxy: string): Promise<void> {
-    await EdgeBlock.disableAsync(proxy);
+    await EdgeBlock.DisableAsync(proxy);
 }
 
 export async function isProxyEnabled(proxy: string): Promise<boolean> {
-    const appSettings = await AppConfig.LoadAsync();
-    const link = path.join(appSettings.nginxBasePath, 'sites-enabled', proxy);
-    try {
-        await fs.access(link);
-        return true;
-    } catch {
-        return false;
-    }
+    return await EdgeBlock.IsEnabledAsync(proxy);
 }
