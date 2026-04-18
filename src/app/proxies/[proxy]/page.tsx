@@ -1,16 +1,23 @@
 'use client'
 
 import { use, useState, useTransition, useEffect, Suspense } from 'react';
-import Block, { BlockData } from '@/components/Block';
-import { loadConfig, saveConfig } from './scripts';
+import { useRouter } from 'next/navigation';
+import Block, { BlockData } from '@/components/block';
+import { loadConfig, saveConfig, deleteProxy, enableProxy, disableProxy, isProxyEnabled } from './scripts';
+import Toolbar from '@/components/toolbar';
+import Button from '@/components/ui/button';
+import Toggle from '@/components/ui/toggle';
 
 function ProxyEditor({ proxy }: { proxy: string }) {
+    const router = useRouter();
     const [data, setData] = useState<BlockData | null>(null);
     const [isPending, startTransition] = useTransition();
     const [saved, setSaved] = useState(false);
+    const [enabled, setEnabled] = useState(false);
 
     useEffect(() => {
         loadConfig(proxy).then(setData);
+        isProxyEnabled(proxy).then(setEnabled);
     }, [proxy]);
 
     function handleSave() {
@@ -22,26 +29,46 @@ function ProxyEditor({ proxy }: { proxy: string }) {
         });
     }
 
+    function handleToggle(next: boolean) {
+        startTransition(async () => {
+            if (next) {
+                await enableProxy(proxy);
+            } else {
+                await disableProxy(proxy);
+            }
+            setEnabled(next);
+        });
+    }
+
+    function handleDelete() {
+        startTransition(async () => {
+            await deleteProxy(proxy);
+            router.push('/proxies');
+        });
+    }
+
     return (
         <div className="flex flex-col h-full">
 
             {/* ── toolbar ── */}
-            <div className="shrink-0 flex items-center justify-between gap-4 px-3 py-1.5 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-                <div className="flex items-center gap-2 text-sm min-w-0">
-                    <a href="/" className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors shrink-0">
-                        Proxies
-                    </a>
-                    <span className="text-zinc-300 dark:text-zinc-600">/</span>
-                    <span className="font-medium truncate">{proxy}</span>
+            <Toolbar>
+                <span className="flex-1 font-medium text-sm">{proxy}</span>
+
+                <div className="flex items-center gap-3">
+                    <Toggle
+                        checked={enabled}
+                        onChange={handleToggle}
+                        label={enabled ? 'Enabled' : 'Disabled'}
+                        disabled={isPending || !data}
+                    />
+                    <Button variant="primary" onClick={handleSave} disabled={isPending || !data}>
+                        {saved ? 'Saved' : 'Save'}
+                    </Button>
+                    <Button variant="danger" onClick={handleDelete} disabled={isPending || !data}>
+                        Delete
+                    </Button>
                 </div>
-                <button
-                    onClick={handleSave}
-                    disabled={isPending || !data}
-                    className="shrink-0 px-4 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
-                >
-                    {isPending ? 'Saving…' : saved ? 'Saved ✓' : 'Save'}
-                </button>
-            </div>
+            </Toolbar>
 
             {/* ── content ── */}
             <div className="flex-1 overflow-auto p-2">
