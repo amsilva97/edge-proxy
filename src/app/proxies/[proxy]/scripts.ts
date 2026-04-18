@@ -1,6 +1,6 @@
 'use server'
 
-import { EdgeBlock } from '@/libs/EdgeBlock';
+import { EdgeBlock } from '@/libs/edgeBlock';
 import { EdgeProxyBlock, EdgeProxyBlockKey } from '@/types/types';
 
 function defaultConfig(): EdgeProxyBlock {

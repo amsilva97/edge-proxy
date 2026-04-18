@@ -1,22 +1,21 @@
 'use client'
 
+import { EdgeProxySettings } from '@/types/types';
 import { useEffect, useState, useTransition } from 'react';
-import { loadAppSettingAsync, saveAppSettingAsync } from './scripts';
-import { EdgeProxySettings } from '@/libs/AppConfig';
-
+import { LoadConfig, SaveConfig } from './scripts';
 export default function AppConfigPage() {
     const [config, setConfig] = useState<EdgeProxySettings | null>(null);
     const [isPending, startTransition] = useTransition();
     const [saved, setSaved] = useState(false);
 
     useEffect(() => {
-        loadAppSettingAsync().then(setConfig);
+        LoadConfig().then(setConfig);
     }, []);
 
     function handleSave() {
         if (!config) return;
         startTransition(async () => {
-            await saveAppSettingAsync(config);
+            await SaveConfig(config);
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
         });

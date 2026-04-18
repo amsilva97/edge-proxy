@@ -1,11 +1,11 @@
 'use server'
 
-import {
-    loadAppSettingAsync,
-    saveAppSettingAsync,
-} from "@/libs/AppConfig";
+import { AppConfig } from "@/libs/appConfig";
 
-export {
-    loadAppSettingAsync,
-    saveAppSettingAsync
-};
+export async function LoadConfig() {
+    return await AppConfig.LoadAsync();
+}
+
+export async function SaveConfig(config: any) {
+    await AppConfig.SaveAsync(config);
+}
