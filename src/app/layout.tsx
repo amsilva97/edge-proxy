@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Network, Settings, PanelLeftClose, PanelLeftOpen, type LucideIcon } from "lucide-react";
 import "./globals.css";
 import "./layout.css";
+import Notifier from "@/components/notifier";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <meta name="description" content="Edge proxy configuration manager" />
             </head>
             <body className="layout-body">
+                <Notifier />
                 <nav className={`nav-sidebar ${collapsed ? "collapsed" : ""}`} style={{ width: `${navWidth}px` }}>
                     <div className="nav-sidebar-header">
                         <div className="nav-sidebar-icon-slot">
