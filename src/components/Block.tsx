@@ -2,8 +2,8 @@
 
 import { JSX, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { EdgeProxyBlockKey } from "@/libs/EdgeProxyBlock";
-import type { EdgeProxyBlock } from "@/libs/EdgeProxyBlock";
+import { EdgeProxyBlockKey } from "@/types/types";
+import type { EdgeProxyBlock } from "@/types/types";
 
 export { EdgeProxyBlockKey as BlockKey };
 export type { EdgeProxyBlock as BlockData };

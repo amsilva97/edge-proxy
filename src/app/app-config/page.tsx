@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { loadAppSettingAsync, saveAppSettingAsync } from './scripts';
-import { EdgeProxySettings } from '@/libs/EdgeProxySettings';
+import { EdgeProxySettings } from '@/libs/AppConfig';
 
 export default function AppConfigPage() {
     const [config, setConfig] = useState<EdgeProxySettings | null>(null);

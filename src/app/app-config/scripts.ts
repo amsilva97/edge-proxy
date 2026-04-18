@@ -3,7 +3,7 @@
 import {
     loadAppSettingAsync,
     saveAppSettingAsync,
-} from "@/libs/EdgeProxySettings";
+} from "@/libs/AppConfig";
 
 export {
     loadAppSettingAsync,

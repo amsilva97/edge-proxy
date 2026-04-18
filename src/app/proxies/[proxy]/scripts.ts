@@ -1,7 +1,7 @@
 'use server'
 
-import { EdgeProxyBlock, EdgeProxyBlockKey } from '@/libs/EdgeProxyBlock';
-import { EdgeProxyBlockHelper } from '@/libs/server/EdgeProxyBlockHelper';
+import { EdgeBlock } from '@/libs/EdgeBlock';
+import { EdgeProxyBlock, EdgeProxyBlockKey } from '@/types/types';
 
 function defaultConfig(): EdgeProxyBlock {
     return [
@@ -19,12 +19,12 @@ function defaultConfig(): EdgeProxyBlock {
 }
 
 export async function loadConfig(proxy: string): Promise<EdgeProxyBlock> {
-    if (!await EdgeProxyBlockHelper.existsAsync(proxy)) {
-        await EdgeProxyBlockHelper.saveAsync(proxy, defaultConfig());
+    if (!await EdgeBlock.existsAsync(proxy)) {
+        await EdgeBlock.saveAsync(proxy, defaultConfig());
     }
-    return EdgeProxyBlockHelper.loadAsync(proxy);
+    return EdgeBlock.loadAsync(proxy);
 }
 
 export async function saveConfig(proxy: string, data: EdgeProxyBlock): Promise<void> {
-    await EdgeProxyBlockHelper.saveAsync(proxy, data);
+    await EdgeBlock.saveAsync(proxy, data);
 }
