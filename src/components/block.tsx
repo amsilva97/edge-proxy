@@ -2,7 +2,7 @@
 
 import { JSX, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Plus } from "lucide-react";
+import { Trash2, Plus, Search } from "lucide-react";
 import Input from "@/components/ui/input";
 import { EdgeProxyBlockKey } from "@/types/types";
 import type { EdgeProxyBlock } from "@/types/types";
@@ -53,7 +53,7 @@ const Del = ({ onClick }: { onClick: () => void }) => (
         aria-label="Delete"
         className="opacity-0 group-hover/card:opacity-100 text-zinc-400 hover:text-red-500 transition-all"
     >
-        <X size={12} strokeWidth={2} />
+        <Trash2 size={12} strokeWidth={2} />
     </button>
 );
 
@@ -63,12 +63,16 @@ interface InsertOption { label: string; onClick: () => void; }
 
 function InsertBar({ options }: { options: InsertOption[] }) {
     const [open, setOpen] = useState(false);
+    const [query, setQuery] = useState('');
     const [pos, setPos] = useState({ top: 0, left: 0 });
     const triggerRef = useRef<HTMLDivElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
+    const searchRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (!open) return;
+        setQuery('');
+        const id = setTimeout(() => searchRef.current?.focus(), 0);
         function onDown(e: MouseEvent) {
             if (
                 menuRef.current && !menuRef.current.contains(e.target as Node) &&
@@ -76,7 +80,7 @@ function InsertBar({ options }: { options: InsertOption[] }) {
             ) setOpen(false);
         }
         document.addEventListener('mousedown', onDown);
-        return () => document.removeEventListener('mousedown', onDown);
+        return () => { clearTimeout(id); document.removeEventListener('mousedown', onDown); };
     }, [open]);
 
     function handleClick() {
@@ -86,6 +90,12 @@ function InsertBar({ options }: { options: InsertOption[] }) {
         }
         setOpen(o => !o);
     }
+
+    const q = query.trim().toLowerCase();
+    const visible = (q
+        ? options.filter(o => o.label.toLowerCase().includes(q))
+        : [...options]
+    ).sort((a, b) => a.label.localeCompare(b.label));
 
     return (
         <div className="relative group/bar h-3 flex items-center">
@@ -103,17 +113,32 @@ function InsertBar({ options }: { options: InsertOption[] }) {
                 <div
                     ref={menuRef}
                     style={{ top: pos.top, left: pos.left }}
-                    className="fixed z-[9999] bg-white border border-zinc-200 rounded shadow-lg shadow-black/10 py-0.5 min-w-28"
+                    className="fixed z-[9999] bg-white border border-zinc-200 rounded shadow-lg shadow-black/10 min-w-40 max-h-64 flex flex-col"
                 >
-                    {options.map(({ label, onClick }) => (
-                        <button
-                            key={label}
-                            onClick={() => { onClick(); setOpen(false); }}
-                            className="w-full px-2 py-1 text-xs text-left hover:bg-zinc-50 transition-colors"
-                        >
-                            {label}
-                        </button>
-                    ))}
+                    <div className="flex items-center gap-1.5 px-2 py-1.5 border-b border-zinc-100 shrink-0">
+                        <Search size={11} className="text-zinc-400 shrink-0" />
+                        <input
+                            ref={searchRef}
+                            value={query}
+                            onChange={e => setQuery(e.target.value)}
+                            placeholder="Search…"
+                            className="flex-1 text-[11px] outline-none placeholder:text-zinc-400 bg-transparent"
+                        />
+                    </div>
+                    <div className="overflow-y-auto py-0.5">
+                        {visible.length === 0
+                            ? <div className="px-3 py-2 text-xs text-zinc-400">No results</div>
+                            : visible.map(({ label, onClick }) => (
+                                <button
+                                    key={label}
+                                    onClick={() => { onClick(); setOpen(false); }}
+                                    className="w-full px-2 py-1 text-xs text-left hover:bg-zinc-50 transition-colors"
+                                >
+                                    {label}
+                                </button>
+                            ))
+                        }
+                    </div>
                 </div>,
                 document.body
             )}
@@ -272,7 +297,7 @@ export default function Block({ data, onChange, onDelete }: BlockProps): JSX.Ele
                                     aria-label="Delete"
                                     className="opacity-0 group-hover/name:opacity-100 text-zinc-400 hover:text-red-500 transition-all"
                                 >
-                                    <X size={12} strokeWidth={2} />
+                                    <Trash2 size={12} strokeWidth={2} />
                                 </button>
                             </div>
                         ))}
