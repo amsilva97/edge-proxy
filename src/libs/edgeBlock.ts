@@ -1,7 +1,7 @@
 import path from 'path';
 import { FileSystem } from './fileSystem';
 import { PROXIES_DIR } from './constants';
-import { EdgeProxyBlock, EdgeProxyBlockKey } from '@/types/types';
+import { EdgeProxyBlock } from '@/types/types';
 import { Nginx } from './nginx';
 import { AppConfig } from './appConfig';
 import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
@@ -85,40 +85,25 @@ export namespace EdgeBlock {
     }
 
     export function BuildNginxConfig(block: EdgeProxyBlock, indent = 0): string {
-        function _BuildNginxConfig(block: EdgeProxyBlock, indent = 0): string {
-            const [key, children] = block as [EdgeProxyBlockKey, any[]];
+        function _build(block: EdgeProxyBlock, indent: number): string {
+            const [name, ...rest] = block;
             const pad = '    '.repeat(indent);
+            const isContext = rest.length > 0 && Array.isArray(rest[0]) && (rest[0].length === 0 || Array.isArray(rest[0][0]));
 
-            switch (key) {
-                case EdgeProxyBlockKey.Root:
-                    return (children ?? []).map((c: EdgeProxyBlock) => _BuildNginxConfig(c, indent)).join('\n\n');
-
-                case EdgeProxyBlockKey.Server: {
-                    const inner = (children ?? [])
-                        .map((c: EdgeProxyBlock) => _BuildNginxConfig(c, indent + 1))
-                        .filter(Boolean)
-                        .join('\n');
-                    return `${pad}server {\n${inner}\n${pad}}`;
-                }
-
-                case EdgeProxyBlockKey.Listen: {
-                    const [ip, port, ...flags] = children as string[];
-                    const addr = ip ? `${ip}:${port}` : port;
-                    const flagStr = flags.filter(Boolean).join(' ');
-                    return `${pad}listen ${addr}${flagStr ? ` ${flagStr}` : ''};`;
-                }
-
-                case EdgeProxyBlockKey.ServerName: {
-                    const names = (children as string[]).filter(Boolean).join(' ');
-                    return `${pad}server_name ${names || '_'};`;
-                }
-
-                default:
-                    return '';
-
+            if (isContext) {
+                const children = rest[0] as EdgeProxyBlock[];
+                const inner = children
+                    .map(c => _build(c, indent + 1))
+                    .filter(Boolean)
+                    .join('\n');
+                return `${pad}${name} {\n${inner}\n${pad}}`;
             }
+
+            const values = rest.filter(v => v !== '' && v !== undefined && v !== null);
+            if (values.length === 0) return '';
+            return `${pad}${name} ${values.join(' ')};`;
         }
-        // Add a newline at the end of the config for better formatting per file
-        return _BuildNginxConfig(block, indent) + '\n';
+
+        return _build(block, indent) + '\n';
     }
 }

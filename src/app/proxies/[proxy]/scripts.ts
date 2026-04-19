@@ -1,29 +1,18 @@
 import { EdgeBlock } from '@/libs/edgeBlock';
-import { EdgeProxyBlock, EdgeProxyBlockKey } from '@/types/types';
+import { EdgeBlockData } from '@/libs/edgeDirective';
 
-function defaultConfig(): EdgeProxyBlock {
-    return [
-        EdgeProxyBlockKey.Root,
-        [
-            [
-                EdgeProxyBlockKey.Server,
-                [
-                    [EdgeProxyBlockKey.Listen,     ['', '80', '']],
-                    [EdgeProxyBlockKey.ServerName, ['']],
-                ],
-            ],
-        ],
-    ];
+function defaultConfig(): EdgeBlockData {
+    return ['root']
 }
 
-export async function loadConfig(proxy: string): Promise<EdgeProxyBlock> {
+export async function loadConfig(proxy: string): Promise<EdgeBlockData> {
     if (!await EdgeBlock.DoExistsAsync(proxy)) {
         await EdgeBlock.SaveAsync(proxy, defaultConfig());
     }
     return EdgeBlock.LoadAsync(proxy);
 }
 
-export async function saveConfig(proxy: string, data: EdgeProxyBlock): Promise<void> {
+export async function saveConfig(proxy: string, data: EdgeBlockData): Promise<void> {
     await EdgeBlock.SaveAsync(proxy, data);
 }
 
