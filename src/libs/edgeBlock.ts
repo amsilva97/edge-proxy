@@ -85,7 +85,7 @@ export namespace EdgeBlock {
         return path.join(PROXIES_DIR, `${safe}.json`);
     }
 
-    function BuildNginxConfig(block: EdgeProxyBlock, indent = 0): string {
+    export function BuildNginxConfig(block: EdgeProxyBlock, indent = 0): string {
         function _BuildNginxConfig(block: EdgeProxyBlock, indent = 0): string {
             const [key, children] = block as [EdgeProxyBlockKey, any[]];
             const pad = '    '.repeat(indent);
