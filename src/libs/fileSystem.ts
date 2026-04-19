@@ -13,7 +13,7 @@ export namespace FileSystem {
         }
         catch (error: any) {
             NotificationManager.addToast(error.message, ToastNotificationStatus.Error);
-            return '';
+            throw error;
         }
     }
 

@@ -53,7 +53,7 @@ export namespace EdgeBlock {
         const link = path.join(appSettings.nginxBasePath, 'sites-enabled', proxy);
         await FileSystem.RemoveFileAsync(link, { force: true });
         await Nginx.ReloadAsync();
-        NotificationManager.addToast( `Proxy '${proxy}' disabled successfully.`, ToastNotificationStatus.Success);
+        NotificationManager.addToast(`Proxy '${proxy}' disabled successfully.`, ToastNotificationStatus.Success);
     }
 
     export async function DoExistsAsync(proxy: string): Promise<boolean> {
