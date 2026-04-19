@@ -13,8 +13,8 @@ export default function Toggle({ checked, onChange, label, disabled }: TogglePro
                 aria-checked={checked}
                 disabled={disabled}
                 onClick={() => onChange(!checked)}
-                className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed ${
-                    checked ? 'bg-blue-600' : 'bg-zinc-300 dark:bg-zinc-600'
+                className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 cursor-pointer disabled:cursor-not-allowed ${
+                    checked ? 'bg-brand' : 'bg-zinc-300'
                 }`}
             >
                 <span
@@ -23,9 +23,7 @@ export default function Toggle({ checked, onChange, label, disabled }: TogglePro
                     }`}
                 />
             </button>
-            {label && (
-                <span className="text-xs text-zinc-700 dark:text-zinc-300">{label}</span>
-            )}
+            {label && <span className="text-xs text-zinc-600">{label}</span>}
         </label>
     );
 }

@@ -5,7 +5,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export default function Button({ variant = 'solid', color = 'brand', size = 'md', className = '', ...props }: ButtonProps) {
-    const base = 'inline-flex items-center justify-center font-medium rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed';
+    const base = 'inline-flex items-center justify-center font-medium rounded-md transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed';
 
     const sizes = {
         sm: 'px-2 py-0.5 text-xs',

@@ -7,6 +7,7 @@ import { loadConfig, saveConfig, deleteProxy, enableProxy, disableProxy, isProxy
 import Toolbar from '@/components/toolbar';
 import Button from '@/components/ui/button';
 import Toggle from '@/components/ui/toggle';
+import Dialog from '@/components/dialog';
 
 function ProxyEditor({ proxy }: { proxy: string }) {
     const router = useRouter();
@@ -14,6 +15,8 @@ function ProxyEditor({ proxy }: { proxy: string }) {
     const [isPending, startTransition] = useTransition();
     const [saved, setSaved] = useState(false);
     const [enabled, setEnabled] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         loadConfig(proxy).then(setData);
@@ -31,52 +34,56 @@ function ProxyEditor({ proxy }: { proxy: string }) {
 
     function handleToggle(next: boolean) {
         startTransition(async () => {
-            if (next) {
-                await enableProxy(proxy);
-            } else {
-                await disableProxy(proxy);
-            }
+            if (next) await enableProxy(proxy);
+            else await disableProxy(proxy);
             setEnabled(next);
         });
     }
 
-    function handleDelete() {
-        startTransition(async () => {
-            await deleteProxy(proxy);
-            router.push('/proxies');
-        });
+    async function handleDelete() {
+        setDeleting(true);
+        await deleteProxy(proxy);
+        router.push('/proxies');
     }
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full bg-zinc-50 text-zinc-900">
 
-            {/* ── toolbar ── */}
-            <Toolbar>
-                <span className="flex-1 font-medium text-sm">{proxy}</span>
-
-                <div className="flex items-center gap-3">
-                    <Toggle
-                        checked={enabled}
-                        onChange={handleToggle}
-                        label={enabled ? 'Enabled' : 'Disabled'}
-                        disabled={isPending || !data}
-                    />
-                    <Button variant="primary" onClick={handleSave} disabled={isPending || !data}>
-                        {saved ? 'Saved' : 'Save'}
-                    </Button>
-                    <Button variant="danger" onClick={handleDelete} disabled={isPending || !data}>
-                        Delete
-                    </Button>
-                </div>
+            <Toolbar title={proxy}>
+                <Toggle
+                    checked={enabled}
+                    onChange={handleToggle}
+                    label={enabled ? 'Enabled' : 'Disabled'}
+                    disabled={isPending || !data}
+                />
+                <Button variant="outline" color="danger" onClick={() => setConfirmDelete(true)} disabled={isPending || !data}>
+                    Delete
+                </Button>
+                <Button variant="solid" onClick={handleSave} disabled={isPending || !data}>
+                    {saved ? 'Saved' : 'Save'}
+                </Button>
             </Toolbar>
 
-            {/* ── content ── */}
-            <div className="flex-1 overflow-auto p-2">
+            <div className="flex-1 overflow-auto p-4">
                 {data
                     ? <Block data={data} onChange={setData} />
                     : <div className="flex items-center justify-center h-32 text-sm text-zinc-400">Loading…</div>
                 }
             </div>
+
+            <Dialog
+                open={confirmDelete}
+                title={`Delete '${proxy}'`}
+                onCancel={() => !deleting && setConfirmDelete(false)}
+            >
+                <p className="text-sm text-zinc-600 mb-4">This cannot be undone.</p>
+                <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setConfirmDelete(false)} disabled={deleting}>Cancel</Button>
+                    <Button variant="solid" color="danger" onClick={handleDelete} disabled={deleting}>
+                        {deleting ? 'Deleting…' : 'Delete'}
+                    </Button>
+                </div>
+            </Dialog>
 
         </div>
     );
@@ -91,9 +98,7 @@ export default function ProxiesPage({ params }: { params: Promise<{ proxy: strin
     return (
         <div className="h-full flex flex-col">
             <Suspense fallback={
-                <div className="flex items-center justify-center flex-1 text-sm text-zinc-400">
-                    Loading…
-                </div>
+                <div className="flex items-center justify-center flex-1 text-sm text-zinc-400">Loading…</div>
             }>
                 <ProxiesPageInner params={params} />
             </Suspense>
