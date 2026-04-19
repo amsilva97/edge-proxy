@@ -1,5 +1,13 @@
 @AGENTS.md
 
+# UI Guidelines
+
+## Icons
+Always use [Lucide](https://lucide.dev) (`lucide-react`) for icons unless explicitly told otherwise.
+
+## Components
+If a UI element is likely to appear in more than one place, create a reusable component in `src/components/` (or `src/components/ui/` for generic primitives) rather than inlining it. When in doubt, extract it.
+
 # Rules
 
 ## Protected Directories

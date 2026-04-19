@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { listProxies, deleteProxy, proxyExists } from './scripts';
+import Toolbar from '@/components/toolbar';
+import Button from '@/components/ui/button';
+import Table from '@/components/ui/table';
+import Dialog from '@/components/dialog';
+import { Trash2 } from 'lucide-react';
 
 function NewProxyForm({ onDone }: { onDone: () => void }) {
     const [name, setName] = useState('');
@@ -16,100 +21,47 @@ function NewProxyForm({ onDone }: { onDone: () => void }) {
         const slug = name.trim();
         if (!slug) return;
         if (await proxyExists(slug)) {
-            setError('Already exists');
+            setError('A proxy with that name already exists');
             return;
         }
         router.push(`/proxies/${slug}`);
     }
 
+    function onKeyDown(e: React.KeyboardEvent) {
+        if (e.key === 'Enter') submit();
+        if (e.key === 'Escape') onDone();
+    }
+
     return (
         <div className="flex items-center gap-2">
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-1">
                 <input
                     ref={inputRef}
                     type="text"
                     value={name}
-                    onChange={(e) => { setName(e.target.value); setError(''); }}
-                    onKeyDown={(e) => { if (e.key === 'Enter') submit(); if (e.key === 'Escape') onDone(); }}
+                    onChange={e => { setName(e.target.value); setError(''); }}
+                    onKeyDown={onKeyDown}
                     placeholder="proxy-name"
-                    className={`w-44 ${error ? 'border-red-500 focus:border-red-500' : ''}`}
                 />
                 {error && <span className="text-xs text-red-500">{error}</span>}
             </div>
-            <button
-                onClick={submit}
-                disabled={!name.trim()}
-                className="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
-            >
-                Create
-            </button>
-            <button
-                onClick={onDone}
-                className="px-3 py-1 rounded-md text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 text-sm transition-colors"
-            >
-                Cancel
-            </button>
+            <Button variant="solid" onClick={submit} disabled={!name.trim()}>Create</Button>
+            <Button variant="outline" onClick={onDone}>Cancel</Button>
         </div>
     );
 }
 
-function ProxyRow({ name, onDeleted }: { name: string; onDeleted: () => void }) {
-    const [confirming, setConfirming] = useState(false);
-    const [deleting, setDeleting] = useState(false);
-    const router = useRouter();
-
-    async function handleDelete(e: React.MouseEvent) {
-        e.stopPropagation();
-        setDeleting(true);
-        await deleteProxy(name);
-        onDeleted();
-    }
-
-    return (
-        <tr
-            className="group border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors"
-            onClick={() => !confirming && router.push(`/proxies/${name}`)}
-        >
-            <td className="px-4 py-2.5 text-sm font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                {name}
-            </td>
-            <td className="px-4 py-2.5 text-xs text-zinc-400">
-                proxy
-            </td>
-            <td className="px-4 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
-                {confirming ? (
-                    <div className="flex items-center justify-end gap-1.5">
-                        <button
-                            onClick={handleDelete}
-                            disabled={deleting}
-                            className="px-2 py-0.5 rounded text-xs font-medium bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white transition-colors"
-                        >
-                            {deleting ? 'Deleting…' : 'Confirm'}
-                        </button>
-                        <button
-                            onClick={() => setConfirming(false)}
-                            className="px-2 py-0.5 rounded text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                ) : (
-                    <button
-                        onClick={() => setConfirming(true)}
-                        className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 transition-all text-xs leading-none"
-                        aria-label="Delete"
-                    >
-                        ✕
-                    </button>
-                )}
-            </td>
-        </tr>
-    );
-}
+const columns = [
+    { key: 'name', label: 'Name' },
+    { key: 'type', label: 'Type' },
+];
 
 export default function ProxiesPage() {
     const [proxies, setProxies] = useState<string[] | null>(null);
     const [creating, setCreating] = useState(false);
+    const [deletingProxy, setDeletingProxy] = useState<string | null>(null);
+    const [deleting, setDeleting] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         listProxies().then(setProxies);
@@ -119,48 +71,69 @@ export default function ProxiesPage() {
         setProxies(prev => prev?.filter(p => p !== name) ?? null);
     }
 
-    return (
-        <div className="flex flex-col h-full">
+    async function confirmDelete() {
+        if (!deletingProxy) return;
+        setDeleting(true);
+        await deleteProxy(deletingProxy);
+        handleDeleted(deletingProxy);
+        setDeletingProxy(null);
+        setDeleting(false);
+    }
 
-            {/* ── toolbar ── */}
-            <div className="shrink-0 flex items-center justify-between gap-4 px-3 py-1.5 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-                <span className="text-sm font-medium">Proxies</span>
+    const rows = proxies?.map(name => ({ name, type: 'proxy' })) ?? [];
+
+    return (
+        <div className="flex flex-col h-full bg-zinc-50 text-zinc-900">
+
+            <Toolbar title="Proxies">
                 {creating
                     ? <NewProxyForm onDone={() => setCreating(false)} />
-                    : (
-                        <button
-                            onClick={() => setCreating(true)}
-                            className="px-4 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors"
-                        >
-                            New
-                        </button>
-                    )
+                    : <Button variant="solid" onClick={() => setCreating(true)}>New Proxy</Button>
                 }
-            </div>
+            </Toolbar>
 
-            {/* ── content ── */}
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-auto p-5">
                 {proxies === null ? (
-                    <div className="flex items-center justify-center h-32 text-sm text-zinc-400">Loading…</div>
+                    <div className="flex items-center justify-center h-32 text-sm text-zinc-500">
+                        Loading…
+                    </div>
                 ) : proxies.length === 0 ? (
-                    <div className="flex items-center justify-center h-32 text-sm text-zinc-400">No proxies yet. Click New to create one.</div>
+                    <div className="flex flex-col items-center justify-center h-48 gap-2">
+                        <span className="text-sm text-zinc-500">No proxies yet.</span>
+                        <Button variant="solid" onClick={() => setCreating(true)}>New Proxy</Button>
+                    </div>
                 ) : (
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                                <th className="px-4 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Name</th>
-                                <th className="px-4 py-2 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Type</th>
-                                <th className="px-4 py-2" />
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {proxies.map(name => (
-                                <ProxyRow key={name} name={name} onDeleted={() => handleDeleted(name)} />
-                            ))}
-                        </tbody>
-                    </table>
+                    <Table
+                        columns={columns}
+                        data={rows}
+                        rowKey={row => row.name}
+                        onRowClick={row => router.push(`/proxies/${row.name}`)}
+                        actions={row => (
+                            <button
+                                onClick={() => setDeletingProxy(row.name)}
+                                className="opacity-0 group-hover:opacity-100 text-zinc-900 hover:text-red-500 transition-colors"
+                                aria-label="Delete"
+                            >
+                                <Trash2 size={14} strokeWidth={1.75} />
+                            </button>
+                        )}
+                    />
                 )}
             </div>
+
+            <Dialog
+                open={deletingProxy !== null}
+                title={`Delete '${deletingProxy}'`}
+                onCancel={() => !deleting && setDeletingProxy(null)}
+            >
+                <p className="text-sm text-zinc-600 mb-4">This cannot be undone.</p>
+                <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setDeletingProxy(null)} disabled={deleting}>Cancel</Button>
+                    <Button variant="solid" color="danger" onClick={confirmDelete} disabled={deleting}>
+                        {deleting ? 'Deleting…' : 'Delete'}
+                    </Button>
+                </div>
+            </Dialog>
 
         </div>
     );

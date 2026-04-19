@@ -1,11 +1,13 @@
 interface ToolbarProps {
-    children: React.ReactNode;
+    title?: string;
+    children?: React.ReactNode;
 }
 
-export default function Toolbar({ children }: ToolbarProps) {
+export default function Toolbar({ title, children }: ToolbarProps) {
     return (
-        <div className="flex items-center h-14 border-b border-zinc-200 dark:border-zinc-800 px-3">
-            {children}
+        <div className="shrink-0 flex items-center justify-between gap-4 px-5 h-12 bg-white border-b border-zinc-200">
+            {title && <span className="text-sm font-semibold text-zinc-900">{title}</span>}
+            {children && <div className="flex items-center gap-2">{children}</div>}
         </div>
     );
 }

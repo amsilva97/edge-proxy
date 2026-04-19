@@ -57,12 +57,7 @@ export namespace EdgeBlock {
     }
 
     export async function DoExistsAsync(proxy: string): Promise<boolean> {
-        try {
-            await FileSystem.ExistsAsync(ProxyFile(proxy));
-            return true;
-        } catch {
-            return false;
-        }
+        return FileSystem.ExistsAsync(ProxyFile(proxy));
     }
 
     export async function IsEnabledAsync(proxy: string): Promise<boolean> {
