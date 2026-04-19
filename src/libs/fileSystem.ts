@@ -1,5 +1,5 @@
 'use client';
-import { NotificationManager, ToastNotification, ToastNotificationStatus } from '@/components/notifier';
+import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
 import * as FilesActions from './fileSystem.actions';
 
 export namespace FileSystem {
@@ -12,13 +12,7 @@ export namespace FileSystem {
             return await FilesActions.ReadFileAsync(path);
         }
         catch (error: any) {
-            console.error(error);
-            NotificationManager.addToast(
-                new ToastNotification(
-                    error.message || String(error.message),
-                    ToastNotificationStatus.Error
-                )
-            );
+            NotificationManager.addToast(error.message, ToastNotificationStatus.Error);
             return '';
         }
     }

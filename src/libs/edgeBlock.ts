@@ -5,6 +5,7 @@ import { PROXIES_DIR } from './constants';
 import { EdgeProxyBlock, EdgeProxyBlockKey } from '@/types/types';
 import { Nginx } from './nginx';
 import { AppConfig } from './appConfig';
+import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
 
 export namespace EdgeBlock {
     export async function GetProxyListAsync(): Promise<string[]> {
@@ -44,6 +45,7 @@ export namespace EdgeBlock {
         await FileSystem.RemoveFileAsync(link, { force: true });
         await FileSystem.MakeSymlinkAsync(target, link);
         await Nginx.ReloadAsync();
+        NotificationManager.addToast(`Proxy '${proxy}' enabled successfully.`, ToastNotificationStatus.Success);
     }
 
     export async function DisableAsync(proxy: string): Promise<void> {
@@ -51,6 +53,7 @@ export namespace EdgeBlock {
         const link = path.join(appSettings.nginxBasePath, 'sites-enabled', proxy);
         await FileSystem.RemoveFileAsync(link, { force: true });
         await Nginx.ReloadAsync();
+        NotificationManager.addToast( `Proxy '${proxy}' disabled successfully.`, ToastNotificationStatus.Success);
     }
 
     export async function DoExistsAsync(proxy: string): Promise<boolean> {
