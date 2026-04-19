@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { listProxies, deleteProxy, proxyExists } from './scripts';
 import Toolbar from '@/components/toolbar';
 import Button from '@/components/ui/button';
+import Input from '@/components/ui/input';
 import Table from '@/components/ui/table';
 import Dialog from '@/components/dialog';
 import { Trash2 } from 'lucide-react';
@@ -35,8 +36,9 @@ function NewProxyForm({ onDone }: { onDone: () => void }) {
     return (
         <div className="flex items-center gap-2">
             <div className="flex flex-col gap-1">
-                <input
+                <Input
                     ref={inputRef}
+                    size="normal"
                     type="text"
                     value={name}
                     onChange={e => { setName(e.target.value); setError(''); }}
