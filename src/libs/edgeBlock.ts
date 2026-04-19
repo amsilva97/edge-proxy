@@ -1,4 +1,3 @@
-'use client';
 import path from 'path';
 import { FileSystem } from './fileSystem';
 import { PROXIES_DIR } from './constants';

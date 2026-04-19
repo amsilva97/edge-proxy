@@ -1,5 +1,3 @@
-'use client';
-
 import { EdgeBlock } from "@/libs/edgeBlock";
 
 

@@ -1,4 +1,3 @@
-'use client';
 import * as NginxActions from './nginx.actions';
 
 export namespace Nginx {

@@ -1,4 +1,3 @@
-'use client';
 import { EdgeBlock } from '@/libs/edgeBlock';
 import { EdgeProxyBlock, EdgeProxyBlockKey } from '@/types/types';
 

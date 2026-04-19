@@ -1,4 +1,3 @@
-'use client';
 import { FileSystem } from './fileSystem';
 import path from 'path';
 import { DATA_DIR } from '@/libs/constants';

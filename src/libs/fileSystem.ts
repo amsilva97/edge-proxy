@@ -1,4 +1,3 @@
-'use client';
 import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
 import * as FilesActions from './fileSystem.actions';
 

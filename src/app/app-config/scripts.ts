@@ -1,5 +1,3 @@
-'use client';
-
 import { AppConfig } from "@/libs/appConfig";
 
 export async function LoadConfig() {
