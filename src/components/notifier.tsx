@@ -32,13 +32,19 @@ export class NotificationManager {
     private constructor() { }
 
     private static _toasts: ToastNotification[] = [];
+    private static _listener: ((toasts: ToastNotification[]) => void) | null = null;
 
     static get toastList() {
         return this._toasts;
     }
 
+    static setListener(fn: ((toasts: ToastNotification[]) => void) | null) {
+        this._listener = fn;
+    }
+
     static addToast(toast: ToastNotification) {
         this._toasts.push(toast);
+        this._listener?.([...this._toasts]);
     }
 }
 
@@ -62,6 +68,11 @@ function Toast({ toast, onDismiss }: IToastProps) {
 
 export default function Notifier() {
     const [toasts, setToasts] = useState<ToastNotification[]>([]);
+
+    useEffect(() => {
+        NotificationManager.setListener(setToasts);
+        return () => NotificationManager.setListener(null);
+    }, []);
 
     const dismiss = (index: number) => {
         NotificationManager.toastList.splice(index, 1);

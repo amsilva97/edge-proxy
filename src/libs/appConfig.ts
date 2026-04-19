@@ -1,5 +1,5 @@
 'use client';
-import * as AppConfigActions from './appConfig.actions';
+import { FileSystem } from './fileSystem';
 import path from 'path';
 import { DATA_DIR } from '@/libs/constants';
 import { EdgeProxySettings } from '@/types/types';
@@ -13,10 +13,12 @@ let appConfigData: EdgeProxySettings = {
 
 export namespace AppConfig {
     export async function LoadAsync(): Promise<EdgeProxySettings> {
-        return await AppConfigActions.LoadAsync();
+        const data = await FileSystem.ReadFileAsync(configPath);
+        const config = JSON.parse(data) as EdgeProxySettings;
+        return { ...appConfigData, ...config };
     }
 
     export async function SaveAsync(config: EdgeProxySettings): Promise<void> {
-        await AppConfigActions.SaveAsync(config);
+        await FileSystem.WriteFileAsync(configPath, JSON.stringify(config, null, 2));
     }
 }
