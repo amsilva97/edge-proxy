@@ -2,6 +2,7 @@ import path from 'path';
 import { FileSystem } from './fileSystem';
 import { PROXIES_DIR } from './constants';
 import { EdgeProxyBlock } from '@/types/types';
+import { EdgeDirectives } from './edgeDirective';
 import { Nginx } from './nginx';
 import { AppConfig } from './appConfig';
 import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
@@ -88,18 +89,28 @@ export namespace EdgeBlock {
         function _build(block: EdgeProxyBlock, indent: number): string {
             const [name, ...rest] = block;
             const pad = '    '.repeat(indent);
-            const isContext = rest.length > 0 && Array.isArray(rest[0]) && (rest[0].length === 0 || Array.isArray(rest[0][0]));
+            const directive = EdgeDirectives.find(d => d.key === name);
+            const nonCtxParams = directive?.params.filter(p => p.primitive !== 'context') ?? [];
+            const hasContext = directive?.params.some(p => p.primitive === 'context') ?? false;
 
-            if (isContext) {
-                const children = rest[0] as EdgeProxyBlock[];
-                const inner = children
-                    .map(c => _build(c, indent + 1))
-                    .filter(Boolean)
-                    .join('\n');
-                return `${pad}${name} {\n${inner}\n${pad}}`;
+            const applySlots = (vals: unknown[]) =>
+                vals.map((v, i) => {
+                    if (!v && v !== 0) return '';
+                    const slot = nonCtxParams[i];
+                    const suffix = slot?.suffix ?? slot?.subSlot?.suffix;
+                    return suffix ? `${v}${suffix}` : String(v);
+                }).filter(Boolean);
+
+            if (hasContext) {
+                const slotVals = rest.slice(0, nonCtxParams.length);
+                const children = (rest[nonCtxParams.length] ?? []) as EdgeProxyBlock[];
+                const inner = children.map(c => _build(c, indent + 1)).filter(Boolean).join('\n');
+                const params = applySlots(slotVals);
+                const header = params.length ? `${name} ${params.join(' ')}` : name;
+                return `${pad}${header} {\n${inner}\n${pad}}`;
             }
 
-            const values = rest.filter(v => v !== '' && v !== undefined && v !== null);
+            const values = applySlots(rest);
             if (values.length === 0) return '';
             return `${pad}${name} ${values.join(' ')};`;
         }
