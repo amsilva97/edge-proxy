@@ -1,6 +1,6 @@
 import path from 'path';
 import { FileSystem } from './fileSystem';
-import { PROXIES_DIR } from './constants';
+import { DataPaths } from './constants';
 import { EdgeProxyBlock } from '@/types/types';
 import { EdgeDirectives } from './edgeDirective';
 import { Nginx } from './nginx';
@@ -10,7 +10,7 @@ import { NotificationManager, ToastNotificationStatus } from '@/components/notif
 export namespace EdgeBlock {
     export async function GetProxyListAsync(): Promise<string[]> {
         try {
-            const files = await FileSystem.ReadDirAsync(PROXIES_DIR);
+            const files = await FileSystem.ReadDirAsync(DataPaths.proxies);
             return files
                 .filter((f: string) => f.endsWith('.json'))
                 .map((f: string) => f.slice(0, -5));
@@ -25,7 +25,7 @@ export namespace EdgeBlock {
     }
 
     export async function SaveAsync(proxy: string, data: EdgeProxyBlock[]): Promise<void> {
-        await FileSystem.MakeDirAsync(PROXIES_DIR, { recursive: true });
+        await FileSystem.MakeDirAsync(DataPaths.proxies, { recursive: true });
         await FileSystem.WriteFileAsync(ProxyFile(proxy), JSON.stringify(data, null, 2));
         await GenerateNginxConfigAsync(proxy, data);
     }
@@ -82,7 +82,7 @@ export namespace EdgeBlock {
 
     function ProxyFile(proxy: string) {
         const safe = proxy.replace(/[^a-zA-Z0-9_-]/g, '_');
-        return path.join(PROXIES_DIR, `${safe}.json`);
+        return path.join(DataPaths.proxies, `${safe}.json`);
     }
 
     export function BuildNginxConfig(blocks: EdgeProxyBlock[], indent = 0): string {

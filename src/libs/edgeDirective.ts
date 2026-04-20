@@ -4,6 +4,7 @@ export type EdgePrimitive =
     | 'string' // a simple string value
     | 'number' // a simple number value
     | 'flag'   // keyword flag — present (checked) or absent, no value
+    | ['file', string] // a file the user uploaded [primitive, path]
 
 export type EdgeSlot = {
     primitive: EdgePrimitive;
@@ -714,6 +715,187 @@ export const EdgeDirectives: EdgeDirective[] = [
         key: 'uninitialized_variable_warn',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    // ngx_http_ssl_module
+    {
+        key: 'ssl',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_buffer_size',
+        params: [{ primitive: 'string', label: 'size' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_certificate',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_certificate_cache',
+        params: [
+            { primitive: ['off', 'max'], label: 'mode' },
+            { primitive: 'flag', label: 'max', optional: true, subSlot: { primitive: 'number', label: 'size' } },
+            { primitive: 'flag', label: 'inactive', optional: true, subSlot: { primitive: 'string', label: 'time' } },
+            { primitive: 'flag', label: 'valid', optional: true, subSlot: { primitive: 'string', label: 'time' } },
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_certificate_compression',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_certificate_key',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_ciphers',
+        params: [{ primitive: 'string', label: 'ciphers' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_client_certificate',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_conf_command',
+        params: [
+            { primitive: 'string', label: 'name' },
+            { primitive: 'string', label: 'value' },
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_crl',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_dhparam',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_early_data',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_ecdh_curve',
+        params: [{ primitive: 'string', label: 'curve' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_ech_file',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_key_log',
+        params: [{ primitive: 'string', label: 'path' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_ocsp',
+        params: [{ primitive: ['on', 'off', 'leaf'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_ocsp_cache',
+        params: [{ primitive: 'string', label: 'off | shared:name:size' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_ocsp_responder',
+        params: [{ primitive: 'string', label: 'url' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_password_file',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_prefer_server_ciphers',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_protocols',
+        params: [
+            { primitive: 'flag', label: 'SSLv2', optional: true },
+            { primitive: 'flag', label: 'SSLv3', optional: true },
+            { primitive: 'flag', label: 'TLSv1', optional: true },
+            { primitive: 'flag', label: 'TLSv1.1', optional: true },
+            { primitive: 'flag', label: 'TLSv1.2', optional: true },
+            { primitive: 'flag', label: 'TLSv1.3', optional: true },
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_reject_handshake',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_session_cache',
+        params: [{ primitive: 'string', label: 'off|none|builtin[:size]|shared:name:size' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_session_ticket_key',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_session_tickets',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_session_timeout',
+        params: [{ primitive: 'string', label: 'time' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_stapling',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_stapling_file',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_stapling_responder',
+        params: [{ primitive: 'string', label: 'url' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_stapling_verify',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_trusted_certificate',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_verify_client',
+        params: [{ primitive: ['on', 'off', 'optional', 'optional_no_ca'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
+    },
+    {
+        key: 'ssl_verify_depth',
+        params: [{ primitive: 'number', label: 'number' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     }
     // ngx_http_access_module
     // ngx_http_addition_module

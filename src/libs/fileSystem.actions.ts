@@ -1,6 +1,5 @@
 'use server';
 import fs from 'fs/promises';
-import * as p from 'path';
 
 export async function ReadDirAsync(path: string): Promise<string[]> {
     return await fs.readdir(path);
@@ -18,7 +17,7 @@ export async function WriteFileAsync(path: string, data: string): Promise<void> 
     await fs.writeFile(path, data, 'utf8');
 }
 
-export async function RemoveFileAsync(path: string, options: { force: boolean; }): Promise<void> {
+export async function RemoveFileAsync(path: string, options: { force?: boolean; recursive?: boolean }): Promise<void> {
     await fs.rm(path, options);
 }
 

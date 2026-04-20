@@ -24,7 +24,7 @@ export namespace FileSystem {
         await FilesActions.WriteFileAsync(path, data);
     }
 
-    export async function RemoveFileAsync(path: string, options: { force: boolean; }): Promise<void> {
+    export async function RemoveFileAsync(path: string, options: { force?: boolean; recursive?: boolean }): Promise<void> {
         await FilesActions.RemoveFileAsync(path, options);
     }
 
