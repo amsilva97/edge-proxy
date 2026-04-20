@@ -18,12 +18,12 @@ export namespace EdgeBlock {
         }
     }
 
-    export async function LoadAsync(proxy: string): Promise<EdgeProxyBlock> {
+    export async function LoadAsync(proxy: string): Promise<EdgeProxyBlock[]> {
         const raw = await FileSystem.ReadFileAsync(ProxyFile(proxy));
-        return JSON.parse(raw) as EdgeProxyBlock;
+        return JSON.parse(raw) as EdgeProxyBlock[];
     }
 
-    export async function SaveAsync(proxy: string, data: EdgeProxyBlock): Promise<void> {
+    export async function SaveAsync(proxy: string, data: EdgeProxyBlock[]): Promise<void> {
         await FileSystem.MakeDirAsync(PROXIES_DIR, { recursive: true });
         await FileSystem.WriteFileAsync(ProxyFile(proxy), JSON.stringify(data, null, 2));
         await GenerateNginxConfigAsync(proxy, data);
@@ -70,7 +70,7 @@ export namespace EdgeBlock {
         }
     }
 
-    async function GenerateNginxConfigAsync(proxy: string, data: EdgeProxyBlock): Promise<string> {
+    async function GenerateNginxConfigAsync(proxy: string, data: EdgeProxyBlock[]): Promise<string> {
         const config = BuildNginxConfig(data);
         const appSettings = await AppConfig.LoadAsync();
         const sitesAvailable = path.join(appSettings.nginxBasePath, 'sites-available');
@@ -84,7 +84,7 @@ export namespace EdgeBlock {
         return path.join(PROXIES_DIR, `${safe}.json`);
     }
 
-    export function BuildNginxConfig(block: EdgeProxyBlock, indent = 0): string {
+    export function BuildNginxConfig(blocks: EdgeProxyBlock[], indent = 0): string {
         function _build(block: EdgeProxyBlock, indent: number): string {
             const [name, ...rest] = block;
             const pad = '    '.repeat(indent);
@@ -104,6 +104,6 @@ export namespace EdgeBlock {
             return `${pad}${name} ${values.join(' ')};`;
         }
 
-        return _build(block, indent) + '\n';
+        return blocks.map(b => _build(b, indent)).filter(Boolean).join('\n') + '\n';
     }
 }

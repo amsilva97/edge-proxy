@@ -1,18 +1,18 @@
 import { EdgeBlock } from '@/libs/edgeBlock';
 import { EdgeBlockData } from '@/libs/edgeDirective';
 
-function defaultConfig(): EdgeBlockData {
-    return ['root']
+function defaultConfig(): EdgeBlockData[] {
+    return [];
 }
 
-export async function loadConfig(proxy: string): Promise<EdgeBlockData> {
+export async function loadConfig(proxy: string): Promise<EdgeBlockData[]> {
     if (!await EdgeBlock.DoExistsAsync(proxy)) {
         await EdgeBlock.SaveAsync(proxy, defaultConfig());
     }
-    return EdgeBlock.LoadAsync(proxy);
+    return EdgeBlock.LoadAsync(proxy) as Promise<EdgeBlockData[]>;
 }
 
-export async function saveConfig(proxy: string, data: EdgeBlockData): Promise<void> {
+export async function saveConfig(proxy: string, data: EdgeBlockData[]): Promise<void> {
     await EdgeBlock.SaveAsync(proxy, data);
 }
 

@@ -4,6 +4,7 @@ import { use, useState, useTransition, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Block, { BlockData } from '@/components/block';
 import { EdgeBlock } from '@/libs/edgeBlock';
+import { EdgeDirectiveContext } from '@/libs/edgeDirective';
 import { loadConfig, saveConfig, deleteProxy, enableProxy, disableProxy, isProxyEnabled } from './scripts';
 import Toolbar from '@/components/toolbar';
 import Button from '@/components/ui/button';
@@ -82,7 +83,7 @@ function ProxyEditor({ proxy }: { proxy: string }) {
             <div className="flex-1 overflow-hidden flex gap-4 p-4">
                 <div className="flex-1 overflow-auto">
                     {data
-                        ? <Block data={data} onChange={setData} />
+                        ? <Block data={data} context={EdgeDirectiveContext.http} onChange={setData} />
                         : <div className="flex items-center justify-center h-32 text-sm text-zinc-400">Loading…</div>
                     }
                 </div>
