@@ -1,7 +1,6 @@
 import { AppData } from '@/libs/appData';
 import { Nginx } from '@/libs/nginx';
 import { EdgeBlockData } from '@/libs/edgeDirective';
-import { SslCerts } from '@/libs/sslCerts';
 
 function defaultConfig(): EdgeBlockData[] {
     return [];
@@ -37,6 +36,6 @@ export async function isProxyEnabled(proxy: string): Promise<boolean> {
 }
 
 export async function listSslLabels(): Promise<string[]> {
-    const certs = await SslCerts.ListAsync();
+    const certs = await AppData.GetSslListAsync();
     return certs.map(c => c.label);
 }

@@ -4,7 +4,6 @@ import * as NginxActions from './nginx.actions';
 import { FileSystem } from './fileSystem'
 import { DataPaths } from './constants';
 import { AppConfig } from './appConfig';
-import { promises } from 'dns';
 
 export namespace Nginx {
     const HTTP_PROXY = 'sites-enabled'
@@ -13,7 +12,6 @@ export namespace Nginx {
     const SSL_KEY_EXTENSION = '.key'
 
     export async function ReloadAsync(): Promise<void> {
-        const command = 'nginx -s reload';
         await NginxActions.ReloadAction();
     }
 
@@ -47,8 +45,15 @@ export namespace Nginx {
         const sslPath = path.join(appSettings.nginxBasePath, SSL)
         const sslCertPath = path.join(sslPath, sslName + SSL_CERT_EXTENSION)
         const sslKeyPath = path.join(sslPath, sslName + SSL_KEY_EXTENSION)
+        await FileSystem.MakeDirAsync(sslPath, { recursive: true });
         await FileSystem.WriteFileAsync(sslCertPath, cert);
         await FileSystem.WriteFileAsync(sslKeyPath, key);
+    }
+
+    export async function IsEnabledSslAsync(sslName: string): Promise<boolean> {
+        const appSettings = await AppConfig.LoadAsync()
+        const sslCertPath = path.join(appSettings.nginxBasePath, SSL, sslName + SSL_CERT_EXTENSION)
+        return FileSystem.ExistsAsync(sslCertPath)
     }
 
     export async function DisableSslAsync(sslName: string): Promise<void> {

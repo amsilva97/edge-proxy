@@ -1,14 +1,15 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react';
-import { listCerts, saveCert, deleteCert, certExists } from './scripts';
-import { SslCertMeta } from '@/libs/sslCerts';
+import { listCerts, saveCert, deleteCert, certExists, isCertEnabled, enableCert, disableCert } from './scripts';
 import Toolbar from '@/components/toolbar';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
 import Table from '@/components/ui/table';
+import Toggle from '@/components/ui/toggle';
 import Dialog from '@/components/dialog';
 import { Trash2 } from 'lucide-react';
+import { SslCertMeta } from '@/libs/appData';
 
 function CertField({
     label,
@@ -171,25 +172,36 @@ function AddCertDialog({
     );
 }
 
-const columns = [
-    { key: 'label', label: 'Label' },
-];
-
 export default function SslPage() {
     const [certs, setCerts] = useState<SslCertMeta[] | null>(null);
+    const [enabled, setEnabled] = useState<Record<string, boolean>>({});
+    const [toggling, setToggling] = useState<Record<string, boolean>>({});
     const [adding, setAdding] = useState(false);
     const [deletingLabel, setDeletingLabel] = useState<string | null>(null);
     const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
-        listCerts().then(setCerts);
+        listCerts().then(async list => {
+            setCerts(list);
+            const states = await Promise.all(list.map(c => isCertEnabled(c.label)));
+            setEnabled(Object.fromEntries(list.map((c, i) => [c.label, states[i]])));
+        });
     }, []);
+
+    async function handleToggle(label: string, next: boolean) {
+        setToggling(prev => ({ ...prev, [label]: true }));
+        if (next) await enableCert(label);
+        else await disableCert(label);
+        setEnabled(prev => ({ ...prev, [label]: next }));
+        setToggling(prev => ({ ...prev, [label]: false }));
+    }
 
     async function confirmDelete() {
         if (!deletingLabel) return;
         setDeleting(true);
         await deleteCert(deletingLabel);
         setCerts(prev => prev?.filter(c => c.label !== deletingLabel) ?? null);
+        setEnabled(prev => { const n = { ...prev }; delete n[deletingLabel]; return n; });
         setDeletingLabel(null);
         setDeleting(false);
     }
@@ -213,7 +225,21 @@ export default function SslPage() {
                     </div>
                 ) : (
                     <Table
-                        columns={columns}
+                        columns={[
+                            {
+                                key: 'enabled',
+                                label: '',
+                                width: '0px',
+                                render: (_val, row) => (
+                                    <Toggle
+                                        checked={enabled[row.label] ?? false}
+                                        onChange={next => handleToggle(row.label, next)}
+                                        disabled={toggling[row.label]}
+                                    />
+                                ),
+                            },
+                            { key: 'label', label: 'Label' },
+                        ]}
                         data={certs}
                         rowKey={row => row.label}
                         actions={row => (
