@@ -17,32 +17,31 @@ export namespace AppData {
     export async function GetHttpProxyListAsync(): Promise<string[]> {
         try {
             const files = await FileSystem.ReadDirAsync(HTTP_PROXY_PATH);
-            return files
-                .filter((f: string) => f.endsWith('.json'))
-                .map((f: string) => f.slice(0, -5));
+            return files.map((f: string) => f.endsWith('.json') ? f.slice(0, -5) : f);
         } catch {
             return [];
         }
     }
 
     export async function SaveHttpProxyAsync(proxy: string, data: EdgeProxyBlock[]): Promise<void> {
-        const full_path = path.join(HTTP_PROXY_PATH, proxy);
+        await FileSystem.MakeDirAsync(HTTP_PROXY_PATH, { recursive: true });
+        const full_path = path.join(HTTP_PROXY_PATH, `${proxy}.json`);
         await FileSystem.WriteFileAsync(full_path, JSON.stringify(data, null, 2));
     }
 
     export async function LoadHttpProxyAsync(proxy: string): Promise<EdgeProxyBlock[]> {
-        const full_path = path.join(HTTP_PROXY_PATH, proxy);
+        const full_path = path.join(HTTP_PROXY_PATH, `${proxy}.json`);
         const raw = await FileSystem.ReadFileAsync(full_path);
         return JSON.parse(raw) as EdgeProxyBlock[];
     }
 
     export async function DeleteHttpProxyAsync(proxy: string): Promise<void> {
-        const full_path = path.join(HTTP_PROXY_PATH, proxy);
+        const full_path = path.join(HTTP_PROXY_PATH, `${proxy}.json`);
         await FileSystem.RemoveFileAsync(full_path, { force: true });
     }
 
     export async function ExistsHttpProxyAsync(proxy: string): Promise<boolean> {
-        const full_path = path.join(HTTP_PROXY_PATH, proxy);
+        const full_path = path.join(HTTP_PROXY_PATH, `${proxy}.json`);
         return FileSystem.ExistsAsync(full_path);
     }
     //#endregion
