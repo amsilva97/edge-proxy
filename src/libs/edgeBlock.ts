@@ -8,6 +8,7 @@ import { AppConfig } from './appConfig';
 import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
 
 export namespace EdgeBlock {
+    /** @deprecated Use 'AppData.GetHttpProxyListAsync' */
     export async function GetProxyListAsync(): Promise<string[]> {
         try {
             const files = await FileSystem.ReadDirAsync(DataPaths.proxies);
@@ -19,17 +20,20 @@ export namespace EdgeBlock {
         }
     }
 
+    /** @deprecated Use 'AppData.LoadHttpProxyAsync' */
     export async function LoadAsync(proxy: string): Promise<EdgeProxyBlock[]> {
         const raw = await FileSystem.ReadFileAsync(ProxyFile(proxy));
         return JSON.parse(raw) as EdgeProxyBlock[];
     }
 
+    /** @deprecated Use 'AppData.SaveHttpProxyAsync' */
     export async function SaveAsync(proxy: string, data: EdgeProxyBlock[]): Promise<void> {
         await FileSystem.MakeDirAsync(DataPaths.proxies, { recursive: true });
         await FileSystem.WriteFileAsync(ProxyFile(proxy), JSON.stringify(data, null, 2));
         await GenerateNginxConfigAsync(proxy, data);
     }
 
+    /** @deprecated Use 'AppData.DeleteHttpProxyAsync' */
     export async function DeleteAsync(proxy: string): Promise<void> {
         await FileSystem.RemoveFileAsync(ProxyFile(proxy), { force: true });
         const appSettings = await AppConfig.LoadAsync();
@@ -37,6 +41,7 @@ export namespace EdgeBlock {
         await FileSystem.RemoveFileAsync(path.join(appSettings.nginxBasePath, 'sites-available', proxy), { force: true });
     }
 
+    /** @deprecated Use 'AppData.EnableHttpProxyAsync' */
     export async function EnableAsync(proxy: string): Promise<void> {
         const appSettings = await AppConfig.LoadAsync();
         const target = path.join(appSettings.nginxBasePath, 'sites-available', proxy);
@@ -48,6 +53,7 @@ export namespace EdgeBlock {
         NotificationManager.addToast(`Proxy '${proxy}' enabled successfully.`, ToastNotificationStatus.Success);
     }
 
+    /** @deprecated Use 'AppData.DisableHttpProxyAsync' */
     export async function DisableAsync(proxy: string): Promise<void> {
         const appSettings = await AppConfig.LoadAsync();
         const link = path.join(appSettings.nginxBasePath, 'sites-enabled', proxy);
@@ -56,10 +62,12 @@ export namespace EdgeBlock {
         NotificationManager.addToast(`Proxy '${proxy}' disabled successfully.`, ToastNotificationStatus.Success);
     }
 
+    /** @deprecated Use 'AppData.ExistsHttpProxyAsync' */
     export async function DoExistsAsync(proxy: string): Promise<boolean> {
         return FileSystem.ExistsAsync(ProxyFile(proxy));
     }
 
+    /** @deprecated Use 'AppData.IsEnabledHttpProxyAsync' */
     export async function IsEnabledAsync(proxy: string): Promise<boolean> {
         const appSettings = await AppConfig.LoadAsync();
         const link = path.join(appSettings.nginxBasePath, 'sites-enabled', proxy);
@@ -71,6 +79,7 @@ export namespace EdgeBlock {
         }
     }
 
+    /** @deprecated Use 'Nginx.SaveHttpProxy' */
     async function GenerateNginxConfigAsync(proxy: string, data: EdgeProxyBlock[]): Promise<string> {
         const config = BuildNginxConfig(data);
         const appSettings = await AppConfig.LoadAsync();
@@ -80,11 +89,14 @@ export namespace EdgeBlock {
         return config;
     }
 
+    /** @deprecated we will not sanitize file names if issues arise later we will have the respected method handle it */
     function ProxyFile(proxy: string) {
+        return proxy
         const safe = proxy.replace(/[^a-zA-Z0-9_-]/g, '_');
         return path.join(DataPaths.proxies, `${safe}.json`);
     }
 
+    /** @deprecated Use 'Nginx.BuildNginxConfig' */
     export function BuildNginxConfig(blocks: EdgeProxyBlock[], indent = 0): string {
         function _build(block: EdgeProxyBlock, indent: number): string {
             const [name, ...rest] = block;
