@@ -17,7 +17,8 @@ export namespace AppData {
     export async function GetHttpProxyListAsync(): Promise<string[]> {
         try {
             const files = await FileSystem.ReadDirAsync(HTTP_PROXY_PATH);
-            return files.map((f: string) => f.endsWith('.json') ? f.slice(0, -5) : f);
+            const names = files.map((f: string) => f.endsWith('.json') ? f.slice(0, -5) : f);
+            return [...new Set(names)];
         } catch {
             return [];
         }

@@ -39,7 +39,7 @@ export default function Table<T = any>({ columns, data, onRowClick, rowKey, acti
                         <tr
                             key={rowKey ? rowKey(row) : i}
                             onClick={() => onRowClick?.(row)}
-                            className={`group border-b border-zinc-100 last:border-0 transition-colors ${onRowClick ? 'cursor-pointer hover:bg-brand/10' : ''}`}
+                            className={`group border-b border-zinc-100 last:border-0 transition-colors hover:bg-brand/5 ${onRowClick ? 'cursor-pointer' : ''}`}
                         >
                             {columns.map(col => (
                                 <td
