@@ -97,6 +97,10 @@ export namespace EdgeBlock {
                 vals.map((v, i) => {
                     if (!v && v !== 0) return '';
                     const slot = nonCtxParams[i];
+                    if (slot?.primitive === 'ssl') {
+                        const sub = name === 'ssl_certificate_key' ? 'key' : 'cert';
+                        return path.join(DataPaths.ssl, String(v), sub);
+                    }
                     const suffix = slot?.suffix ?? slot?.subSlot?.suffix;
                     return suffix ? `${v}${suffix}` : String(v);
                 }).filter(Boolean);

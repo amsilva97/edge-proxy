@@ -4,7 +4,8 @@ export type EdgePrimitive =
     | 'string' // a simple string value
     | 'number' // a simple number value
     | 'flag'   // keyword flag — present (checked) or absent, no value
-    | ['file', string] // a file the user uploaded [primitive, path]
+    // Non-directive primitive
+    | 'ssl' // will use the apps saved ssl
 
 export type EdgeSlot = {
     primitive: EdgePrimitive;
@@ -729,7 +730,7 @@ export const EdgeDirectives: EdgeDirective[] = [
     },
     {
         key: 'ssl_certificate',
-        params: [{ primitive: 'string', label: 'file' }],
+        params: [{ primitive: 'ssl' }], //[{ primitive: 'string', label: 'file' }], // Overriding the params to use the user save ssls
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
@@ -749,7 +750,7 @@ export const EdgeDirectives: EdgeDirective[] = [
     },
     {
         key: 'ssl_certificate_key',
-        params: [{ primitive: 'string', label: 'file' }],
+        params: [{ primitive: 'ssl' }], //[{ primitive: 'string', label: 'file' }], // Overriding the params to use the user save ssls
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {

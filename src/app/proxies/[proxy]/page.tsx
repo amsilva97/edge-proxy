@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Block, { BlockData } from '@/components/block';
 import { EdgeBlock } from '@/libs/edgeBlock';
 import { EdgeDirectiveContext } from '@/libs/edgeDirective';
-import { loadConfig, saveConfig, deleteProxy, enableProxy, disableProxy, isProxyEnabled } from './scripts';
+import { loadConfig, saveConfig, deleteProxy, enableProxy, disableProxy, isProxyEnabled, listSslLabels } from './scripts';
 import Toolbar from '@/components/toolbar';
 import Button from '@/components/ui/button';
 import Toggle from '@/components/ui/toggle';
@@ -33,10 +33,12 @@ function ProxyEditor({ proxy }: { proxy: string }) {
     const [enabled, setEnabled] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [sslLabels, setSslLabels] = useState<string[]>([]);
 
     useEffect(() => {
         loadConfig(proxy).then(setData);
         isProxyEnabled(proxy).then(setEnabled);
+        listSslLabels().then(setSslLabels);
     }, [proxy]);
 
     function handleSave() {
@@ -83,7 +85,7 @@ function ProxyEditor({ proxy }: { proxy: string }) {
             <div className="flex-1 overflow-hidden flex gap-4 p-4">
                 <div className="flex-1 overflow-auto">
                     {data
-                        ? <Block data={data} context={EdgeDirectiveContext.http} onChange={setData} />
+                        ? <Block data={data} context={EdgeDirectiveContext.http} onChange={setData} sslLabels={sslLabels} />
                         : <div className="flex items-center justify-center h-32 text-sm text-zinc-400">Loading…</div>
                     }
                 </div>
