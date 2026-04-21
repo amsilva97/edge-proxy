@@ -228,8 +228,8 @@ export default function SslPage() {
                         columns={[
                             {
                                 key: 'enabled',
-                                label: '',
-                                width: '0px',
+                                label: 'Status',
+                                width: '1px',
                                 render: (_val, row) => (
                                     <Toggle
                                         checked={enabled[row.label] ?? false}

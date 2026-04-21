@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { listProxies, deleteProxy, proxyExists } from './scripts';
+import { listProxies, deleteProxy, proxyExists, isProxyEnabled, enableProxy, disableProxy } from './scripts';
+import Toggle from '@/components/ui/toggle';
 import Toolbar from '@/components/toolbar';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
@@ -60,14 +61,28 @@ const columns = [
 
 export default function ProxiesPage() {
     const [proxies, setProxies] = useState<string[] | null>(null);
+    const [enabled, setEnabled] = useState<Record<string, boolean>>({});
+    const [toggling, setToggling] = useState<Record<string, boolean>>({});
     const [creating, setCreating] = useState(false);
     const [deletingProxy, setDeletingProxy] = useState<string | null>(null);
     const [deleting, setDeleting] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
-        listProxies().then(setProxies);
+        listProxies().then(async list => {
+            setProxies(list);
+            const states = await Promise.all(list.map(name => isProxyEnabled(name)));
+            setEnabled(Object.fromEntries(list.map((name, i) => [name, states[i]])));
+        });
     }, []);
+
+    async function handleToggle(name: string, next: boolean) {
+        setToggling(prev => ({ ...prev, [name]: true }));
+        if (next) await enableProxy(name);
+        else await disableProxy(name);
+        setEnabled(prev => ({ ...prev, [name]: next }));
+        setToggling(prev => ({ ...prev, [name]: false }));
+    }
 
     function handleDeleted(name: string) {
         setProxies(prev => prev?.filter(p => p !== name) ?? null);
@@ -106,7 +121,21 @@ export default function ProxiesPage() {
                     </div>
                 ) : (
                     <Table
-                        columns={columns}
+                        columns={[
+                            {
+                                key: 'enabled',
+                                label: 'Status',
+                                width: '1px',
+                                render: (_val, row) => (
+                                    <Toggle
+                                        checked={enabled[row.name] ?? false}
+                                        onChange={next => handleToggle(row.name, next)}
+                                        disabled={toggling[row.name]}
+                                    />
+                                ),
+                            },
+                            ...columns,
+                        ]}
                         data={rows}
                         rowKey={row => row.name}
                         onRowClick={row => router.push(`/proxies/${row.name}`)}
