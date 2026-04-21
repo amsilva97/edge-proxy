@@ -3,7 +3,7 @@
 import { use, useState, useTransition, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Block, { BlockData } from '@/components/block';
-import { EdgeBlock } from '@/libs/edgeBlock';
+import { Nginx } from '@/libs/nginx';
 import { EdgeDirectiveContext } from '@/libs/edgeDirective';
 import { loadConfig, saveConfig, deleteProxy, enableProxy, disableProxy, isProxyEnabled, listSslLabels } from './scripts';
 import Toolbar from '@/components/toolbar';
@@ -12,7 +12,7 @@ import Toggle from '@/components/ui/toggle';
 import Dialog from '@/components/dialog';
 
 function NginxPreview({ data }: { data: BlockData }) {
-    const text = EdgeBlock.BuildNginxConfig(data).trim();
+    const text = Nginx.BuildNginxConfig(data).trim();
     return (
         <div className="h-full flex flex-col rounded-lg overflow-hidden border border-zinc-200 bg-white">
             <div className="px-3 py-1.5 border-b border-zinc-200 bg-zinc-50 shrink-0">

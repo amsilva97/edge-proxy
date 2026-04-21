@@ -1,14 +1,16 @@
-import { EdgeBlock } from "@/libs/edgeBlock";
+import { AppData } from "@/libs/appData";
+import { Nginx } from "@/libs/nginx";
 
 
 export async function listProxies(): Promise<string[]> {
-    return EdgeBlock.GetProxyListAsync();
+    return AppData.GetHttpProxyListAsync();
 }
 
 export async function deleteProxy(name: string): Promise<void> {
-    return EdgeBlock.DeleteAsync(name);
+    await AppData.DeleteHttpProxyAsync(name);
+    await Nginx.DisableHttpProxyAsync(name);
 }
 
 export async function proxyExists(name: string): Promise<boolean> {
-    return EdgeBlock.DoExistsAsync(name);
+    return AppData.ExistsHttpProxyAsync(name);
 }

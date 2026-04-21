@@ -23,11 +23,11 @@ export namespace Nginx {
         return await FileSystem.ReadDirAsync(httpProxyPath)
     }
 
-    export async function EnableHttpProxyAsync(proxyName: string, edgeBlockData: EdgeBlockData): Promise<void> {
+    export async function EnableHttpProxyAsync(proxyName: string, data: EdgeBlockData[]): Promise<void> {
         const appSettings = await AppConfig.LoadAsync()
         const httpProxyPath = path.join(appSettings.nginxBasePath, HTTP_PROXY, proxyName);
-        const nginxCongif = BuildNginxConfig([edgeBlockData]);
-        await FileSystem.WriteFileAsync(httpProxyPath, nginxCongif);
+        const nginxConfig = BuildNginxConfig(data);
+        await FileSystem.WriteFileAsync(httpProxyPath, nginxConfig);
     }
 
     export async function DisableHttpProxyAsync(proxyName: string): Promise<void> {
@@ -60,7 +60,7 @@ export namespace Nginx {
         await FileSystem.RemoveFileAsync(sslKeyPath);
     }
 
-    function BuildNginxConfig(blocks: EdgeBlockData[]): string {
+    export function BuildNginxConfig(blocks: EdgeBlockData[]): string {
         function _build(block: EdgeBlockData, indent: number): string {
             const [name, ...rest] = block;
             const pad = '    '.repeat(indent);

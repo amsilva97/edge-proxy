@@ -1,4 +1,5 @@
-import { EdgeBlock } from '@/libs/edgeBlock';
+import { AppData } from '@/libs/appData';
+import { Nginx } from '@/libs/nginx';
 import { EdgeBlockData } from '@/libs/edgeDirective';
 import { SslCerts } from '@/libs/sslCerts';
 
@@ -7,30 +8,32 @@ function defaultConfig(): EdgeBlockData[] {
 }
 
 export async function loadConfig(proxy: string): Promise<EdgeBlockData[]> {
-    if (!await EdgeBlock.DoExistsAsync(proxy)) {
-        await EdgeBlock.SaveAsync(proxy, defaultConfig());
+    if (!await AppData.ExistsHttpProxyAsync(proxy)) {
+        await AppData.SaveHttpProxyAsync(proxy, defaultConfig());
     }
-    return EdgeBlock.LoadAsync(proxy) as Promise<EdgeBlockData[]>;
+    return AppData.LoadHttpProxyAsync(proxy) as Promise<EdgeBlockData[]>;
 }
 
 export async function saveConfig(proxy: string, data: EdgeBlockData[]): Promise<void> {
-    await EdgeBlock.SaveAsync(proxy, data);
+    await AppData.SaveHttpProxyAsync(proxy, data);
 }
 
 export async function deleteProxy(proxy: string): Promise<void> {
-    await EdgeBlock.DeleteAsync(proxy);
+    await AppData.DeleteHttpProxyAsync(proxy);
+    await Nginx.DisableHttpProxyAsync(proxy);
 }
 
 export async function enableProxy(proxy: string): Promise<void> {
-    await EdgeBlock.EnableAsync(proxy);
+    const data = await AppData.LoadHttpProxyAsync(proxy) as EdgeBlockData[];
+    await Nginx.EnableHttpProxyAsync(proxy, data);
 }
 
 export async function disableProxy(proxy: string): Promise<void> {
-    await EdgeBlock.DisableAsync(proxy);
+    await Nginx.DisableHttpProxyAsync(proxy);
 }
 
 export async function isProxyEnabled(proxy: string): Promise<boolean> {
-    return await EdgeBlock.IsEnabledAsync(proxy);
+    return Nginx.IsEnabledHttpProxyAsync(proxy);
 }
 
 export async function listSslLabels(): Promise<string[]> {
