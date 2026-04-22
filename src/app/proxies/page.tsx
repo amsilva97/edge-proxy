@@ -56,7 +56,6 @@ function NewProxyForm({ onDone }: { onDone: () => void }) {
 
 const columns = [
     { key: 'name', label: 'Name' },
-    { key: 'type', label: 'Type' },
 ];
 
 export default function ProxiesPage() {
@@ -97,7 +96,7 @@ export default function ProxiesPage() {
         setDeleting(false);
     }
 
-    const rows = proxies?.map(name => ({ name, type: 'proxy' })) ?? [];
+    const rows = proxies?.map(name => ({ name })) ?? [];
 
     return (
         <div className="flex flex-col h-full bg-zinc-50 text-zinc-900">
