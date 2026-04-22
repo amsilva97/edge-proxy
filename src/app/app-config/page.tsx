@@ -1,6 +1,5 @@
 'use client'
 
-import { EdgeProxySettings } from '@/types/types';
 import { useEffect, useState, useTransition } from 'react';
 import { LoadConfig, SaveConfig } from './scripts';
 import Toolbar from '@/components/toolbar';
@@ -8,7 +7,7 @@ import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
 
 export default function AppConfigPage() {
-    const [config, setConfig] = useState<EdgeProxySettings | null>(null);
+    const [config, setConfig] = useState<Record<string, string> | null>(null);
     const [isPending, startTransition] = useTransition();
     const [saved, setSaved] = useState(false);
 
@@ -45,8 +44,8 @@ export default function AppConfigPage() {
                                 <span className="text-sm font-medium text-zinc-700">Base path</span>
                                 <Input
                                     type="text"
-                                    value={config.nginxBasePath}
-                                    onChange={(e) => setConfig({ ...config, nginxBasePath: e.target.value })}
+                                    value={config['NEXT_PUBLIC_NGINX_PATH'] ?? ''}
+                                    onChange={(e) => setConfig({ ...config, NEXT_PUBLIC_NGINX_PATH: e.target.value })}
                                     placeholder="/etc/nginx"
                                     className="w-full"
                                 />

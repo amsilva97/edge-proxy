@@ -1,9 +1,9 @@
-import { AppConfig } from "@/libs/appConfig";
+import { AppEnv } from "@/libs/appEnv";
 
 export async function LoadConfig() {
-    return await AppConfig.LoadAsync();
+    return await AppEnv.LoadEnvAsync();
 }
 
 export async function SaveConfig(config: any) {
-    await AppConfig.SaveAsync(config);
+    await AppEnv.SaveEnvAsync(config);
 }

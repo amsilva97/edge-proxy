@@ -4,6 +4,7 @@ import * as NginxActions from './nginx.actions';
 import { FileSystem } from './fileSystem'
 import { DataPaths } from './constants';
 import { AppConfig } from './appConfig';
+import { AppEnv } from './appEnv';
 
 export namespace Nginx {
     const HTTP_PROXY_PATH = 'sites-enabled'
@@ -16,33 +17,28 @@ export namespace Nginx {
     }
 
     export async function GetHttpProxyListAsync(): Promise<string[]> {
-        const appSettings = await AppConfig.LoadAsync()
-        const httpProxyPath = path.join(appSettings.nginxBasePath, HTTP_PROXY_PATH);
+        const httpProxyPath = path.join(AppEnv.nginxBasePath, HTTP_PROXY_PATH);
         return await FileSystem.ReadDirAsync(httpProxyPath)
     }
 
     export async function EnableHttpProxyAsync(proxyName: string, data: EdgeBlockData[]): Promise<void> {
-        const appSettings = await AppConfig.LoadAsync()
-        const httpProxyPath = path.join(appSettings.nginxBasePath, HTTP_PROXY_PATH, proxyName);
+        const httpProxyPath = path.join(AppEnv.nginxBasePath, HTTP_PROXY_PATH, proxyName);
         const nginxConfig = BuildNginxConfig(data);
         await FileSystem.WriteFileAsync(httpProxyPath, nginxConfig);
     }
 
     export async function DisableHttpProxyAsync(proxyName: string): Promise<void> {
-        const appSettings = await AppConfig.LoadAsync()
-        const httpProxyPath = path.join(appSettings.nginxBasePath, HTTP_PROXY_PATH, proxyName);
+        const httpProxyPath = path.join(AppEnv.nginxBasePath, HTTP_PROXY_PATH, proxyName);
         await FileSystem.RemoveFileAsync(httpProxyPath, { force: true })
     }
 
     export async function IsEnabledHttpProxyAsync(proxyName: string): Promise<boolean> {
-        const appSettings = await AppConfig.LoadAsync()
-        const httpProxyPath = path.join(appSettings.nginxBasePath, HTTP_PROXY_PATH, proxyName);
+        const httpProxyPath = path.join(AppEnv.nginxBasePath, HTTP_PROXY_PATH, proxyName);
         return await FileSystem.ExistsAsync(httpProxyPath)
     }
 
     export async function EnableSslAsync(sslName: string, cert: string, key: string): Promise<void> {
-        const appSettings = await AppConfig.LoadAsync()
-        const sslPath = path.join(appSettings.nginxBasePath, SSL_PATH)
+        const sslPath = path.join(AppEnv.nginxBasePath, SSL_PATH)
         const sslCertPath = path.join(sslPath, sslName + SSL_CERT_EXTENSION)
         const sslKeyPath = path.join(sslPath, sslName + SSL_KEY_EXTENSION)
         await FileSystem.MakeDirAsync(sslPath, { recursive: true });
@@ -51,14 +47,12 @@ export namespace Nginx {
     }
 
     export async function IsEnabledSslAsync(sslName: string): Promise<boolean> {
-        const appSettings = await AppConfig.LoadAsync()
-        const sslCertPath = path.join(appSettings.nginxBasePath, SSL_PATH, sslName + SSL_CERT_EXTENSION)
+        const sslCertPath = path.join(AppEnv.nginxBasePath, SSL_PATH, sslName + SSL_CERT_EXTENSION)
         return FileSystem.ExistsAsync(sslCertPath)
     }
 
     export async function DisableSslAsync(sslName: string): Promise<void> {
-        const appSettings = await AppConfig.LoadAsync()
-        const sslPath = path.join(appSettings.nginxBasePath, SSL_PATH)
+        const sslPath = path.join(AppEnv.nginxBasePath, SSL_PATH)
         const sslCertPath = path.join(sslPath, sslName + SSL_CERT_EXTENSION)
         const sslKeyPath = path.join(sslPath, sslName + SSL_KEY_EXTENSION)
         await FileSystem.RemoveFileAsync(sslCertPath);

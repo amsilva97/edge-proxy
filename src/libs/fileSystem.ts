@@ -16,6 +16,15 @@ export namespace FileSystem {
         }
     }
 
+    export async function TryReadFileAsync(path: string): Promise<string | null> {
+        try {
+            return await FilesActions.ReadFileAsync(path);
+        }
+        catch (error: any) {
+            return null
+        }
+    }
+
     export async function MakeDirAsync(path: string, options: any): Promise<void> {
         await FilesActions.MakeDirAsync(path, options);
     }

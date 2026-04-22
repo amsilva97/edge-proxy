@@ -16,7 +16,7 @@ const STATUS_ICONS = {
     error: XCircle,
 } as const;
 
-class ToastNotification {
+export class ToastNotification {
     constructor(message: string, status: ToastNotificationStatus) {
         this.message = message;
         this.status = status;
@@ -42,8 +42,12 @@ export class NotificationManager {
         this._listener = fn;
     }
 
-    static addToast(message: string, status: ToastNotificationStatus) {
-        const toast = new ToastNotification(message, status);
+    static addToast(toast: ToastNotification): void;
+    static addToast(message: string, status: ToastNotificationStatus): void;
+    static addToast(toastOrMessage: ToastNotification | string, status?: ToastNotificationStatus): void {
+        const toast = toastOrMessage instanceof ToastNotification
+            ? toastOrMessage
+            : new ToastNotification(toastOrMessage, status!);
         this._toasts.push(toast);
         this._listener?.([...this._toasts]);
     }
