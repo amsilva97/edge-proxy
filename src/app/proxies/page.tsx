@@ -11,13 +11,19 @@ import Table from '@/components/ui/table';
 import Dialog from '@/components/dialog';
 import { Trash2 } from 'lucide-react';
 
-function NewProxyForm({ onDone }: { onDone: () => void }) {
+function NewProxyDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
     const [name, setName] = useState('');
     const [error, setError] = useState('');
-    const router = useRouter();
     const inputRef = useRef<HTMLInputElement>(null);
+    const router = useRouter();
 
-    useEffect(() => { inputRef.current?.focus(); }, []);
+    useEffect(() => {
+        if (open) {
+            setName('');
+            setError('');
+            setTimeout(() => inputRef.current?.focus(), 50);
+        }
+    }, [open]);
 
     async function submit() {
         const slug = name.trim();
@@ -31,26 +37,29 @@ function NewProxyForm({ onDone }: { onDone: () => void }) {
 
     function onKeyDown(e: React.KeyboardEvent) {
         if (e.key === 'Enter') submit();
-        if (e.key === 'Escape') onDone();
     }
 
     return (
-        <div className="flex items-center gap-2">
-            <div className="flex flex-col gap-1">
-                <Input
-                    ref={inputRef}
-                    size="normal"
-                    type="text"
-                    value={name}
-                    onChange={e => { setName(e.target.value); setError(''); }}
-                    onKeyDown={onKeyDown}
-                    placeholder="proxy-name"
-                />
-                {error && <span className="text-xs text-red-500">{error}</span>}
+        <Dialog open={open} title="New Proxy" onCancel={onClose}>
+            <div className="flex flex-col gap-4">
+                <label className="flex flex-col gap-1.5">
+                    <span className="text-sm font-medium text-zinc-700">Name</span>
+                    <Input
+                        ref={inputRef}
+                        type="text"
+                        value={name}
+                        onChange={e => { setName(e.target.value); setError(''); }}
+                        onKeyDown={onKeyDown}
+                        placeholder="proxy-name"
+                    />
+                    {error && <span className="text-xs text-red-500">{error}</span>}
+                </label>
+                <div className="flex justify-end gap-2 pt-1">
+                    <Button variant="outline" onClick={onClose}>Cancel</Button>
+                    <Button variant="solid" onClick={submit} disabled={!name.trim()}>Create</Button>
+                </div>
             </div>
-            <Button variant="solid" onClick={submit} disabled={!name.trim()}>Create</Button>
-            <Button variant="outline" onClick={onDone}>Cancel</Button>
-        </div>
+        </Dialog>
     );
 }
 
@@ -102,11 +111,10 @@ export default function ProxiesPage() {
         <div className="flex flex-col h-full bg-zinc-50 text-zinc-900">
 
             <Toolbar title="Proxies">
-                {creating
-                    ? <NewProxyForm onDone={() => setCreating(false)} />
-                    : <Button variant="solid" onClick={() => setCreating(true)}>New Proxy</Button>
-                }
+                <Button variant="solid" onClick={() => setCreating(true)}>New Proxy</Button>
             </Toolbar>
+
+            <NewProxyDialog open={creating} onClose={() => setCreating(false)} />
 
             <div className="flex-1 overflow-auto p-5">
                 {proxies === null ? (
