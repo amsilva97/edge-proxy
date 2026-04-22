@@ -37,8 +37,8 @@ export namespace AppData {
     }
 
     export async function DeleteHttpProxyAsync(proxy: string): Promise<void> {
-        const full_path = path.join(HTTP_PROXY_PATH, `${proxy}.json`);
-        await FileSystem.RemoveFileAsync(full_path, { force: true });
+        await FileSystem.RemoveFileAsync(path.join(HTTP_PROXY_PATH, `${proxy}.json`), { force: true });
+        await FileSystem.RemoveFileAsync(path.join(HTTP_PROXY_PATH, proxy), { force: true });
     }
 
     export async function ExistsHttpProxyAsync(proxy: string): Promise<boolean> {

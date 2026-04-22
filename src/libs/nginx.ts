@@ -31,7 +31,7 @@ export namespace Nginx {
     export async function DisableHttpProxyAsync(proxyName: string): Promise<void> {
         const appSettings = await AppConfig.LoadAsync()
         const httpProxyPath = path.join(appSettings.nginxBasePath, HTTP_PROXY, proxyName);
-        await FileSystem.RemoveFileAsync(httpProxyPath)
+        await FileSystem.RemoveFileAsync(httpProxyPath, { force: true })
     }
 
     export async function IsEnabledHttpProxyAsync(proxyName: string): Promise<boolean> {
