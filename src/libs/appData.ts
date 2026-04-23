@@ -1,17 +1,12 @@
 import path from 'path';
 import { FileSystem } from './fileSystem'
 import { EdgeProxyBlock } from '@/types/types';
-
-export interface SslCertMeta {
-    label: string;
-    path: string;
-}
+import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
 
 export namespace AppData {
-    export const ROOT = 'data';
-    export const CONFIG_FILE = path.join(ROOT, 'app-config.json');
-    export const HTTP_PROXY_PATH = path.join(ROOT, 'httpProxies');
-    export const SSL_PATH = path.join(ROOT, 'ssl');
+    const ROOT = 'data';
+    const HTTP_PROXY_PATH = path.join(ROOT, 'httpProxies');
+    const SSL_PATH = path.join(ROOT, 'ssl');
 
     //#region Https
     export async function GetHttpProxyListAsync(): Promise<string[]> {
@@ -48,23 +43,48 @@ export namespace AppData {
     //#endregion
 
     //#region SSL
-    export async function GetSslListAsync(): Promise<SslCertMeta[]> {
+    export interface SslMeta {
+        label: string;
+        isEnabled: boolean;
+        usedBy: string; // a delimited seperated list
+    }
+
+    const sslMetaUsedByDelimiter = ';'
+
+    const defaultSslMets: Omit<SslMeta, 'label'> = {
+        isEnabled: false,
+        usedBy: ''
+    }
+
+    export async function GetSslListAsync(): Promise<SslMeta[]> {
         try {
             const labels = await FileSystem.ReadDirAsync(SSL_PATH);
-            return labels.map(label => ({
-                label,
-                path: path.join(SSL_PATH, label),
+            return Promise.all(labels.map(async label => {
+                return await GetSslMetaAsync(label)
             }));
         } catch {
             return [];
         }
     }
 
-    export async function SaveSslAsync(label: string, cert: string, key: string): Promise<void> {
+    export async function CreateSslAsync(label: string, cert: string, key: string): Promise<void> {
         const full_path = path.join(SSL_PATH, label)
+        const exists = await ExistsSslAsync(label)
+        if (exists) {
+            NotificationManager.addToast(
+                `${label} already exists.`,
+                ToastNotificationStatus.Error
+            )
+            return
+        }
         await FileSystem.MakeDirAsync(full_path, { recursive: true });
         await FileSystem.WriteFileAsync(path.join(full_path, 'cert'), cert);
         await FileSystem.WriteFileAsync(path.join(full_path, 'key'), key);
+        const sslMeta: SslMeta = {
+            label: label,
+            ...defaultSslMets
+        }
+        await SaveSslMetaAsync(label, sslMeta);
     }
 
     export async function DeleteSslAsync(label: string): Promise<void> {
@@ -77,11 +97,48 @@ export namespace AppData {
         return FileSystem.ExistsAsync(full_path);
     }
 
-    export async function ReadSslAsync(label: string): Promise<{ cert: string; key: string }> {
+    export async function GetSslCertKeyAsync(label: string): Promise<{ cert: string; key: string }> {
         const full_path = path.join(SSL_PATH, label)
         const cert = await FileSystem.ReadFileAsync(path.join(full_path, 'cert'));
         const key = await FileSystem.ReadFileAsync(path.join(full_path, 'key'));
         return { cert, key };
+    }
+
+    export async function UpdateSslCertKeyAsync(label: string, cert: string, key: string): Promise<void> {
+        const full_path = path.join(SSL_PATH, label)
+        const exists = await ExistsSslAsync(label)
+        if (!exists) {
+            NotificationManager.addToast(
+                `${label} does not exists.`,
+                ToastNotificationStatus.Error
+            )
+            return
+        }
+        await FileSystem.WriteFileAsync(path.join(full_path, 'cert'), cert);
+        await FileSystem.WriteFileAsync(path.join(full_path, 'key'), key);
+    }
+
+    export async function GetSslMetaAsync(label: string): Promise<SslMeta> {
+        const metaPath = path.join(SSL_PATH, label, 'meta.json');
+        const raw = await FileSystem.TryReadFileAsync(metaPath);
+        const meta = raw ? JSON.parse(raw) : {};
+        return {
+            label: label,
+            ...defaultSslMets,
+            ...meta
+        }
+    }
+
+    export async function SaveSslMetaAsync(label: string, sslMeta: Partial<SslMeta>): Promise<void> {
+        const metaPath = path.join(SSL_PATH, label, 'meta.json');
+        const raw = await FileSystem.TryReadFileAsync(metaPath);
+        const meta = raw ? JSON.parse(raw) : {};
+        await FileSystem.WriteFileAsync(metaPath, JSON.stringify({
+            label: label,
+            ...defaultSslMets,
+            ...meta,
+            ...sslMeta
+        }, null, 2));
     }
     //#endregion
 }

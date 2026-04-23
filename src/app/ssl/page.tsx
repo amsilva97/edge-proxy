@@ -1,15 +1,17 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react';
-import { listCerts, saveCert, deleteCert, certExists, isCertEnabled, enableCert, disableCert } from './scripts';
+import { listCerts, saveCert, replaceCert, deleteCert, certExists, enableCert, disableCert } from './scripts';
+import { AppData } from '@/libs/appData';
 import Toolbar from '@/components/toolbar';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
 import Table from '@/components/ui/table';
 import Toggle from '@/components/ui/toggle';
 import Dialog from '@/components/dialog';
-import { Trash2 } from 'lucide-react';
-import { SslCertMeta } from '@/libs/appData';
+import { Trash2, RefreshCw } from 'lucide-react';
+import Chip from '@/components/ui/chip';
+import RowMenu from '@/components/ui/row-menu';
 
 function CertField({
     label,
@@ -93,7 +95,7 @@ function AddCertDialog({
 }: {
     open: boolean;
     onClose: () => void;
-    onAdded: (cert: SslCertMeta) => void;
+    onAdded: (cert: AppData.SslMeta) => void;
 }) {
     const [label, setLabel] = useState('');
     const [certContent, setCertContent] = useState('');
@@ -120,10 +122,7 @@ function AddCertDialog({
         if (await certExists(slug)) { setError('A certificate with that label already exists'); return; }
         setSaving(true);
         await saveCert(slug, certContent, keyContent);
-        onAdded({
-            label: slug,
-            path: `data/ssl/${slug}`,
-        });
+        onAdded({ label: slug, isEnabled: false, usedBy: '' });
         setSaving(false);
         onClose();
     }
@@ -172,27 +171,74 @@ function AddCertDialog({
     );
 }
 
+function ReplaceCertDialog({
+    label,
+    onClose,
+}: {
+    label: string | null;
+    onClose: () => void;
+}) {
+    const [certContent, setCertContent] = useState('');
+    const [keyContent, setKeyContent] = useState('');
+    const [error, setError] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        if (label) { setCertContent(''); setKeyContent(''); setError(''); }
+    }, [label]);
+
+    async function handleSubmit() {
+        if (!label) return;
+        if (!certContent) { setError('Certificate file is required'); return; }
+        if (!keyContent) { setError('Key file is required'); return; }
+        setSaving(true);
+        await replaceCert(label, certContent, keyContent);
+        setSaving(false);
+        onClose();
+    }
+
+    return (
+        <Dialog open={label !== null} title={`Replace '${label}'`} onCancel={saving ? undefined : onClose}>
+            <div className="flex flex-col gap-4">
+                <CertField
+                    label="Certificate (.crt / .pem)"
+                    accept=".crt,.pem"
+                    onContent={(c: string) => { setCertContent(c); setError(''); }}
+                />
+                <CertField
+                    label="Certificate Key (.key / .pem)"
+                    accept=".key,.pem"
+                    onContent={(c: string) => { setKeyContent(c); setError(''); }}
+                />
+                {error && <span className="text-xs text-red-500">{error}</span>}
+                <div className="flex justify-end gap-2 pt-1">
+                    <Button variant="outline" onClick={onClose} disabled={saving}>Cancel</Button>
+                    <Button variant="solid" onClick={handleSubmit} disabled={saving}>
+                        {saving ? 'Replacing…' : 'Replace'}
+                    </Button>
+                </div>
+            </div>
+        </Dialog>
+    );
+}
+
 export default function SslPage() {
-    const [certs, setCerts] = useState<SslCertMeta[] | null>(null);
-    const [enabled, setEnabled] = useState<Record<string, boolean>>({});
+    const [certs, setCerts] = useState<AppData.SslMeta[] | null>(null);
     const [toggling, setToggling] = useState<Record<string, boolean>>({});
     const [adding, setAdding] = useState(false);
+    const [replacingLabel, setReplacingLabel] = useState<string | null>(null);
     const [deletingLabel, setDeletingLabel] = useState<string | null>(null);
     const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
-        listCerts().then(async list => {
-            setCerts(list);
-            const states = await Promise.all(list.map(c => isCertEnabled(c.label)));
-            setEnabled(Object.fromEntries(list.map((c, i) => [c.label, states[i]])));
-        });
+        listCerts().then(setCerts);
     }, []);
 
     async function handleToggle(label: string, next: boolean) {
         setToggling(prev => ({ ...prev, [label]: true }));
         if (next) await enableCert(label);
         else await disableCert(label);
-        setEnabled(prev => ({ ...prev, [label]: next }));
+        setCerts(prev => prev?.map(c => c.label === label ? { ...c, isEnabled: next } : c) ?? null);
         setToggling(prev => ({ ...prev, [label]: false }));
     }
 
@@ -201,7 +247,6 @@ export default function SslPage() {
         setDeleting(true);
         await deleteCert(deletingLabel);
         setCerts(prev => prev?.filter(c => c.label !== deletingLabel) ?? null);
-        setEnabled(prev => { const n = { ...prev }; delete n[deletingLabel]; return n; });
         setDeletingLabel(null);
         setDeleting(false);
     }
@@ -232,24 +277,38 @@ export default function SslPage() {
                                 width: '1px',
                                 render: (_val, row) => (
                                     <Toggle
-                                        checked={enabled[row.label] ?? false}
+                                        checked={row.isEnabled}
                                         onChange={next => handleToggle(row.label, next)}
                                         disabled={toggling[row.label]}
                                     />
                                 ),
                             },
                             { key: 'label', label: 'Label' },
+                            {
+                                key: 'usedBy',
+                                label: 'In Use',
+                                width: '1px',
+                                render: (_val, row) => row.usedBy
+                                    ? <Chip label="Used" color="brand" variant="solid" />
+                                    : <Chip label="Unused" color="zinc" variant="outline" />,
+                            },
                         ]}
                         data={certs}
                         rowKey={row => row.label}
                         actions={row => (
-                            <button
-                                onClick={() => setDeletingLabel(row.label)}
-                                className="opacity-0 group-hover:opacity-100 text-zinc-900 hover:text-red-500 transition-colors"
-                                aria-label="Delete"
-                            >
-                                <Trash2 size={14} strokeWidth={1.75} />
-                            </button>
+                            <RowMenu items={[
+                                {
+                                    label: 'Replace',
+                                    icon: <RefreshCw size={14} strokeWidth={1.75} />,
+                                    onClick: () => setReplacingLabel(row.label),
+                                },
+                                {
+                                    label: 'Delete',
+                                    icon: <Trash2 size={14} strokeWidth={1.75} />,
+                                    variant: 'danger',
+                                    onClick: () => setDeletingLabel(row.label),
+                                },
+                            ]} />
                         )}
                     />
                 )}
@@ -259,6 +318,11 @@ export default function SslPage() {
                 open={adding}
                 onClose={() => setAdding(false)}
                 onAdded={cert => setCerts(prev => [...(prev ?? []), cert])}
+            />
+
+            <ReplaceCertDialog
+                label={replacingLabel}
+                onClose={() => setReplacingLabel(null)}
             />
 
             <Dialog
