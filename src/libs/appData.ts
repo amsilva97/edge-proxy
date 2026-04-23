@@ -1,6 +1,7 @@
 import path from 'path';
 import { FileSystem } from './fileSystem'
-import { EdgeProxyBlock } from '@/types/types';
+import { EdgeProxyBlock, EdgeProxyHost, HttpProxyMeta, HttpProxyType } from '@/types/types';
+import { EdgeBlockData } from '@/libs/edgeDirective';
 import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
 
 export namespace AppData {
@@ -9,36 +10,102 @@ export namespace AppData {
     const SSL_PATH = path.join(ROOT, 'ssl');
 
     //#region Https
-    export async function GetHttpProxyListAsync(): Promise<string[]> {
+    const defaultHttpProxyMeta: Omit<HttpProxyMeta, 'label'> = {
+        isEnabled: false,
+        type: HttpProxyType.Advanced
+    }
+
+    export async function GetHttpProxyListAsync(): Promise<HttpProxyMeta[]> {
         try {
             const files = await FileSystem.ReadDirAsync(HTTP_PROXY_PATH);
-            const names = files.map((f: string) => f.endsWith('.json') ? f.slice(0, -5) : f);
-            return [...new Set(names)];
+            const labels = files
+                .filter((f: string) => f.endsWith('.json'))
+                .map((f: string) => f.slice(0, -5));
+            return Promise.all(labels.map(async label => {
+                return await GetHttpProxyMetaAsync(label);
+            }));
         } catch {
             return [];
         }
     }
 
-    export async function SaveHttpProxyAsync(proxy: string, data: EdgeProxyBlock[]): Promise<void> {
+    export async function CreateHttpProxyAsync(proxy: string, block: EdgeProxyBlock): Promise<void> {
+        const exists = await ExistsHttpProxyAsync(proxy);
+        if (exists) {
+            NotificationManager.addToast(
+                `${proxy} already exists.`,
+                ToastNotificationStatus.Error
+            );
+            return;
+        }
         await FileSystem.MakeDirAsync(HTTP_PROXY_PATH, { recursive: true });
         const full_path = path.join(HTTP_PROXY_PATH, `${proxy}.json`);
-        await FileSystem.WriteFileAsync(full_path, JSON.stringify(data, null, 2));
+        const file: EdgeProxyHost = {
+            meta: {
+                label: proxy, ...defaultHttpProxyMeta
+            },
+            block
+        };
+        await FileSystem.WriteFileAsync(full_path, JSON.stringify(file, null, 2));
     }
 
-    export async function LoadHttpProxyAsync(proxy: string): Promise<EdgeProxyBlock[]> {
+    export async function SaveHttpProxyAsync(proxy: string, block: EdgeProxyBlock): Promise<void> {
+        const full_path = path.join(HTTP_PROXY_PATH, `${proxy}.json`);
+        const raw = await FileSystem.TryReadFileAsync(full_path);
+        const existing: EdgeProxyHost = raw ? JSON.parse(raw) : {
+            meta: {
+                label: proxy,
+                ...defaultHttpProxyMeta
+            },
+            block
+        };
+        await FileSystem.WriteFileAsync(full_path, JSON.stringify({ ...existing, block }, null, 2));
+    }
+
+    export async function LoadHttpProxyAsync(proxy: string): Promise<EdgeProxyBlock> {
         const full_path = path.join(HTTP_PROXY_PATH, `${proxy}.json`);
         const raw = await FileSystem.ReadFileAsync(full_path);
-        return JSON.parse(raw) as EdgeProxyBlock[];
+        return (JSON.parse(raw) as EdgeProxyHost).block;
     }
 
     export async function DeleteHttpProxyAsync(proxy: string): Promise<void> {
         await FileSystem.RemoveFileAsync(path.join(HTTP_PROXY_PATH, `${proxy}.json`), { force: true });
-        await FileSystem.RemoveFileAsync(path.join(HTTP_PROXY_PATH, proxy), { force: true });
     }
 
     export async function ExistsHttpProxyAsync(proxy: string): Promise<boolean> {
-        const full_path = path.join(HTTP_PROXY_PATH, `${proxy}.json`);
-        return FileSystem.ExistsAsync(full_path);
+        return FileSystem.ExistsAsync(path.join(HTTP_PROXY_PATH, `${proxy}.json`));
+    }
+
+    export async function GetHttpProxyMetaAsync(label: string): Promise<HttpProxyMeta> {
+        const full_path = path.join(HTTP_PROXY_PATH, `${label}.json`);
+        const raw = await FileSystem.TryReadFileAsync(full_path);
+        const file: Partial<EdgeProxyHost> = raw ? JSON.parse(raw) : {};
+        return {
+            label,
+            ...defaultHttpProxyMeta,
+            ...file.meta
+        };
+    }
+
+    export async function SaveHttpProxyMetaAsync(label: string, meta: Partial<HttpProxyMeta>): Promise<void> {
+        const full_path = path.join(HTTP_PROXY_PATH, `${label}.json`);
+        const raw = await FileSystem.TryReadFileAsync(full_path);
+        const existing: Partial<EdgeProxyHost> = raw ? JSON.parse(raw) : {
+            meta: {
+                label,
+                ...defaultHttpProxyMeta
+            }
+        };
+        const file: Partial<EdgeProxyHost> = {
+            ...existing,
+            meta: {
+                label,
+                ...defaultHttpProxyMeta,
+                ...existing.meta,
+                ...meta
+            }
+        };
+        await FileSystem.WriteFileAsync(full_path, JSON.stringify(file, null, 2));
     }
     //#endregion
 
@@ -139,6 +206,39 @@ export namespace AppData {
             ...meta,
             ...sslMeta
         }, null, 2));
+    }
+
+    export async function UpdateSslUsedByAsync(proxy: string, data: EdgeBlockData[]): Promise<void> {
+        function collectSslLabels(blocks: EdgeBlockData[]): string[] {
+            const labels: string[] = [];
+            for (const block of blocks) {
+                const [key, ...rest] = block as [string, ...unknown[]];
+                if (key === 'ssl_certificate' || key === 'ssl_certificate_key') {
+                    if (typeof rest[0] === 'string' && rest[0]) labels.push(rest[0]);
+                }
+                const last = rest[rest.length - 1];
+                if (Array.isArray(last) && last.length > 0 && Array.isArray(last[0])) {
+                    labels.push(...collectSslLabels(last as EdgeBlockData[]));
+                }
+            }
+            return labels;
+        }
+
+        const activeLabels = new Set(collectSslLabels(data));
+        const allCerts = await GetSslListAsync();
+        for (const cert of allCerts) {
+            const usedBy = new Set(cert.usedBy ? cert.usedBy.split(sslMetaUsedByDelimiter) : []);
+            const wasUsed = usedBy.has(proxy);
+            const isUsed = activeLabels.has(cert.label);
+            if (wasUsed === isUsed) continue;
+            if (isUsed) usedBy.add(proxy);
+            else usedBy.delete(proxy);
+            await SaveSslMetaAsync(cert.label, { ...cert, usedBy: [...usedBy].join(sslMetaUsedByDelimiter) });
+        }
+    }
+
+    export async function RemoveSslUsedByAsync(proxy: string): Promise<void> {
+        await UpdateSslUsedByAsync(proxy, []);
     }
     //#endregion
 }

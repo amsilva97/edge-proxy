@@ -2,8 +2,6 @@ import path from 'path';
 import { EdgeBlockData, EdgeDirectives } from './edgeDirective';
 import * as NginxActions from './nginx.actions';
 import { FileSystem } from './fileSystem'
-import { DataPaths } from './constants';
-import { AppConfig } from './appConfig';
 import { AppEnv } from './appEnv';
 
 export namespace Nginx {

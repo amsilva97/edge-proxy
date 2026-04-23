@@ -2,14 +2,16 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { listProxies, deleteProxy, proxyExists, isProxyEnabled, enableProxy, disableProxy } from './scripts';
+import { listProxies, deleteProxy, proxyExists, enableProxy, disableProxy } from './scripts';
+import { HttpProxyMeta } from '@/types/types';
 import Toggle from '@/components/ui/toggle';
 import Toolbar from '@/components/toolbar';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
 import Table from '@/components/ui/table';
 import Dialog from '@/components/dialog';
-import { Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
+import RowMenu from '@/components/ui/row-menu';
 
 function NewProxyDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
     const [name, setName] = useState('');
@@ -63,13 +65,8 @@ function NewProxyDialog({ open, onClose }: { open: boolean; onClose: () => void 
     );
 }
 
-const columns = [
-    { key: 'name', label: 'Name' },
-];
-
 export default function ProxiesPage() {
-    const [proxies, setProxies] = useState<string[] | null>(null);
-    const [enabled, setEnabled] = useState<Record<string, boolean>>({});
+    const [proxies, setProxies] = useState<HttpProxyMeta[] | null>(null);
     const [toggling, setToggling] = useState<Record<string, boolean>>({});
     const [creating, setCreating] = useState(false);
     const [deletingProxy, setDeletingProxy] = useState<string | null>(null);
@@ -77,35 +74,25 @@ export default function ProxiesPage() {
     const router = useRouter();
 
     useEffect(() => {
-        listProxies().then(async list => {
-            setProxies(list);
-            const states = await Promise.all(list.map(name => isProxyEnabled(name)));
-            setEnabled(Object.fromEntries(list.map((name, i) => [name, states[i]])));
-        });
+        listProxies().then(setProxies);
     }, []);
 
-    async function handleToggle(name: string, next: boolean) {
-        setToggling(prev => ({ ...prev, [name]: true }));
-        if (next) await enableProxy(name);
-        else await disableProxy(name);
-        setEnabled(prev => ({ ...prev, [name]: next }));
-        setToggling(prev => ({ ...prev, [name]: false }));
-    }
-
-    function handleDeleted(name: string) {
-        setProxies(prev => prev?.filter(p => p !== name) ?? null);
+    async function handleToggle(label: string, next: boolean) {
+        setToggling(prev => ({ ...prev, [label]: true }));
+        if (next) await enableProxy(label);
+        else await disableProxy(label);
+        setProxies(prev => prev?.map(p => p.label === label ? { ...p, isEnabled: next } : p) ?? null);
+        setToggling(prev => ({ ...prev, [label]: false }));
     }
 
     async function confirmDelete() {
         if (!deletingProxy) return;
         setDeleting(true);
         await deleteProxy(deletingProxy);
-        handleDeleted(deletingProxy);
+        setProxies(prev => prev?.filter(p => p.label !== deletingProxy) ?? null);
         setDeletingProxy(null);
         setDeleting(false);
     }
-
-    const rows = proxies?.map(name => ({ name })) ?? [];
 
     return (
         <div className="flex flex-col h-full bg-zinc-50 text-zinc-900">
@@ -130,30 +117,35 @@ export default function ProxiesPage() {
                     <Table
                         columns={[
                             {
-                                key: 'enabled',
+                                key: 'isEnabled',
                                 label: 'Status',
                                 width: '1px',
                                 render: (_val, row) => (
                                     <Toggle
-                                        checked={enabled[row.name] ?? false}
-                                        onChange={next => handleToggle(row.name, next)}
-                                        disabled={toggling[row.name]}
+                                        checked={row.isEnabled}
+                                        onChange={next => handleToggle(row.label, next)}
+                                        disabled={toggling[row.label]}
                                     />
                                 ),
                             },
-                            ...columns,
+                            { key: 'label', label: 'Name' },
                         ]}
-                        data={rows}
-                        rowKey={row => row.name}
-                        onRowClick={row => router.push(`/proxies/${row.name}`)}
+                        data={proxies}
+                        rowKey={row => row.label}
                         actions={row => (
-                            <button
-                                onClick={() => setDeletingProxy(row.name)}
-                                className="opacity-0 group-hover:opacity-100 text-zinc-900 hover:text-red-500 transition-colors"
-                                aria-label="Delete"
-                            >
-                                <Trash2 size={14} strokeWidth={1.75} />
-                            </button>
+                            <RowMenu items={[
+                                {
+                                    label: 'Edit',
+                                    icon: <Pencil size={14} strokeWidth={1.75} />,
+                                    onClick: () => router.push(`/proxies/${row.label}`),
+                                },
+                                {
+                                    label: 'Delete',
+                                    icon: <Trash2 size={14} strokeWidth={1.75} />,
+                                    variant: 'danger',
+                                    onClick: () => setDeletingProxy(row.label),
+                                },
+                            ]} />
                         )}
                     />
                 )}
