@@ -229,6 +229,7 @@ export default function SslPage() {
     const [replacingLabel, setReplacingLabel] = useState<string | null>(null);
     const [deletingLabel, setDeletingLabel] = useState<string | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const [inUseLabel, setInUseLabel] = useState<string | null>(null);
 
     useEffect(() => {
         listCerts().then(setCerts);
@@ -306,7 +307,7 @@ export default function SslPage() {
                                     label: 'Delete',
                                     icon: <Trash2 size={14} strokeWidth={1.75} />,
                                     variant: 'danger',
-                                    onClick: () => setDeletingLabel(row.label),
+                                    onClick: () => row.usedBy ? setInUseLabel(row.label) : setDeletingLabel(row.label),
                                 },
                             ]} />
                         )}
@@ -336,6 +337,19 @@ export default function SslPage() {
                     <Button variant="solid" color="danger" onClick={confirmDelete} disabled={deleting}>
                         {deleting ? 'Deleting…' : 'Delete'}
                     </Button>
+                </div>
+            </Dialog>
+
+            <Dialog
+                open={inUseLabel !== null}
+                title="Cannot Delete Certificate"
+                onCancel={() => setInUseLabel(null)}
+            >
+                <p className="text-sm text-zinc-600 mb-4">
+                    <span className="font-medium">'{inUseLabel}'</span> cannot be deleted because it is currently in use by one or more proxies.
+                </p>
+                <div className="flex justify-end">
+                    <Button variant="solid" onClick={() => setInUseLabel(null)}>OK</Button>
                 </div>
             </Dialog>
 
