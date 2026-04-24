@@ -1,7 +1,7 @@
 'use server';
 import path from "path";
 import fs from 'fs/promises';
-import { EdgeProxyHost, HttpHost, HttpHostMeta, SslCertKey } from "@/types/types";
+import { HttpHost, HttpHostMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
 import { AppEnv } from "./appEnv";
 import { EdgeBlockData, EdgeDirectives } from "./edgeDirective";
 
@@ -80,11 +80,11 @@ async function SaveHttpHostMetaAsync(httpHostName: string, httpHostMeta: Partial
 //#endregion
 
 //#region SslCertKey
-export async function GetSslCertKeyListAsync(): Promise<SslCertKey[]> {
+export async function GetSslCertKeyListAsync(): Promise<SslCertKeyMeta[]> {
     return await Promise.all(
         (await fs.readdir(DataPaths.SslCertKey))
             .filter((f: string) => f.endsWith('.json'))
-            .map((f: string) => GetSslCertKeyAsync(f.slice(0, -5)))
+            .map((f: string) => GetSslCertKeyMetaAsync(f.slice(0, -5)))
     )
 }
 
@@ -95,10 +95,10 @@ export async function GetSslCertKeyAsync(sslCertKeyName: string): Promise<SslCer
     return sslCertKey;
 }
 
-export async function SaveSslCertKeyAsync(sslCertKey: SslCertKey): Promise<void> {
-    const sslCertKeyPath: string = path.join(DataPaths.SslCertKey, `${sslCertKey.meta.label}.json`);
-    sslCertKey.meta.usedBy = [...(new Set(sslCertKey.meta.usedBy))] // Removes duplicates
+export async function SaveSslCertKeyAsync(sslCertKeyName: string, sslCertKey: SslCertKey): Promise<void> {
+    const sslCertKeyPath: string = path.join(DataPaths.SslCertKey, `${sslCertKeyName}.json`);
     await fs.writeFile(sslCertKeyPath, JSON.stringify(sslCertKey, null, 2))
+    await SaveHttpHostMetaAsync(sslCertKeyName, { label: sslCertKeyName })
 }
 
 export async function DeleteSslCertKeyAsync(sslCertKeyName: string): Promise<void> {
@@ -120,6 +120,27 @@ export async function DisabledSslCertKeyAsync(sslCertKeyName: string): Promise<v
     const nSslKeyPath: string = path.join(NginxPaths.SslCertKey, `${sslCertKeyName}.key`)
     await fs.rm(nSslCerPath);
     await fs.rm(nSslKeyPath);
+}
+
+export async function GetSslCertKeyMetaAsync(sslCertKeyName: string): Promise<SslCertKeyMeta> {
+    try {
+        const sslCertKeyMetaPath: string = path.join(DataPaths.SslCertKey, `${sslCertKeyName}.meta`);
+        const sslCertKeyMetaContent: string = await fs.readFile(sslCertKeyMetaPath, 'utf8');
+        const sslCertKey: SslCertKeyMeta = JSON.parse(sslCertKeyMetaContent);
+        return sslCertKey;
+    }
+    catch {
+        return {} as SslCertKeyMeta
+    }
+}
+
+async function SaveSslCertKeyMetaAsync(sslCertKeyName: string, sslCertKeyMeta: Partial<SslCertKeyMeta>): Promise<void> {
+    const httpHostMetaPath: string = path.join(DataPaths.HttpHost, `${sslCertKeyName}.meta`);
+    const oldData = await GetSslCertKeyMetaAsync(sslCertKeyName);
+    await fs.writeFile(httpHostMetaPath, JSON.stringify({
+        ...oldData,
+        ...sslCertKeyMeta
+    }, null, 2))
 }
 //#endregion
 
