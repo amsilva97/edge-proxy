@@ -35,7 +35,7 @@ function NewProxyDialog({ open, onClose }: { open: boolean; onClose: () => void 
             return;
         }
         await createProxy(slug);
-        router.push(`/proxies/${slug}`);
+        router.push(`/http-hosts/${slug}`);
     }
 
     function onKeyDown(e: React.KeyboardEvent) {
@@ -138,7 +138,7 @@ export default function ProxiesPage() {
                                 {
                                     label: 'Edit',
                                     icon: <Pencil size={14} strokeWidth={1.75} />,
-                                    onClick: () => router.push(`/proxies/${row.label}`),
+                                    onClick: () => router.push(`/http-hosts/${row.label}`),
                                 },
                                 {
                                     label: 'Delete',
