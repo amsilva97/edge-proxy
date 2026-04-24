@@ -12,9 +12,9 @@ interface NavLink {
 }
 
 const links: NavLink[] = [
-    { label: "Proxies",    href: "/proxies",    icon: Network      },
+    { label: "Http Hosts",    href: "/http-hosts",    icon: Network      },
     { label: "Snippets",   href: "/snippets",   icon: Scissors     },
-    { label: "SSL",        href: "/ssl",        icon: ShieldCheck  },
+    { label: "SSLs",        href: "/ssls",        icon: ShieldCheck  },
     { label: "App Config", href: "/app-config", icon: Settings     },
 ];
 
