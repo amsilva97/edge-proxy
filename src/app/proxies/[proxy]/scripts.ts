@@ -37,6 +37,11 @@ export async function listSslCerts(): Promise<string[]> {
     return certs.filter(c => c.isEnabled).map(c => c.label);
 }
 
+export async function listSnippets(): Promise<string[]> {
+    const snippets = await EdgeProxy.GetSnippetMetaListAsync();
+    return snippets.map(s => s.label);
+}
+
 export async function previewNginxConfig(blocks: EdgeBlockData[]): Promise<string> {
     return EdgeProxy.NginxConfigPreview(blocks);
 }

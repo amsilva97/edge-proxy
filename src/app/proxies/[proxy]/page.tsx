@@ -3,16 +3,16 @@
 import { use, useState, useTransition, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Block, { BlockData } from '@/components/block';
-import { Nginx } from '@/libs/nginx';
 import { EdgeDirectiveContext } from '@/libs/edgeDirective';
-import { getProxy, saveProxy, deleteProxy, enableProxy, disableProxy, isProxyEnabled, listSslCerts } from './scripts';
+import { getProxy, saveProxy, deleteProxy, enableProxy, disableProxy, isProxyEnabled, listSslCerts, listSnippets, previewNginxConfig } from './scripts';
 import Toolbar from '@/components/toolbar';
 import Button from '@/components/ui/button';
 import Toggle from '@/components/ui/toggle';
 import Dialog from '@/components/dialog';
 
 function NginxPreview({ data }: { data: BlockData }) {
-    const text = Nginx.BuildNginxConfig(data).trim();
+    const [text, setText] = useState('');
+    useEffect(() => { previewNginxConfig(data).then(t => setText(t.trim())); }, [data]);
     return (
         <div className="h-full flex flex-col rounded-lg overflow-hidden border border-zinc-200 bg-white">
             <div className="px-3 py-1.5 border-b border-zinc-200 bg-zinc-50 shrink-0">
@@ -34,11 +34,13 @@ function ProxyEditor({ proxy }: { proxy: string }) {
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [sslLabels, setSslLabels] = useState<string[]>([]);
+    const [snippetLabels, setSnippetLabels] = useState<string[]>([]);
 
     useEffect(() => {
         getProxy(proxy).then(setData);
         isProxyEnabled(proxy).then(setEnabled);
         listSslCerts().then(setSslLabels);
+        listSnippets().then(setSnippetLabels);
     }, [proxy]);
 
     function handleSave() {
@@ -85,7 +87,7 @@ function ProxyEditor({ proxy }: { proxy: string }) {
             <div className="flex-1 overflow-hidden flex gap-4 p-4">
                 <div className="flex-1 overflow-auto">
                     {data
-                        ? <Block data={data} context={EdgeDirectiveContext.http} onChange={setData} sslLabels={sslLabels} />
+                        ? <Block data={data} context={EdgeDirectiveContext.http} onChange={setData} sslLabels={sslLabels} snippetLabels={snippetLabels} />
                         : <div className="flex items-center justify-center h-32 text-sm text-zinc-400">Loading…</div>
                     }
                 </div>

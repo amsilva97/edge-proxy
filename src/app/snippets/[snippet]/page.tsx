@@ -3,15 +3,15 @@
 import { use, useState, useTransition, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Block, { BlockData } from '@/components/block';
-import { Nginx } from '@/libs/nginx';
 import { EdgeDirectiveContext } from '@/libs/edgeDirective';
-import { getSnippet, saveSnippet, deleteSnippet } from './scripts';
+import { getSnippet, saveSnippet, deleteSnippet, listSnippets, previewNginxConfig } from './scripts';
 import Toolbar from '@/components/toolbar';
 import Button from '@/components/ui/button';
 import Dialog from '@/components/dialog';
 
 function NginxPreview({ data }: { data: BlockData }) {
-    const text = Nginx.BuildNginxConfig(data).trim();
+    const [text, setText] = useState('');
+    useEffect(() => { previewNginxConfig(data).then(t => setText(t.trim())); }, [data]);
     return (
         <div className="h-full flex flex-col rounded-lg overflow-hidden border border-zinc-200 bg-white">
             <div className="px-3 py-1.5 border-b border-zinc-200 bg-zinc-50 shrink-0">
@@ -31,9 +31,11 @@ function SnippetEditor({ snippet }: { snippet: string }) {
     const [saved, setSaved] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [snippetLabels, setSnippetLabels] = useState<string[]>([]);
 
     useEffect(() => {
         getSnippet(snippet).then(setData);
+        listSnippets().then(all => setSnippetLabels(all.filter(l => l !== snippet)));
     }, [snippet]);
 
     function handleSave() {
@@ -66,7 +68,7 @@ function SnippetEditor({ snippet }: { snippet: string }) {
             <div className="flex-1 overflow-hidden flex gap-4 p-4">
                 <div className="flex-1 overflow-auto">
                     {data
-                        ? <Block data={data} context={EdgeDirectiveContext.location} onChange={setData} sslLabels={[]} />
+                        ? <Block data={data} context={EdgeDirectiveContext.location} onChange={setData} sslLabels={[]} snippetLabels={snippetLabels} />
                         : <div className="flex items-center justify-center h-32 text-sm text-zinc-400">Loading…</div>
                     }
                 </div>
