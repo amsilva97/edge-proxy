@@ -130,6 +130,7 @@ export async function EnableSslCertKeyAsync(sslCertKeyName: string): Promise<voi
     const nSslKeyPath: string = path.join(NginxPaths.SslCertKey, `${sslCertKeyName}.key`);
     await fs.writeFile(nSslCerPath, sslCertKey.cert);
     await fs.writeFile(nSslKeyPath, sslCertKey.key);
+    await SaveSslCertKeyMetaAsync(sslCertKeyName, { isEnabled: true });
 }
 
 export async function DisabledSslCertKeyAsync(sslCertKeyName: string): Promise<void> {
@@ -137,6 +138,7 @@ export async function DisabledSslCertKeyAsync(sslCertKeyName: string): Promise<v
     const nSslKeyPath: string = path.join(NginxPaths.SslCertKey, `${sslCertKeyName}.key`);
     await fs.rm(nSslCerPath, { force: true });
     await fs.rm(nSslKeyPath, { force: true });
+    await SaveSslCertKeyMetaAsync(sslCertKeyName, { isEnabled: false });
 }
 
 export async function GetSslCertKeyMetaAsync(sslCertKeyName: string): Promise<SslCertKeyMeta> {
@@ -146,9 +148,18 @@ export async function GetSslCertKeyMetaAsync(sslCertKeyName: string): Promise<Ss
     return sslCertKeyMeta;
 }
 
+export async function TryGetSslCertKeyMetaAsync(sslCertKeyName: string): Promise<SslCertKeyMeta> {
+    try {
+        return await GetSslCertKeyMetaAsync(sslCertKeyName)
+    } catch (err: any) {
+        if (err?.code == 'ENOENT') return {} as SslCertKeyMeta
+        throw err
+    }
+}
+
 async function SaveSslCertKeyMetaAsync(sslCertKeyName: string, sslCertKeyMeta: Partial<SslCertKeyMeta>): Promise<void> {
     const sslCertKeyMetaPath: string = path.join(DataPaths.SslCertKey, `${sslCertKeyName}.meta`);
-    const oldData = await GetSslCertKeyMetaAsync(sslCertKeyName);
+    const oldData = await TryGetSslCertKeyMetaAsync(sslCertKeyName);
     await fs.writeFile(sslCertKeyMetaPath, JSON.stringify({
         ...oldData,
         ...sslCertKeyMeta

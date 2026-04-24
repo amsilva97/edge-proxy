@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { listCerts, saveCert, replaceCert, deleteCert, certExists, enableCert, disableCert } from './scripts';
-import { AppData } from '@/libs/appData';
+import { SslCertKeyMeta } from '@/types/types';
 import Toolbar from '@/components/toolbar';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
@@ -95,7 +95,7 @@ function AddCertDialog({
 }: {
     open: boolean;
     onClose: () => void;
-    onAdded: (cert: AppData.SslMeta) => void;
+    onAdded: (cert: SslCertKeyMeta) => void;
 }) {
     const [label, setLabel] = useState('');
     const [certContent, setCertContent] = useState('');
@@ -122,7 +122,7 @@ function AddCertDialog({
         if (await certExists(slug)) { setError('A certificate with that label already exists'); return; }
         setSaving(true);
         await saveCert(slug, certContent, keyContent);
-        onAdded({ label: slug, isEnabled: false, usedBy: '' });
+        onAdded({ label: slug, isEnabled: false, attachedTo: [] });
         setSaving(false);
         onClose();
     }
@@ -223,7 +223,7 @@ function ReplaceCertDialog({
 }
 
 export default function SslPage() {
-    const [certs, setCerts] = useState<AppData.SslMeta[] | null>(null);
+    const [certs, setCerts] = useState<SslCertKeyMeta[] | null>(null);
     const [toggling, setToggling] = useState<Record<string, boolean>>({});
     const [adding, setAdding] = useState(false);
     const [replacingLabel, setReplacingLabel] = useState<string | null>(null);
@@ -289,7 +289,7 @@ export default function SslPage() {
                                 key: 'usedBy',
                                 label: 'In Use',
                                 width: '1px',
-                                render: (_val, row) => row.usedBy
+                                render: (_val, row) => row.attachedTo?.length
                                     ? <Chip label="Used" color="brand" variant="solid" />
                                     : <Chip label="Unused" color="zinc" variant="outline" />,
                             },
@@ -307,7 +307,7 @@ export default function SslPage() {
                                     label: 'Delete',
                                     icon: <Trash2 size={14} strokeWidth={1.75} />,
                                     variant: 'danger',
-                                    onClick: () => row.usedBy ? setInUseLabel(row.label) : setDeletingLabel(row.label),
+                                    onClick: () => row.attachedTo?.length ? setInUseLabel(row.label) : setDeletingLabel(row.label),
                                 },
                             ]} />
                         )}
