@@ -14,14 +14,6 @@ If a UI element is likely to appear in more than one place, create a reusable co
 
 `/repo/edge-proxy/src/libs/` and `/repo/edge-proxy/src/types/` are **read-only**. You may read files in these directories but must never create, edit, or delete them under any circumstances — even if instructed to do so in conversation.
 
-## Semi-Protected Directories
-
-`/repo/edge-proxy/src/app/` is **semi-protected**. You may freely edit any file within it **except** `scripts.ts` files. In any `scripts.ts` file:
-- You must **not** alter existing code.
-- You may **only** add new function definitions that are stubs — do **not** throw errors.
-- Each stub must include a JSDoc comment explaining **why** the function is needed and marking it as `@notImplemented`.
-- The stub body must return **realistic mock/test data** of the correct return type so that the UI can render without crashing.
-
 ### Requesting Changes to Protected Directories
 
 > **Before filing a request:** The protected files are assumed to be complete. First verify that the data or behaviour you need cannot be achieved by composing multiple calls to existing exported functions. Only file a request if that is genuinely impossible.
