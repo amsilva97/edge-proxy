@@ -270,7 +270,7 @@ function Card({ data, depth = 0, onChange, onDelete, sslLabels }: ICard): JSX.El
         return (
             <div className={`flex items-start gap-2 py-1${depth > 0 ? " ml-4" : ""}`}>
                 <span className="w-1.5 h-3 rounded-full bg-brand/40 flex-shrink-0 mt-1.5" />
-                <span className="font-mono text-sm font-medium text-zinc-700 tracking-tight w-40 shrink-0 pt-0.5">{name}</span>
+                <span className="font-mono text-sm font-medium text-zinc-700 tracking-tight shrink-0 pt-0.5">{name}</span>
                 {paramInputs}
                 {onDelete && (
                     <button onClick={onDelete} title="Delete"
