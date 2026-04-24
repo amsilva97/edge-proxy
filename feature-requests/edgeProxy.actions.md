@@ -38,6 +38,40 @@ Expected result: no cert meta in `data/ssl/` has `'my-proxy'` in its `usedBy` ar
 Date: 2026-04-24
 Type: code-change
 File: src/libs/edgeProxy.actions.ts
+Reason: FindSslCertKeys has a broken skeleton — for...in over an array iterates indices, not values, and never populates sslSet. Needs to walk the block tree the same way BuildNginxConfig does.
+---
+
+```diff
+ function FindSslCertKeys(httpHost: HttpHost): string[] {
+     const sslSet: Set<string> = new Set()
+-    function _(edgeBlockDataList: EdgeBlockData[]) {
+-        for (const edgeBlockData in edgeBlockDataList) {
+-            const key = edgeBlockData
++    function walk(blocks: EdgeBlockData[]) {
++        for (const block of blocks) {
++            const [name, ...rest] = block;
++            const directive = EdgeDirectives.find(d => d.key === name);
++            if (!directive) continue;
++            const nonCtxParams = directive.params.filter(p => p.primitive !== 'context');
++            const hasContext = directive.params.some(p => p.primitive === 'context');
++            nonCtxParams.forEach((param, i) => {
++                if (param.primitive === 'ssl' && rest[i]) sslSet.add(String(rest[i]));
++            });
++            if (hasContext) {
++                const children = (rest[nonCtxParams.length] ?? []) as EdgeBlockData[];
++                walk(children);
++            }
+         }
+     }
+-    _(httpHost)
++    walk(httpHost)
+     return [...sslSet]
+ }
+
+---
+Date: 2026-04-24
+Type: code-change
+File: src/libs/edgeProxy.actions.ts
 Reason: Creating a new host throws ENOENT because SaveHttpHostMetaAsync calls GetHttpHostMetaAsync to read existing meta before the file exists. GetHttpHostMetaListAsync and GetSslCertKeyListAsync also throw if their data directories don't exist yet.
 ---
 

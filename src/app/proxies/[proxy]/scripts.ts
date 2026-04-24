@@ -34,7 +34,7 @@ export async function disableProxy(name: string): Promise<void> {
 
 export async function listSslCerts(): Promise<string[]> {
     const certs = await EdgeProxy.GetSslCertKeyListAsync();
-    return certs.map(c => c.label);
+    return certs.filter(c => c.isEnabled).map(c => c.label);
 }
 
 export async function previewNginxConfig(blocks: EdgeBlockData[]): Promise<string> {
