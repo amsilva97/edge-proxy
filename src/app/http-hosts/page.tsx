@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { listProxies, deleteProxy, proxyExists, createProxy, enableProxy, disableProxy } from './scripts';
-import { HttpHostMeta } from '@/types/types';
+import { HttpHostMeta, HttpProxyType } from '@/types/types';
 import Toggle from '@/components/ui/toggle';
 import Toolbar from '@/components/toolbar';
 import Button from '@/components/ui/button';
@@ -130,6 +130,15 @@ export default function ProxiesPage() {
                                 ),
                             },
                             { key: 'label', label: 'Name' },
+                            {
+                                key: 'type',
+                                label: 'Type',
+                                render: (val: HttpProxyType) => (
+                                    <span className="text-sm text-zinc-600">
+                                        {val === HttpProxyType.Proxy ? 'Proxy' : 'Advanced'}
+                                    </span>
+                                ),
+                            },
                         ]}
                         data={proxies}
                         rowKey={row => row.label}
