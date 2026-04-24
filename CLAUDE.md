@@ -18,8 +18,9 @@ If a UI element is likely to appear in more than one place, create a reusable co
 
 `/repo/edge-proxy/src/app/` is **semi-protected**. You may freely edit any file within it **except** `scripts.ts` files. In any `scripts.ts` file:
 - You must **not** alter existing code.
-- You may **only** add new function definitions whose body is `throw new Error("Not implemented")`.
-- Each such stub must include a JSDoc comment explaining **why** the function is needed.
+- You may **only** add new function definitions that are stubs — do **not** throw errors.
+- Each stub must include a JSDoc comment explaining **why** the function is needed and marking it as `@notImplemented`.
+- The stub body must return **realistic mock/test data** of the correct return type so that the UI can render without crashing.
 
 ### Requesting Changes to Protected Directories
 
