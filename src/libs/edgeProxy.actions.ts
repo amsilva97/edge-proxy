@@ -151,7 +151,11 @@ async function SaveSslCertKeyMetaAsync(sslCertKeyName: string, sslCertKeyMeta: P
 }
 //#endregion
 
-export function BuildNginxConfig(blocks: EdgeBlockData[]): string {
+export async function NginxConfigPreview(blocks: EdgeBlockData[]): Promise<string> {
+    return BuildNginxConfig(blocks)
+}
+
+function BuildNginxConfig(blocks: EdgeBlockData[]): string {
     function _build(block: EdgeBlockData, indent: number): string {
         const [name, ...rest] = block;
         const pad = '    '.repeat(indent);
