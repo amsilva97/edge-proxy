@@ -20,3 +20,15 @@ export type EdgeProxyHost = {
 export interface EdgeProxySettings {
     nginxBasePath: string;
 }
+
+export type SslCertKeyMeta = {
+    label: string;
+    isEnabled: boolean;
+    usedBy: string[];
+}
+
+export type SslCertKey = {
+    cert: string;
+    key: string;
+    meta: SslCertKeyMeta;
+}
