@@ -1,4 +1,4 @@
-import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
+// import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
 import * as FilesActions from './fileSystem.actions';
 
 /** @deprecated I want to remove this */
@@ -13,7 +13,7 @@ export namespace FileSystem {
             return await FilesActions.ReadFileAsync(path);
         }
         catch (error: any) {
-            NotificationManager.addToast(error.message, ToastNotificationStatus.Error);
+            // NotificationManager.addToast(error.message, ToastNotificationStatus.Error);
             throw error;
         }
     }

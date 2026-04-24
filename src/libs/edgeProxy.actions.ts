@@ -12,8 +12,8 @@ namespace DataPaths {
 }
 
 namespace NginxPaths {
-    const Root = AppEnv.nginxBasePath
-    export const EnabledHttpHost = path.join(Root, 'sites-enabled')
+    const Root = AppEnv.nginxBasePath;
+    export const EnabledHttpHost = path.join(Root, 'sites-enabled');
     export const SslCertKey = path.join(Root, 'ssl');
 }
 
@@ -27,34 +27,41 @@ export async function GetHttpHostAsync(httpHostName: string): Promise<HttpHost> 
 
 export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost): Promise<void> {
     const httpHostPath: string = path.join(DataPaths.HttpHost, `${httpHostName}.json`);
-    await fs.writeFile(httpHostPath, JSON.stringify(httpHost, null, 2))
-    await SaveHttpHostMetaAsync(httpHostName, { label: httpHostName })
+    await fs.mkdir(path.dirname(httpHostPath), { recursive: true });
+    await fs.writeFile(httpHostPath, JSON.stringify(httpHost, null, 2));
+    await SaveHttpHostMetaAsync(httpHostName, { label: httpHostName });
 }
 
 export async function DeleteHttpHostAsync(httpHostName: string): Promise<void> {
     const httpHostPath: string = path.join(DataPaths.HttpHost, `${httpHostName}.json`);
-    await DisabledHttpHostAsync(httpHostName)
-    await fs.rm(httpHostPath)
+    await DisabledHttpHostAsync(httpHostName);
+    await fs.rm(httpHostPath, { force: true });
 }
 
 export async function EnableHttpHostAsync(httpHostName: string): Promise<void> {
-    const httpHost: HttpHost = await GetHttpHostAsync(httpHostName)
-    const nHttpHostPath: string = path.join(NginxPaths.EnabledHttpHost, httpHostName)
+    const httpHost: HttpHost = await GetHttpHostAsync(httpHostName);
+    const nHttpHostPath: string = path.join(NginxPaths.EnabledHttpHost, httpHostName);
     const nginxConfig = BuildNginxConfig(httpHost);
     await fs.writeFile(nHttpHostPath, JSON.stringify(nginxConfig, null, 2));
+    await SaveHttpHostMetaAsync(httpHostName, { isEnabled: true });
 }
 
 export async function DisabledHttpHostAsync(httpHostName: string): Promise<void> {
-    const nHttpHostPath: string = path.join(NginxPaths.EnabledHttpHost, httpHostName)
-    await fs.rm(nHttpHostPath)
+    const nHttpHostPath: string = path.join(NginxPaths.EnabledHttpHost, httpHostName);
+    await fs.rm(nHttpHostPath, { force: true });
+    await SaveHttpHostMetaAsync(httpHostName, { isEnabled: false });
 }
 
 export async function GetHttpHostMetaListAsync(): Promise<HttpHostMeta[]> {
-    return await Promise.all(
-        (await fs.readdir(DataPaths.HttpHost))
-            .filter((f: string) => f.endsWith('.json'))
-            .map((f: string) => GetHttpHostMetaAsync(f.slice(0, -5)))
-    )
+    try {
+        return await Promise.all(
+            (await fs.readdir(DataPaths.HttpHost))
+                .filter((f: string) => f.endsWith('.json'))
+                .map((f: string) => GetHttpHostMetaAsync(f.slice(0, -5)))
+        );
+    } catch {
+        return [];
+    }
 }
 
 export async function GetHttpHostMetaAsync(httpHostName: string): Promise<HttpHostMeta> {
@@ -65,7 +72,7 @@ export async function GetHttpHostMetaAsync(httpHostName: string): Promise<HttpHo
         return httpHostMeta;
     }
     catch {
-        return {} as HttpHostMeta
+        return {} as HttpHostMeta;
     }
 }
 
@@ -75,7 +82,7 @@ async function SaveHttpHostMetaAsync(httpHostName: string, httpHostMeta: Partial
     await fs.writeFile(httpHostMetaPath, JSON.stringify({
         ...oldData,
         ...httpHostMeta
-    }, null, 2))
+    }, null, 2));
 }
 //#endregion
 
@@ -85,7 +92,7 @@ export async function GetSslCertKeyListAsync(): Promise<SslCertKeyMeta[]> {
         (await fs.readdir(DataPaths.SslCertKey))
             .filter((f: string) => f.endsWith('.json'))
             .map((f: string) => GetSslCertKeyMetaAsync(f.slice(0, -5)))
-    )
+    );
 }
 
 export async function GetSslCertKeyAsync(sslCertKeyName: string): Promise<SslCertKey> {
@@ -97,29 +104,29 @@ export async function GetSslCertKeyAsync(sslCertKeyName: string): Promise<SslCer
 
 export async function SaveSslCertKeyAsync(sslCertKeyName: string, sslCertKey: SslCertKey): Promise<void> {
     const sslCertKeyPath: string = path.join(DataPaths.SslCertKey, `${sslCertKeyName}.json`);
-    await fs.writeFile(sslCertKeyPath, JSON.stringify(sslCertKey, null, 2))
-    await SaveSslCertKeyMetaAsync(sslCertKeyName, { label: sslCertKeyName })
+    await fs.writeFile(sslCertKeyPath, JSON.stringify(sslCertKey, null, 2));
+    await SaveSslCertKeyMetaAsync(sslCertKeyName, { label: sslCertKeyName });
 }
 
 export async function DeleteSslCertKeyAsync(sslCertKeyName: string): Promise<void> {
     const sslCertKeyPath: string = path.join(DataPaths.SslCertKey, `${sslCertKeyName}.json`);
-    await DisabledSslCertKeyAsync(sslCertKeyName)
-    await fs.rm(sslCertKeyPath)
+    await DisabledSslCertKeyAsync(sslCertKeyName);
+    await fs.rm(sslCertKeyPath, { force: true });
 }
 
 export async function EnableSslCertKeyAsync(sslCertKeyName: string): Promise<void> {
-    const sslCertKey: SslCertKey = await GetSslCertKeyAsync(sslCertKeyName)
-    const nSslCerPath: string = path.join(NginxPaths.SslCertKey, `${sslCertKeyName}.cert`)
-    const nSslKeyPath: string = path.join(NginxPaths.SslCertKey, `${sslCertKeyName}.key`)
+    const sslCertKey: SslCertKey = await GetSslCertKeyAsync(sslCertKeyName);
+    const nSslCerPath: string = path.join(NginxPaths.SslCertKey, `${sslCertKeyName}.cert`);
+    const nSslKeyPath: string = path.join(NginxPaths.SslCertKey, `${sslCertKeyName}.key`);
     await fs.writeFile(nSslCerPath, sslCertKey.cert);
     await fs.writeFile(nSslKeyPath, sslCertKey.key);
 }
 
 export async function DisabledSslCertKeyAsync(sslCertKeyName: string): Promise<void> {
-    const nSslCerPath: string = path.join(NginxPaths.SslCertKey, `${sslCertKeyName}.cert`)
-    const nSslKeyPath: string = path.join(NginxPaths.SslCertKey, `${sslCertKeyName}.key`)
-    await fs.rm(nSslCerPath);
-    await fs.rm(nSslKeyPath);
+    const nSslCerPath: string = path.join(NginxPaths.SslCertKey, `${sslCertKeyName}.cert`);
+    const nSslKeyPath: string = path.join(NginxPaths.SslCertKey, `${sslCertKeyName}.key`);
+    await fs.rm(nSslCerPath, { force: true });
+    await fs.rm(nSslKeyPath, { force: true });
 }
 
 export async function GetSslCertKeyMetaAsync(sslCertKeyName: string): Promise<SslCertKeyMeta> {
@@ -140,7 +147,7 @@ async function SaveSslCertKeyMetaAsync(sslCertKeyName: string, sslCertKeyMeta: P
     await fs.writeFile(sslCertKeyMetaPath, JSON.stringify({
         ...oldData,
         ...sslCertKeyMeta
-    }, null, 2))
+    }, null, 2));
 }
 //#endregion
 

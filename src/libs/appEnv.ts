@@ -1,4 +1,4 @@
-import { NotificationManager, ToastNotification, ToastNotificationStatus } from '@/components/notifier';
+// import { NotificationManager, ToastNotification, ToastNotificationStatus } from '@/components/notifier';
 import { FileSystem } from './fileSystem';
 
 const ENV_LOCAL = '.env.local';
@@ -10,22 +10,22 @@ export class AppEnv {
     }
 
     static async LoadEnvAsync(): Promise<Record<string, string>> {
-        let toast: ToastNotification | null = null;
+        // let toast: ToastNotification | null = null;
         let result: Record<string, string> = {};
         try {
             const contentLocal = await FileSystem.TryReadFileAsync(ENV_LOCAL);
             if (contentLocal) return AppEnv.parseEnvFile(contentLocal);
             const contentDefault = await FileSystem.TryReadFileAsync(ENV_DEFAULT);
             if (contentDefault) {
-                toast = new ToastNotification('No .env.local found — loaded default configuration.', ToastNotificationStatus.Warning);
+                // toast = new ToastNotification('No .env.local found — loaded default configuration.', ToastNotificationStatus.Warning);
                 result = AppEnv.parseEnvFile(contentDefault);
             } else {
-                toast = new ToastNotification('No environment config found.', ToastNotificationStatus.Error);
+                // toast = new ToastNotification('No environment config found.', ToastNotificationStatus.Error);
             }
         } catch (error: any) {
-            toast = new ToastNotification(error?.message ?? 'Failed to load environment config.', ToastNotificationStatus.Error);
+            // toast = new ToastNotification(error?.message ?? 'Failed to load environment config.', ToastNotificationStatus.Error);
         }
-        if (toast) NotificationManager.addToast(toast);
+        // if (toast) NotificationManager.addToast(toast);
         return result;
     }
 
