@@ -897,7 +897,7 @@ export const EdgeDirectives: EdgeDirective[] = [
         key: 'ssl_verify_depth',
         params: [{ primitive: 'number', label: 'number' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
-    }
+    },
     // ngx_http_access_module
     // ngx_http_addition_module
     // ngx_http_api_module
@@ -937,6 +937,442 @@ export const EdgeDirectives: EdgeDirective[] = [
     // ngx_http_oidc_module
     // ngx_http_perl_module
     // ngx_http_proxy_module
+    {
+        key: 'proxy_allow_upstream',
+        params: [{ primitive: 'string', label: 'string ...' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_bind',
+        params: [
+            { primitive: 'string', label: 'address | off' },
+            { primitive: 'flag', label: 'transparent', optional: true }
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_bind_dynamic',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_buffer_size',
+        params: [{ primitive: 'string', label: 'size' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_buffering',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_buffers',
+        params: [
+            { primitive: 'number', label: 'number' },
+            { primitive: 'string', label: 'size' }
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_busy_buffers_size',
+        params: [{ primitive: 'string', label: 'size' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache',
+        params: [{ primitive: 'string', label: 'zone | off' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache_background_update',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache_bypass',
+        params: [{ primitive: 'string', label: 'string ...' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache_convert_head',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache_key',
+        params: [{ primitive: 'string', label: 'string' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache_lock',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache_lock_age',
+        params: [{ primitive: 'string', label: 'time' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache_lock_timeout',
+        params: [{ primitive: 'string', label: 'time' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache_max_range_offset',
+        params: [{ primitive: 'number', label: 'number' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache_methods',
+        params: [{ primitive: 'string', label: 'GET | HEAD | POST ...' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache_min_uses',
+        params: [{ primitive: 'number' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache_path',
+        params: [
+            { primitive: 'string', label: 'path' },
+            { primitive: 'flag', label: 'levels', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'use_temp_path', optional: true, subSlot: { primitive: ['on', 'off'], prefix: '=' } },
+            { primitive: 'flag', label: 'keys_zone', subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'inactive', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'max_size', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'min_free', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'manager_files', optional: true, subSlot: { primitive: 'number', prefix: '=' } },
+            { primitive: 'flag', label: 'manager_sleep', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'manager_threshold', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'loader_files', optional: true, subSlot: { primitive: 'number', prefix: '=' } },
+            { primitive: 'flag', label: 'loader_sleep', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'loader_threshold', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'purger', optional: true, subSlot: { primitive: ['on', 'off'], prefix: '=' } },
+            { primitive: 'flag', label: 'purger_files', optional: true, subSlot: { primitive: 'number', prefix: '=' } },
+            { primitive: 'flag', label: 'purger_sleep', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'purger_threshold', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+        ],
+        context: EdgeDirectiveContext.http
+    },
+    {
+        key: 'proxy_cache_purge',
+        params: [{ primitive: 'string', label: 'string ...' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache_revalidate',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache_use_stale',
+        params: [{ primitive: 'string', label: 'error | timeout | invalid_header | updating | http_500 | http_502 | http_503 | http_504 | http_403 | http_404 | http_429 | off ...' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cache_valid',
+        params: [
+            { primitive: 'string', label: '[code ...] time' }
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_connect_timeout',
+        params: [{ primitive: 'string', label: 'time' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cookie_domain',
+        params: [
+            { primitive: 'string', label: 'domain | off' },
+            { primitive: 'string', label: 'replacement', optional: true }
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cookie_flags',
+        params: [
+            { primitive: 'string', label: 'cookie | off' },
+            { primitive: 'string', label: 'flag ...', optional: true }
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_cookie_path',
+        params: [
+            { primitive: 'string', label: 'path | off' },
+            { primitive: 'string', label: 'replacement', optional: true }
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_force_ranges',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_headers_hash_bucket_size',
+        params: [{ primitive: 'string', label: 'size' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_headers_hash_max_size',
+        params: [{ primitive: 'string', label: 'size' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_hide_header',
+        params: [{ primitive: 'string', label: 'field' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_http_version',
+        params: [{ primitive: ['1.0', '1.1', '2'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ignore_client_abort',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ignore_headers',
+        params: [{ primitive: 'string', label: 'field ...' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_intercept_errors',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_limit_rate',
+        params: [{ primitive: 'string', label: 'rate' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_max_temp_file_size',
+        params: [{ primitive: 'string', label: 'size' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_method',
+        params: [{ primitive: 'string', label: 'method' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_next_upstream',
+        params: [{ primitive: 'string', label: 'error | timeout | denied | invalid_header | http_500 | http_502 | http_503 | http_504 | http_403 | http_404 | http_429 | non_idempotent | off ...' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_next_upstream_timeout',
+        params: [{ primitive: 'string', label: 'time' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_next_upstream_tries',
+        params: [{ primitive: 'number' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_no_cache',
+        params: [{ primitive: 'string', label: 'string ...' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_pass',
+        params: [{ primitive: 'string', label: 'URL' }],
+        context: EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_pass_header',
+        params: [{ primitive: 'string', label: 'field' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_pass_request_body',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_pass_request_headers',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_pass_trailers',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_read_timeout',
+        params: [{ primitive: 'string', label: 'time' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_redirect',
+        params: [
+            { primitive: 'string', label: 'default | off | redirect' },
+            { primitive: 'string', label: 'replacement', optional: true }
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_request_buffering',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_request_dynamic',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_send_lowat',
+        params: [{ primitive: 'string', label: 'size' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_send_timeout',
+        params: [{ primitive: 'string', label: 'time' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_set_body',
+        params: [{ primitive: 'string', label: 'value' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_set_header',
+        params: [
+            { primitive: 'string', label: 'field' },
+            { primitive: 'string', label: 'value' }
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_socket_keepalive',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_certificate',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_certificate_cache',
+        params: [
+            { primitive: ['off', 'max'], label: 'mode' },
+            { primitive: 'flag', label: 'max', optional: true, subSlot: { primitive: 'number', prefix: '=' } },
+            { primitive: 'flag', label: 'inactive', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'valid', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_certificate_key',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_ciphers',
+        params: [{ primitive: 'string', label: 'ciphers' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_conf_command',
+        params: [
+            { primitive: 'string', label: 'name' },
+            { primitive: 'string', label: 'value' }
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_crl',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_key_log',
+        params: [{ primitive: 'string', label: 'path' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_name',
+        params: [{ primitive: 'string', label: 'name' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_password_file',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_protocols',
+        params: [
+            { primitive: 'flag', label: 'SSLv2', optional: true },
+            { primitive: 'flag', label: 'SSLv3', optional: true },
+            { primitive: 'flag', label: 'TLSv1', optional: true },
+            { primitive: 'flag', label: 'TLSv1.1', optional: true },
+            { primitive: 'flag', label: 'TLSv1.2', optional: true },
+            { primitive: 'flag', label: 'TLSv1.3', optional: true },
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_server_name',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_session_reuse',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_trusted_certificate',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_verify',
+        params: [{ primitive: ['on', 'off'] }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_ssl_verify_depth',
+        params: [{ primitive: 'number' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_store',
+        params: [{ primitive: 'string', label: 'on | off | string' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_store_access',
+        params: [{ primitive: 'string', label: 'users:permissions ...' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_temp_file_write_size',
+        params: [{ primitive: 'string', label: 'size' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'proxy_temp_path',
+        params: [
+            { primitive: 'string', label: 'path' },
+            { primitive: 'number', label: 'level1', optional: true },
+            { primitive: 'number', label: 'level2', optional: true },
+            { primitive: 'number', label: 'level3', optional: true }
+        ],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
     // ngx_http_proxy_protocol_vendor_module
     // ngx_http_random_index_module
     // ngx_http_realip_module
