@@ -29,7 +29,10 @@ export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost
     const httpHostPath: string = path.join(DataPaths.HttpHost, `${httpHostName}.json`);
     await fs.mkdir(path.dirname(httpHostPath), { recursive: true });
     await fs.writeFile(httpHostPath, JSON.stringify(httpHost, null, 2));
-    await SaveHttpHostMetaAsync(httpHostName, { label: httpHostName });
+    await SaveHttpHostMetaAsync(httpHostName, {
+        label: httpHostName,
+        usedSsls: FindSslCertKeys(httpHost)
+    });
 }
 
 export async function DeleteHttpHostAsync(httpHostName: string): Promise<void> {
@@ -88,6 +91,28 @@ async function SaveHttpHostMetaAsync(httpHostName: string, httpHostMeta: Partial
         ...oldData,
         ...httpHostMeta
     }, null, 2));
+}
+
+function FindSslCertKeys(httpHost: HttpHost): string[] {
+    const sslSet: Set<string> = new Set()
+    function walk(blocks: EdgeBlockData[]) {
+        for (const block of blocks) {
+            const [name, ...rest] = block;
+            const directive = EdgeDirectives.find(d => d.key === name);
+            if (!directive) continue;
+            const nonCtxParams = directive.params.filter(p => p.primitive !== 'context');
+            const hasContext = directive.params.some(p => p.primitive === 'context');
+            nonCtxParams.forEach((param, i) => {
+                if (param.primitive === 'ssl' && rest[i]) sslSet.add(String(rest[i]));
+            });
+            if (hasContext) {
+                const children = (rest[nonCtxParams.length] ?? []) as EdgeBlockData[];
+                walk(children);
+            }
+        }
+    }
+    walk(httpHost)
+    return [...sslSet]
 }
 //#endregion
 
