@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Network, Settings, ShieldCheck, PanelLeftClose, PanelLeftOpen, type LucideIcon } from "lucide-react";
+import { Network, Settings, ShieldCheck, Scissors, PanelLeftClose, PanelLeftOpen, type LucideIcon } from "lucide-react";
 
 interface NavLink {
     label: string;
@@ -13,6 +13,7 @@ interface NavLink {
 
 const links: NavLink[] = [
     { label: "Proxies",    href: "/proxies",    icon: Network      },
+    { label: "Snippets",   href: "/snippets",   icon: Scissors     },
     { label: "SSL",        href: "/ssl",        icon: ShieldCheck  },
     { label: "App Config", href: "/app-config", icon: Settings     },
 ];
