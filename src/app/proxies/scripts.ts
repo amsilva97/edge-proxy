@@ -1,28 +1,24 @@
-import {
-    GetHttpHostMetaListAsync,
-    DeleteHttpHostAsync,
-    EnableHttpHostAsync,
-    DisabledHttpHostAsync,
-} from '@/libs/edgeProxy.actions';
-import { HttpHostMeta } from '@/types/types';
+'use client';
+import { EdgeProxy } from "@/libs/edgeProxy";
+import { HttpHostMeta } from "@/types/types";
 
 export async function listProxies(): Promise<HttpHostMeta[]> {
-    return GetHttpHostMetaListAsync();
+    return EdgeProxy.GetHttpHostMetaListAsync();
 }
 
 export async function proxyExists(name: string): Promise<boolean> {
-    const list = await GetHttpHostMetaListAsync();
-    return list.some(p => p.label === name);
+    const meta = await EdgeProxy.GetHttpHostMetaAsync(name);
+    return !!meta.label;
 }
 
 export async function deleteProxy(name: string): Promise<void> {
-    await DeleteHttpHostAsync(name);
+    return EdgeProxy.DeleteHttpHostAsync(name);
 }
 
 export async function enableProxy(name: string): Promise<void> {
-    await EnableHttpHostAsync(name);
+    return EdgeProxy.EnableHttpHostAsync(name);
 }
 
 export async function disableProxy(name: string): Promise<void> {
-    await DisabledHttpHostAsync(name);
+    return EdgeProxy.DisabledHttpHostAsync(name);
 }

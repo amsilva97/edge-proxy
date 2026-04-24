@@ -1,7 +1,8 @@
 import { EdgeBlockData } from '@/libs/edgeDirective';
 
 export enum HttpProxyType {
-    Advanced
+    Advanced,
+    Proxy
 }
 
 /** @deprecated use 'HttpHost' and/or 'HttpHostMeta' */
@@ -12,10 +13,11 @@ export type EdgeProxyHost = {
 
 export type HttpHost = EdgeBlockData[];
 
-export interface HttpHostMeta {
+export type HttpHostMeta = {
     label: string;
     isEnabled: boolean;
-    type: HttpProxyType
+    type: HttpProxyType;
+    usedSsls: string[];
 }
 
 export type SslCertKey = {
@@ -26,5 +28,5 @@ export type SslCertKey = {
 export type SslCertKeyMeta = {
     label: string;
     isEnabled: boolean;
-    usedBy: string[];
+    attachedTo: string[];
 }

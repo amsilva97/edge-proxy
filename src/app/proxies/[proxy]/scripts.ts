@@ -1,46 +1,42 @@
-'use server';
+'use client';
+import { EdgeProxy } from "@/libs/edgeProxy";
+import { HttpHost, HttpHostMeta } from "@/types/types";
+import { EdgeBlockData } from "@/libs/edgeDirective";
 
-import type { EdgeBlockData } from '@/libs/edgeDirective';
-
-export async function loadConfig(proxy: string): Promise<EdgeBlockData[]> {
-    const { GetHttpHostAsync, SaveHttpHostAsync } = await import('@/libs/edgeProxy.actions');
-    try {
-        return await GetHttpHostAsync(proxy);
-    } catch {
-        const config: EdgeBlockData[] = [];
-        await SaveHttpHostAsync(proxy, config);
-        return config;
-    }
+export async function getProxy(name: string): Promise<HttpHost> {
+    return EdgeProxy.GetHttpHostAsync(name);
 }
 
-export async function saveConfig(proxy: string, data: EdgeBlockData[]): Promise<void> {
-    const { SaveHttpHostAsync } = await import('@/libs/edgeProxy.actions');
-    await SaveHttpHostAsync(proxy, data);
+export async function saveProxy(name: string, httpHost: HttpHost): Promise<void> {
+    return EdgeProxy.SaveHttpHostAsync(name, httpHost);
 }
 
-export async function deleteProxy(proxy: string): Promise<void> {
-    const { DeleteHttpHostAsync } = await import('@/libs/edgeProxy.actions');
-    await DeleteHttpHostAsync(proxy);
+export async function getProxyMeta(name: string): Promise<HttpHostMeta> {
+    return EdgeProxy.GetHttpHostMetaAsync(name);
 }
 
-export async function enableProxy(proxy: string): Promise<void> {
-    const { EnableHttpHostAsync } = await import('@/libs/edgeProxy.actions');
-    await EnableHttpHostAsync(proxy);
+export async function isProxyEnabled(name: string): Promise<boolean> {
+    const meta = await EdgeProxy.GetHttpHostMetaAsync(name);
+    return !!meta.isEnabled;
 }
 
-export async function disableProxy(proxy: string): Promise<void> {
-    const { DisabledHttpHostAsync } = await import('@/libs/edgeProxy.actions');
-    await DisabledHttpHostAsync(proxy);
+export async function deleteProxy(name: string): Promise<void> {
+    return EdgeProxy.DeleteHttpHostAsync(name);
 }
 
-export async function isProxyEnabled(proxy: string): Promise<boolean> {
-    const { GetHttpHostMetaAsync } = await import('@/libs/edgeProxy.actions');
-    const meta = await GetHttpHostMetaAsync(proxy);
-    return meta.isEnabled ?? false;
+export async function enableProxy(name: string): Promise<void> {
+    return EdgeProxy.EnableHttpHostAsync(name);
 }
 
-export async function listSslLabels(): Promise<string[]> {
-    const { GetSslCertKeyListAsync } = await import('@/libs/edgeProxy.actions');
-    const certs = await GetSslCertKeyListAsync();
-    return certs.filter(c => c.isEnabled).map(c => c.label);
+export async function disableProxy(name: string): Promise<void> {
+    return EdgeProxy.DisabledHttpHostAsync(name);
+}
+
+export async function listSslCerts(): Promise<string[]> {
+    const certs = await EdgeProxy.GetSslCertKeyListAsync();
+    return certs.map(c => c.label);
+}
+
+export async function previewNginxConfig(blocks: EdgeBlockData[]): Promise<string> {
+    return EdgeProxy.NginxConfigPreview(blocks);
 }

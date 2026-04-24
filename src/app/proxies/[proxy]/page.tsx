@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Block, { BlockData } from '@/components/block';
 import { Nginx } from '@/libs/nginx';
 import { EdgeDirectiveContext } from '@/libs/edgeDirective';
-import { loadConfig, saveConfig, deleteProxy, enableProxy, disableProxy, isProxyEnabled, listSslLabels } from './scripts';
+import { getProxy, saveProxy, deleteProxy, enableProxy, disableProxy, isProxyEnabled, listSslCerts } from './scripts';
 import Toolbar from '@/components/toolbar';
 import Button from '@/components/ui/button';
 import Toggle from '@/components/ui/toggle';
@@ -36,15 +36,15 @@ function ProxyEditor({ proxy }: { proxy: string }) {
     const [sslLabels, setSslLabels] = useState<string[]>([]);
 
     useEffect(() => {
-        loadConfig(proxy).then(setData);
+        getProxy(proxy).then(setData);
         isProxyEnabled(proxy).then(setEnabled);
-        listSslLabels().then(setSslLabels);
+        listSslCerts().then(setSslLabels);
     }, [proxy]);
 
     function handleSave() {
         if (!data) return;
         startTransition(async () => {
-            await saveConfig(proxy, data);
+            await saveProxy(proxy, data);
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
         });
