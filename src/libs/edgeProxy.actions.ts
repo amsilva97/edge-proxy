@@ -272,14 +272,21 @@ export async function GetSnippetAsync(snippetName: string): Promise<Snippet> {
 
 export async function SaveSnippetAsync(snippetName: string, snippet: Snippet): Promise<void> {
     const snippetPath: string = path.join(DataPaths.Snippets, `${snippetName}.json`);
+    const nSnippetPath: string = path.join(NginxPaths.Snippets, snippetName);
+    const nginxConfig = BuildNginxConfig(snippet);
     await fs.mkdir(path.dirname(snippetPath), { recursive: true });
+    await fs.mkdir(path.dirname(nSnippetPath), { recursive: true });
     await fs.writeFile(snippetPath, JSON.stringify(snippet, null, 2));
+    await fs.writeFile(nSnippetPath, JSON.stringify(nginxConfig, null, 2));
+    console.log(nSnippetPath)
     await SaveSnippetMetaAsync(snippetName, { label: snippetName });
 }
 
 export async function DeleteSnippetAsync(snippetName: string): Promise<void> {
     const snippetPath: string = path.join(DataPaths.Snippets, `${snippetName}.json`);
+    const nSnippetPath: string = path.join(NginxPaths.Snippets, `${snippetName}`);
     await fs.rm(snippetPath, { force: true });
+    await fs.rm(nSnippetPath, { force: true });
 }
 
 export async function GetSnippetMetaAsync(snippetName: string): Promise<SnippetMeta> {
@@ -344,10 +351,10 @@ function BuildNginxConfig(blocks: EdgeBlockData[]): string {
                 const slot = nonCtxParams[i];
                 if (slot?.primitive === 'ssl') {
                     const sub = String(v) + (name === 'ssl_certificate_key' ? '.key' : '.cert');
-                    return path.join('/etc/nginx', DataPaths.SslCertKeys, sub);
+                    return path.join(NginxPaths.SslCertKeys, sub);
                 }
                 if (slot?.primitive === 'snippet') {
-                    return path.join('/etc/nginx', NginxPaths.Snippets, String(v));
+                    return path.join(NginxPaths.Snippets, String(v));
                 }
                 const suffix = slot?.suffix ?? slot?.subSlot?.suffix;
                 return suffix ? `${v}${suffix}` : String(v);
