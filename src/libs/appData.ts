@@ -6,16 +6,21 @@ import { NotificationManager, ToastNotificationStatus } from '@/components/notif
 
 /** @deprecated I want to mnove all of this to edgeData */
 export namespace AppData {
+    /** @deprecated I want to mnove all of this to edgeData */
     const ROOT = 'data';
+    /** @deprecated I want to mnove all of this to edgeData */
     const HTTP_PROXY_PATH = path.join(ROOT, 'httpProxies');
+    /** @deprecated I want to mnove all of this to edgeData */
     const SSL_PATH = path.join(ROOT, 'ssl');
 
     //#region Https
+    /** @deprecated I want to mnove all of this to edgeData */
     const defaultHttpProxyMeta: Omit<HttpHostMeta, 'label'> = {
         isEnabled: false,
         type: HttpProxyType.Advanced
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function GetHttpProxyListAsync(): Promise<HttpHostMeta[]> {
         try {
             const files = await FileSystem.ReadDirAsync(HTTP_PROXY_PATH);
@@ -30,6 +35,7 @@ export namespace AppData {
         }
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function CreateHttpProxyAsync(proxy: string, block: HttpHost): Promise<void> {
         const exists = await ExistsHttpProxyAsync(proxy);
         if (exists) {
@@ -50,6 +56,7 @@ export namespace AppData {
         await FileSystem.WriteFileAsync(full_path, JSON.stringify(file, null, 2));
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function SaveHttpProxyAsync(proxy: string, block: HttpHost): Promise<void> {
         const full_path = path.join(HTTP_PROXY_PATH, `${proxy}.json`);
         const raw = await FileSystem.TryReadFileAsync(full_path);
@@ -69,14 +76,17 @@ export namespace AppData {
         return (JSON.parse(raw) as EdgeProxyHost).block;
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function DeleteHttpProxyAsync(proxy: string): Promise<void> {
         await FileSystem.RemoveFileAsync(path.join(HTTP_PROXY_PATH, `${proxy}.json`), { force: true });
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function ExistsHttpProxyAsync(proxy: string): Promise<boolean> {
         return FileSystem.ExistsAsync(path.join(HTTP_PROXY_PATH, `${proxy}.json`));
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function GetHttpProxyMetaAsync(label: string): Promise<HttpHostMeta> {
         const full_path = path.join(HTTP_PROXY_PATH, `${label}.json`);
         const raw = await FileSystem.TryReadFileAsync(full_path);
@@ -88,6 +98,7 @@ export namespace AppData {
         };
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function SaveHttpProxyMetaAsync(label: string, meta: Partial<HttpHostMeta>): Promise<void> {
         const full_path = path.join(HTTP_PROXY_PATH, `${label}.json`);
         const raw = await FileSystem.TryReadFileAsync(full_path);
@@ -111,19 +122,23 @@ export namespace AppData {
     //#endregion
 
     //#region SSL
+    /** @deprecated I want to mnove all of this to edgeData */
     export interface SslMeta {
         label: string;
         isEnabled: boolean;
         usedBy: string; // a delimited seperated list
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     const sslMetaUsedByDelimiter = ';'
 
+    /** @deprecated I want to mnove all of this to edgeData */
     const defaultSslMets: Omit<SslMeta, 'label'> = {
         isEnabled: false,
         usedBy: ''
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function GetSslListAsync(): Promise<SslMeta[]> {
         try {
             const labels = await FileSystem.ReadDirAsync(SSL_PATH);
@@ -135,6 +150,7 @@ export namespace AppData {
         }
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function CreateSslAsync(label: string, cert: string, key: string): Promise<void> {
         const full_path = path.join(SSL_PATH, label)
         const exists = await ExistsSslAsync(label)
@@ -155,16 +171,19 @@ export namespace AppData {
         await SaveSslMetaAsync(label, sslMeta);
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function DeleteSslAsync(label: string): Promise<void> {
         const full_path = path.join(SSL_PATH, label)
         await FileSystem.RemoveFileAsync(full_path, { force: true, recursive: true });
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function ExistsSslAsync(label: string): Promise<boolean> {
         const full_path = path.join(SSL_PATH, label)
         return FileSystem.ExistsAsync(full_path);
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function GetSslCertKeyAsync(label: string): Promise<{ cert: string; key: string }> {
         const full_path = path.join(SSL_PATH, label)
         const cert = await FileSystem.ReadFileAsync(path.join(full_path, 'cert'));
@@ -172,6 +191,7 @@ export namespace AppData {
         return { cert, key };
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function UpdateSslCertKeyAsync(label: string, cert: string, key: string): Promise<void> {
         const full_path = path.join(SSL_PATH, label)
         const exists = await ExistsSslAsync(label)
@@ -186,6 +206,7 @@ export namespace AppData {
         await FileSystem.WriteFileAsync(path.join(full_path, 'key'), key);
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function GetSslMetaAsync(label: string): Promise<SslMeta> {
         const metaPath = path.join(SSL_PATH, label, 'meta.json');
         const raw = await FileSystem.TryReadFileAsync(metaPath);
@@ -197,6 +218,7 @@ export namespace AppData {
         }
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function SaveSslMetaAsync(label: string, sslMeta: Partial<SslMeta>): Promise<void> {
         const metaPath = path.join(SSL_PATH, label, 'meta.json');
         const raw = await FileSystem.TryReadFileAsync(metaPath);
@@ -209,6 +231,7 @@ export namespace AppData {
         }, null, 2));
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function UpdateSslUsedByAsync(proxy: string, data: EdgeBlockData[]): Promise<void> {
         function collectSslLabels(blocks: EdgeBlockData[]): string[] {
             const labels: string[] = [];
@@ -238,6 +261,7 @@ export namespace AppData {
         }
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function RemoveSslUsedByAsync(proxy: string): Promise<void> {
         await UpdateSslUsedByAsync(proxy, []);
     }

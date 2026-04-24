@@ -4,37 +4,48 @@ import * as NginxActions from './nginx.actions';
 import { FileSystem } from './fileSystem'
 import { AppEnv } from './appEnv';
 
+/** @deprecated I want to mnove all of this to edgeData */
 export namespace Nginx {
+    /** @deprecated I want to mnove all of this to edgeData */
     const HTTP_PROXY_PATH = 'sites-enabled'
+    /** @deprecated I want to mnove all of this to edgeData */
     const SSL_PATH = 'ssl'
+    /** @deprecated I want to mnove all of this to edgeData */
     const SSL_CERT_EXTENSION = '.cert'
+    /** @deprecated I want to mnove all of this to edgeData */
     const SSL_KEY_EXTENSION = '.key'
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function ReloadAsync(): Promise<void> {
         await NginxActions.ReloadAction();
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function GetHttpProxyListAsync(): Promise<string[]> {
         const httpProxyPath = path.join(AppEnv.nginxBasePath, HTTP_PROXY_PATH);
         return await FileSystem.ReadDirAsync(httpProxyPath)
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function EnableHttpProxyAsync(proxyName: string, data: EdgeBlockData[]): Promise<void> {
         const httpProxyPath = path.join(AppEnv.nginxBasePath, HTTP_PROXY_PATH, proxyName);
         const nginxConfig = BuildNginxConfig(data);
         await FileSystem.WriteFileAsync(httpProxyPath, nginxConfig);
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function DisableHttpProxyAsync(proxyName: string): Promise<void> {
         const httpProxyPath = path.join(AppEnv.nginxBasePath, HTTP_PROXY_PATH, proxyName);
         await FileSystem.RemoveFileAsync(httpProxyPath, { force: true })
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function IsEnabledHttpProxyAsync(proxyName: string): Promise<boolean> {
         const httpProxyPath = path.join(AppEnv.nginxBasePath, HTTP_PROXY_PATH, proxyName);
         return await FileSystem.ExistsAsync(httpProxyPath)
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function EnableSslAsync(sslName: string, cert: string, key: string): Promise<void> {
         const sslPath = path.join(AppEnv.nginxBasePath, SSL_PATH)
         const sslCertPath = path.join(sslPath, sslName + SSL_CERT_EXTENSION)
@@ -44,11 +55,13 @@ export namespace Nginx {
         await FileSystem.WriteFileAsync(sslKeyPath, key);
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function IsEnabledSslAsync(sslName: string): Promise<boolean> {
         const sslCertPath = path.join(AppEnv.nginxBasePath, SSL_PATH, sslName + SSL_CERT_EXTENSION)
         return FileSystem.ExistsAsync(sslCertPath)
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export async function DisableSslAsync(sslName: string): Promise<void> {
         const sslPath = path.join(AppEnv.nginxBasePath, SSL_PATH)
         const sslCertPath = path.join(sslPath, sslName + SSL_CERT_EXTENSION)
@@ -57,6 +70,7 @@ export namespace Nginx {
         await FileSystem.RemoveFileAsync(sslKeyPath);
     }
 
+    /** @deprecated I want to mnove all of this to edgeData */
     export function BuildNginxConfig(blocks: EdgeBlockData[]): string {
         function _build(block: EdgeBlockData, indent: number): string {
             const [name, ...rest] = block;
