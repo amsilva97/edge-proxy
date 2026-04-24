@@ -98,7 +98,7 @@ export async function GetSslCertKeyAsync(sslCertKeyName: string): Promise<SslCer
 export async function SaveSslCertKeyAsync(sslCertKeyName: string, sslCertKey: SslCertKey): Promise<void> {
     const sslCertKeyPath: string = path.join(DataPaths.SslCertKey, `${sslCertKeyName}.json`);
     await fs.writeFile(sslCertKeyPath, JSON.stringify(sslCertKey, null, 2))
-    await SaveHttpHostMetaAsync(sslCertKeyName, { label: sslCertKeyName })
+    await SaveSslCertKeyMetaAsync(sslCertKeyName, { label: sslCertKeyName })
 }
 
 export async function DeleteSslCertKeyAsync(sslCertKeyName: string): Promise<void> {
@@ -126,8 +126,8 @@ export async function GetSslCertKeyMetaAsync(sslCertKeyName: string): Promise<Ss
     try {
         const sslCertKeyMetaPath: string = path.join(DataPaths.SslCertKey, `${sslCertKeyName}.meta`);
         const sslCertKeyMetaContent: string = await fs.readFile(sslCertKeyMetaPath, 'utf8');
-        const sslCertKey: SslCertKeyMeta = JSON.parse(sslCertKeyMetaContent);
-        return sslCertKey;
+        const sslCertKeyMeta: SslCertKeyMeta = JSON.parse(sslCertKeyMetaContent);
+        return sslCertKeyMeta;
     }
     catch {
         return {} as SslCertKeyMeta
@@ -135,9 +135,9 @@ export async function GetSslCertKeyMetaAsync(sslCertKeyName: string): Promise<Ss
 }
 
 async function SaveSslCertKeyMetaAsync(sslCertKeyName: string, sslCertKeyMeta: Partial<SslCertKeyMeta>): Promise<void> {
-    const httpHostMetaPath: string = path.join(DataPaths.HttpHost, `${sslCertKeyName}.meta`);
+    const sslCertKeyMetaPath: string = path.join(DataPaths.SslCertKey, `${sslCertKeyName}.meta`);
     const oldData = await GetSslCertKeyMetaAsync(sslCertKeyName);
-    await fs.writeFile(httpHostMetaPath, JSON.stringify({
+    await fs.writeFile(sslCertKeyMetaPath, JSON.stringify({
         ...oldData,
         ...sslCertKeyMeta
     }, null, 2))
