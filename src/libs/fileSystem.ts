@@ -1,6 +1,7 @@
 import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
 import * as FilesActions from './fileSystem.actions';
 
+/** @deprecated I want to remove this */
 export namespace FileSystem {
     export async function ReadDirAsync(path: string): Promise<string[]> {
         return await FilesActions.ReadDirAsync(path);

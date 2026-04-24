@@ -4,6 +4,7 @@ import { EdgeProxyBlock, EdgeProxyHost, HttpProxyMeta, HttpProxyType } from '@/t
 import { EdgeBlockData } from '@/libs/edgeDirective';
 import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
 
+/** @deprecated I want to mnove all of this to edgeData */
 export namespace AppData {
     const ROOT = 'data';
     const HTTP_PROXY_PATH = path.join(ROOT, 'httpProxies');
