@@ -1,7 +1,7 @@
 'use server';
 import path from "path";
 import fs from 'fs/promises';
-import { HttpHost, HttpHostMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
+import { HttpHost, HttpHostMeta, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
 import { AppEnv } from "./appEnv";
 import { EdgeBlockData, EdgeDirectives } from "./edgeDirective";
 
@@ -193,6 +193,66 @@ async function SaveSslCertKeyMetaAsync(sslCertKeyName: string, sslCertKeyMeta: P
     }, null, 2));
 }
 //#endregion
+
+//#region Snippets
+export async function GetSnippetMetaListAsync(): Promise<SnippetMeta[]> {
+    try {
+        return await Promise.all(
+            (await fs.readdir(DataPaths.Snippets))
+                .filter((f: string) => f.endsWith('.json'))
+                .map((f: string) => GetSnippetMetaAsync(f.slice(0, -5)))
+        );
+    } catch (err: any) {
+        if (err?.code == 'ENOENT' && err?.path == DataPaths.Snippets) return []
+        throw err
+    }
+}
+
+export async function GetSnippetAsync(snippetName: string): Promise<Snippet> {
+    const snippetPath: string = path.join(DataPaths.Snippets, `${snippetName}.json`);
+    const snippetContent: string = await fs.readFile(snippetPath, 'utf8');
+    const snippet: Snippet = JSON.parse(snippetContent);
+    return snippet;
+}
+
+export async function SaveSnippetAsync(snippetName: string, snippet: Snippet): Promise<void> {
+    const snippetPath: string = path.join(DataPaths.Snippets, `${snippetName}.json`);
+    await fs.mkdir(path.dirname(snippetPath), { recursive: true });
+    await fs.writeFile(snippetPath, JSON.stringify(snippet, null, 2));
+    await SaveSnippetMetaAsync(snippetName, { label: snippetName });
+}
+
+export async function DeleteSnippetAsync(snippetName: string): Promise<void> {
+    const snippetPath: string = path.join(DataPaths.Snippets, `${snippetName}.json`);
+    await fs.rm(snippetPath, { force: true });
+}
+
+export async function GetSnippetMetaAsync(snippetName: string): Promise<SnippetMeta> {
+    const snippetMetaPath: string = path.join(DataPaths.Snippets, `${snippetName}.meta`);
+    const snippetMetaContent: string = await fs.readFile(snippetMetaPath, 'utf8');
+    const snippetMeta: SnippetMeta = JSON.parse(snippetMetaContent);
+    return snippetMeta;
+}
+
+export async function TryGetSnippetMetaAsync(snippetName: string): Promise<SnippetMeta> {
+    try {
+        return await GetSnippetMetaAsync(snippetName)
+    } catch (err: any) {
+        if (err?.code == 'ENOENT') return {} as SnippetMeta
+        throw err
+    }
+}
+
+async function SaveSnippetMetaAsync(snippetName: string, snippetMeta: Partial<SnippetMeta>): Promise<void> {
+    const snippetMetaPath: string = path.join(DataPaths.Snippets, `${snippetName}.meta`);
+    const oldData = await TryGetSnippetMetaAsync(snippetName);
+    await fs.writeFile(snippetMetaPath, JSON.stringify({
+        ...oldData,
+        ...snippetMeta
+    }, null, 2));
+}
+//#endregion
+
 export async function NginxConfigPreview(blocks: EdgeBlockData[]): Promise<string> {
     return BuildNginxConfig(blocks)
 }

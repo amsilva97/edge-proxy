@@ -30,3 +30,10 @@ export type SslCertKeyMeta = {
     isEnabled: boolean;
     attachedTo: string[];
 }
+
+export type Snippet = EdgeBlockData[];
+
+export type SnippetMeta = {
+    label: string;
+    attachedTo: string[];
+}

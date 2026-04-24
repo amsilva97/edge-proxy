@@ -1,7 +1,7 @@
 'use client';
 import * as EdgeProxyActions from './edgeProxy.actions';
 import path from "path";
-import { HttpHost, HttpHostMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
+import { HttpHost, HttpHostMeta, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
 import { AppEnv } from "./appEnv";
 import { EdgeBlockData } from "./edgeDirective";
 
@@ -76,6 +76,28 @@ export namespace EdgeProxy {
 
     export async function GetSslCertKeyMetaAsync(sslCertKeyName: string): Promise<SslCertKeyMeta> {
         return await EdgeProxyActions.GetSslCertKeyMetaAsync(sslCertKeyName);
+    }
+    //#endregion
+
+    //#region Snippets
+    export async function GetSnippetMetaListAsync(): Promise<SnippetMeta[]> {
+        return await EdgeProxyActions.GetSnippetMetaListAsync();
+    }
+
+    export async function GetSnippetAsync(snippetName: string): Promise<Snippet> {
+        return await EdgeProxyActions.GetSnippetAsync(snippetName);
+    }
+
+    export async function SaveSnippetAsync(snippetName: string, snippet: Snippet): Promise<void> {
+        return await EdgeProxyActions.SaveSnippetAsync(snippetName, snippet);
+    }
+
+    export async function DeleteSnippetAsync(snippetName: string): Promise<void> {
+        return await EdgeProxyActions.DeleteSnippetAsync(snippetName);
+    }
+
+    export async function GetSnippetMetaAsync(snippetName: string): Promise<SnippetMeta> {
+        return await EdgeProxyActions.GetSnippetMetaAsync(snippetName);
     }
     //#endregion
 
