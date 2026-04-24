@@ -29,12 +29,26 @@ export async function GetHttpHostAsync(httpHostName: string): Promise<HttpHost> 
 
 export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost): Promise<void> {
     const httpHostPath: string = path.join(DataPaths.HttpHosts, `${httpHostName}.json`);
+    const oldHttpHostMeta = await TryGetHttpHostMetaAsync(httpHostName);
+    const oldUsedSsls = oldHttpHostMeta?.usedSsls
+    const newUsedSsls = FindUsedSsls(httpHost)
+    const oldUsedSnippets = oldHttpHostMeta?.usedSnippets
+    const newUsedSnippets = FindUsedSnippets(httpHost)
+
+    // Save HttpHost
     await fs.mkdir(path.dirname(httpHostPath), { recursive: true });
     await fs.writeFile(httpHostPath, JSON.stringify(httpHost, null, 2));
     await SaveHttpHostMetaAsync(httpHostName, {
         label: httpHostName,
-        usedSsls: FindSslCertKeys(httpHost)
+        usedSsls: newUsedSsls,
+        usedSnippets: newUsedSnippets
     });
+
+    // Update Attachments
+    for (const oldUsedSsl of oldUsedSsls ?? []) await DetachSslCertKeyToHost(oldUsedSsl, httpHostName)
+    for (const newUsedSsl of newUsedSsls) await AttachSslCertKeyToHost(newUsedSsl, httpHostName)
+    for (const oldUsedSnippet of oldUsedSnippets ?? []) await DetachSnippetFromHost(oldUsedSnippet, httpHostName)
+    for (const newUsedSnippet of newUsedSnippets) await AttachSnippetToHost(newUsedSnippet, httpHostName)
 }
 
 export async function DeleteHttpHostAsync(httpHostName: string): Promise<void> {
@@ -95,7 +109,7 @@ async function SaveHttpHostMetaAsync(httpHostName: string, httpHostMeta: Partial
     }, null, 2));
 }
 
-function FindSslCertKeys(httpHost: HttpHost): string[] {
+function FindUsedSsls(httpHost: HttpHost): string[] {
     const sslSet: Set<string> = new Set()
     function walk(blocks: EdgeBlockData[]) {
         for (const block of blocks) {
@@ -116,6 +130,29 @@ function FindSslCertKeys(httpHost: HttpHost): string[] {
     walk(httpHost)
     return [...sslSet]
 }
+
+function FindUsedSnippets(httpHost: HttpHost): string[] {
+    const snippetSet: Set<string> = new Set()
+    function walk(blocks: EdgeBlockData[]) {
+        for (const block of blocks) {
+            const [name, ...rest] = block;
+            const directive = EdgeDirectives.find(d => d.key === name);
+            if (!directive) continue;
+            const nonCtxParams = directive.params.filter(p => p.primitive !== 'context');
+            const hasContext = directive.params.some(p => p.primitive === 'context');
+            nonCtxParams.forEach((param, i) => {
+                if (param.primitive === 'snippet' && rest[i]) snippetSet.add(String(rest[i]));
+            });
+            if (hasContext) {
+                const children = (rest[nonCtxParams.length] ?? []) as EdgeBlockData[];
+                walk(children);
+            }
+        }
+    }
+    walk(httpHost)
+    return [...snippetSet]
+}
+
 //#endregion
 
 //#region SslCertKey
@@ -192,6 +229,24 @@ async function SaveSslCertKeyMetaAsync(sslCertKeyName: string, sslCertKeyMeta: P
         ...sslCertKeyMeta
     }, null, 2));
 }
+
+async function AttachSslCertKeyToHost(sslCertKeyName: string, hostName: string) {
+    const oldMeta = await GetSslCertKeyMetaAsync(sslCertKeyName)
+    const oldAttachments = new Set(oldMeta.attachedTo)
+    oldAttachments.add(hostName)
+    await SaveSslCertKeyMetaAsync(sslCertKeyName, {
+        attachedTo: [...oldAttachments]
+    })
+}
+
+async function DetachSslCertKeyToHost(sslCertKeyName: string, hostName: string) {
+    const oldMeta = await GetSslCertKeyMetaAsync(sslCertKeyName)
+    const oldAttachments = new Set(oldMeta.attachedTo)
+    oldAttachments.delete(hostName)
+    await SaveSslCertKeyMetaAsync(sslCertKeyName, {
+        attachedTo: [...oldAttachments]
+    })
+}
 //#endregion
 
 //#region Snippets
@@ -251,6 +306,24 @@ async function SaveSnippetMetaAsync(snippetName: string, snippetMeta: Partial<Sn
         ...snippetMeta
     }, null, 2));
 }
+
+async function AttachSnippetToHost(snippetName: string, hostName: string) {
+    const oldMeta = await GetSnippetMetaAsync(snippetName)
+    const oldAttachments = new Set(oldMeta.attachedTo)
+    oldAttachments.add(hostName)
+    await SaveSnippetMetaAsync(snippetName, {
+        attachedTo: [...oldAttachments]
+    })
+}
+
+async function DetachSnippetFromHost(snippetName: string, hostName: string) {
+    const oldMeta = await GetSnippetMetaAsync(snippetName)
+    const oldAttachments = new Set(oldMeta.attachedTo)
+    oldAttachments.delete(hostName)
+    await SaveSnippetMetaAsync(snippetName, {
+        attachedTo: [...oldAttachments]
+    })
+}
 //#endregion
 
 export async function NginxConfigPreview(blocks: EdgeBlockData[]): Promise<string> {
@@ -272,6 +345,9 @@ function BuildNginxConfig(blocks: EdgeBlockData[]): string {
                 if (slot?.primitive === 'ssl') {
                     const sub = String(v) + (name === 'ssl_certificate_key' ? '.key' : '.cert');
                     return path.join('/etc/nginx', DataPaths.SslCertKeys, sub);
+                }
+                if (slot?.primitive === 'snippet') {
+                    return path.join('/etc/nginx', NginxPaths.Snippets, String(v));
                 }
                 const suffix = slot?.suffix ?? slot?.subSlot?.suffix;
                 return suffix ? `${v}${suffix}` : String(v);

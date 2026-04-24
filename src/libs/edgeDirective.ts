@@ -4,8 +4,9 @@ export type EdgePrimitive =
     | 'string' // a simple string value
     | 'number' // a simple number value
     | 'flag'   // keyword flag — present (checked) or absent, no value
-    // Non-directive primitive
+    // Non-directive primitives
     | 'ssl' // will use the apps saved ssl
+    | 'snippet' // will use the apps saved snippets
 
 export type EdgeSlot = {
     primitive: EdgePrimitive;
@@ -83,7 +84,7 @@ export const EdgeDirectives: EdgeDirective[] = [
     },
     {
         key: 'include',
-        params: [{ primitive: 'string', label: 'file | mask' }],
+        params: [{ primitive: 'snippet' }],
         context: EdgeDirectiveContext.any
     },
     {

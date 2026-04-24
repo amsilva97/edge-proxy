@@ -18,9 +18,11 @@ export type HttpHostMeta = {
     isEnabled: boolean;
     type: HttpProxyType;
     usedSsls: string[];
+    usedSnippets: string[];
 }
 
 export type SslCertKey = {
+    label: string;
     cert: string;
     key: string;
 }
