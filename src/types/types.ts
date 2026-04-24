@@ -5,12 +5,6 @@ export enum HttpProxyType {
     Proxy
 }
 
-/** @deprecated use 'HttpHost' and/or 'HttpHostMeta' */
-export type EdgeProxyHost = {
-    block: HttpHost,
-    meta: HttpHostMeta
-}
-
 export type HttpHost = EdgeBlockData[];
 
 export type HttpHostMeta = {
