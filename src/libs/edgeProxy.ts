@@ -21,65 +21,65 @@ export namespace EdgeProxy {
 
     //#region HttpHost
     export async function GetHttpHostAsync(httpHostName: string): Promise<HttpHost> {
-        return await EdgeProxyActions.GetHttpHostAsync(httpHostName)
+        return await EdgeProxyActions.GetHttpHostAsync(httpHostName);
     }
 
     export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost): Promise<void> {
-        return await EdgeProxyActions.SaveHttpHostAsync(httpHostName, httpHost)
+        return await EdgeProxyActions.SaveHttpHostAsync(httpHostName, httpHost);
     }
 
     export async function DeleteHttpHostAsync(httpHostName: string): Promise<void> {
-        return await EdgeProxyActions.DeleteHttpHostAsync(httpHostName)
+        return await EdgeProxyActions.DeleteHttpHostAsync(httpHostName);
     }
 
     export async function EnableHttpHostAsync(httpHostName: string): Promise<void> {
-        return await EdgeProxyActions.EnableHttpHostAsync(httpHostName)
+        return await EdgeProxyActions.EnableHttpHostAsync(httpHostName);
     }
 
     export async function DisabledHttpHostAsync(httpHostName: string): Promise<void> {
-        return await EdgeProxyActions.DisabledHttpHostAsync(httpHostName)
+        return await EdgeProxyActions.DisabledHttpHostAsync(httpHostName);
     }
 
     export async function GetHttpHostMetaListAsync(): Promise<HttpHostMeta[]> {
-        return await EdgeProxyActions.GetHttpHostMetaListAsync()
+        return await EdgeProxyActions.GetHttpHostMetaListAsync();
     }
 
     export async function GetHttpHostMetaAsync(httpHostName: string): Promise<HttpHostMeta> {
-        return await EdgeProxyActions.GetHttpHostMetaAsync(httpHostName)
+        return await EdgeProxyActions.GetHttpHostMetaAsync(httpHostName);
     }
     //#endregion
 
     //#region SslCertKey
     export async function GetSslCertKeyListAsync(): Promise<SslCertKeyMeta[]> {
-        return await EdgeProxyActions.GetSslCertKeyListAsync()
+        return await EdgeProxyActions.GetSslCertKeyMetaListAsync();
     }
 
     export async function GetSslCertKeyAsync(sslCertKeyName: string): Promise<SslCertKey> {
-        return await EdgeProxyActions.GetSslCertKeyAsync(sslCertKeyName)
+        return await EdgeProxyActions.GetSslCertKeyAsync(sslCertKeyName);
     }
 
     export async function SaveSslCertKeyAsync(sslCertKeyName: string, sslCertKey: SslCertKey): Promise<void> {
-        return await EdgeProxyActions.SaveSslCertKeyAsync(sslCertKeyName, sslCertKey)
+        return await EdgeProxyActions.SaveSslCertKeyAsync(sslCertKeyName, sslCertKey);
     }
 
     export async function DeleteSslCertKeyAsync(sslCertKeyName: string): Promise<void> {
-        return await EdgeProxyActions.DeleteSslCertKeyAsync(sslCertKeyName)
+        return await EdgeProxyActions.DeleteSslCertKeyAsync(sslCertKeyName);
     }
 
     export async function EnableSslCertKeyAsync(sslCertKeyName: string): Promise<void> {
-        return await EdgeProxyActions.EnableSslCertKeyAsync(sslCertKeyName)
+        return await EdgeProxyActions.EnableSslCertKeyAsync(sslCertKeyName);
     }
 
     export async function DisabledSslCertKeyAsync(sslCertKeyName: string): Promise<void> {
-        return await EdgeProxyActions.DisabledSslCertKeyAsync(sslCertKeyName)
+        return await EdgeProxyActions.DisabledSslCertKeyAsync(sslCertKeyName);
     }
 
     export async function GetSslCertKeyMetaAsync(sslCertKeyName: string): Promise<SslCertKeyMeta> {
-        return await EdgeProxyActions.GetSslCertKeyMetaAsync(sslCertKeyName)
+        return await EdgeProxyActions.GetSslCertKeyMetaAsync(sslCertKeyName);
     }
     //#endregion
 
     export async function NginxConfigPreview(blocks: EdgeBlockData[]): Promise<string> {
-        return await EdgeProxyActions.NginxConfigPreview(blocks)
+        return await EdgeProxyActions.NginxConfigPreview(blocks);
     }
 }

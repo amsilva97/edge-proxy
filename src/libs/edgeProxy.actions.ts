@@ -59,26 +59,31 @@ export async function GetHttpHostMetaListAsync(): Promise<HttpHostMeta[]> {
                 .filter((f: string) => f.endsWith('.json'))
                 .map((f: string) => GetHttpHostMetaAsync(f.slice(0, -5)))
         );
-    } catch {
-        return [];
+    } catch (err: any) {
+        if (err?.code == 'ENOENT' && err?.path == DataPaths.HttpHost) return []
+        throw err
     }
 }
 
 export async function GetHttpHostMetaAsync(httpHostName: string): Promise<HttpHostMeta> {
+    const httpHostMetaPath: string = path.join(DataPaths.HttpHost, `${httpHostName}.meta`);
+    const httpHostMetaContent: string = await fs.readFile(httpHostMetaPath, 'utf8');
+    const httpHostMeta: HttpHostMeta = JSON.parse(httpHostMetaContent);
+    return httpHostMeta;
+}
+
+export async function TryGetHttpHostMetaAsync(httpHostName: string): Promise<HttpHostMeta> {
     try {
-        const httpHostMetaPath: string = path.join(DataPaths.HttpHost, `${httpHostName}.meta`);
-        const httpHostMetaContent: string = await fs.readFile(httpHostMetaPath, 'utf8');
-        const httpHostMeta: HttpHostMeta = JSON.parse(httpHostMetaContent);
-        return httpHostMeta;
-    }
-    catch {
-        return {} as HttpHostMeta;
+        return await GetHttpHostMetaAsync(httpHostName)
+    } catch (err: any) {
+        if (err?.code == 'ENOENT') return {} as HttpHostMeta
+        throw err
     }
 }
 
 async function SaveHttpHostMetaAsync(httpHostName: string, httpHostMeta: Partial<HttpHostMeta>): Promise<void> {
     const httpHostMetaPath: string = path.join(DataPaths.HttpHost, `${httpHostName}.meta`);
-    const oldData = await GetHttpHostMetaAsync(httpHostName);
+    const oldData = await TryGetHttpHostMetaAsync(httpHostName);
     await fs.writeFile(httpHostMetaPath, JSON.stringify({
         ...oldData,
         ...httpHostMeta
@@ -87,12 +92,17 @@ async function SaveHttpHostMetaAsync(httpHostName: string, httpHostMeta: Partial
 //#endregion
 
 //#region SslCertKey
-export async function GetSslCertKeyListAsync(): Promise<SslCertKeyMeta[]> {
-    return await Promise.all(
-        (await fs.readdir(DataPaths.SslCertKey))
-            .filter((f: string) => f.endsWith('.json'))
-            .map((f: string) => GetSslCertKeyMetaAsync(f.slice(0, -5)))
-    );
+export async function GetSslCertKeyMetaListAsync(): Promise<SslCertKeyMeta[]> {
+    try {
+        return await Promise.all(
+            (await fs.readdir(DataPaths.SslCertKey))
+                .filter((f: string) => f.endsWith('.json'))
+                .map((f: string) => GetSslCertKeyMetaAsync(f.slice(0, -5)))
+        );
+    } catch (err: any) {
+        if (err?.code == 'ENOENT' && err?.path == DataPaths.SslCertKey) return []
+        throw err
+    }
 }
 
 export async function GetSslCertKeyAsync(sslCertKeyName: string): Promise<SslCertKey> {
@@ -130,15 +140,10 @@ export async function DisabledSslCertKeyAsync(sslCertKeyName: string): Promise<v
 }
 
 export async function GetSslCertKeyMetaAsync(sslCertKeyName: string): Promise<SslCertKeyMeta> {
-    try {
-        const sslCertKeyMetaPath: string = path.join(DataPaths.SslCertKey, `${sslCertKeyName}.meta`);
-        const sslCertKeyMetaContent: string = await fs.readFile(sslCertKeyMetaPath, 'utf8');
-        const sslCertKeyMeta: SslCertKeyMeta = JSON.parse(sslCertKeyMetaContent);
-        return sslCertKeyMeta;
-    }
-    catch {
-        return {} as SslCertKeyMeta
-    }
+    const sslCertKeyMetaPath: string = path.join(DataPaths.SslCertKey, `${sslCertKeyName}.meta`);
+    const sslCertKeyMetaContent: string = await fs.readFile(sslCertKeyMetaPath, 'utf8');
+    const sslCertKeyMeta: SslCertKeyMeta = JSON.parse(sslCertKeyMetaContent);
+    return sslCertKeyMeta;
 }
 
 async function SaveSslCertKeyMetaAsync(sslCertKeyName: string, sslCertKeyMeta: Partial<SslCertKeyMeta>): Promise<void> {
@@ -150,7 +155,6 @@ async function SaveSslCertKeyMetaAsync(sslCertKeyName: string, sslCertKeyMeta: P
     }, null, 2));
 }
 //#endregion
-
 export async function NginxConfigPreview(blocks: EdgeBlockData[]): Promise<string> {
     return BuildNginxConfig(blocks)
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { listProxies, deleteProxy, proxyExists, enableProxy, disableProxy } from './scripts';
+import { listProxies, deleteProxy, proxyExists, createProxy, enableProxy, disableProxy } from './scripts';
 import { HttpHostMeta } from '@/types/types';
 import Toggle from '@/components/ui/toggle';
 import Toolbar from '@/components/toolbar';
@@ -34,6 +34,7 @@ function NewProxyDialog({ open, onClose }: { open: boolean; onClose: () => void 
             setError('A proxy with that name already exists');
             return;
         }
+        await createProxy(slug);
         router.push(`/proxies/${slug}`);
     }
 

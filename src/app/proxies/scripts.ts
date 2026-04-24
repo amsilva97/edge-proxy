@@ -1,14 +1,22 @@
 'use client';
 import { EdgeProxy } from "@/libs/edgeProxy";
-import { HttpHostMeta } from "@/types/types";
+import { HttpHost, HttpHostMeta } from "@/types/types";
+
+export async function createProxy(name: string): Promise<void> {
+    return EdgeProxy.SaveHttpHostAsync(name, [] as HttpHost);
+}
 
 export async function listProxies(): Promise<HttpHostMeta[]> {
     return EdgeProxy.GetHttpHostMetaListAsync();
 }
 
 export async function proxyExists(name: string): Promise<boolean> {
-    const meta = await EdgeProxy.GetHttpHostMetaAsync(name);
-    return !!meta.label;
+    try {
+        const meta = await EdgeProxy.GetHttpHostMetaAsync(name);
+        return !!meta.label;
+    } catch {
+        return false;
+    }
 }
 
 export async function deleteProxy(name: string): Promise<void> {
