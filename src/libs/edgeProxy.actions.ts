@@ -1,7 +1,7 @@
 'use server';
 import path from "path";
 import fs from 'fs/promises';
-import { EdgeProxyHost, SslCertKey } from "@/types/types";
+import { EdgeProxyHost, HttpHost, HttpHostMeta, SslCertKey } from "@/types/types";
 import { AppEnv } from "./appEnv";
 import { EdgeBlockData, EdgeDirectives } from "./edgeDirective";
 
@@ -18,42 +18,64 @@ namespace NginxPaths {
 }
 
 //#region HttpHost
-export async function GetHttpHostListAsync(): Promise<EdgeProxyHost[]> {
-    return await Promise.all(
-        (await fs.readdir(DataPaths.HttpHost))
-            .filter((f: string) => f.endsWith('.json'))
-            .map((f: string) => GetHttpHostAsync(f.slice(0, -5)))
-    )
-}
-
-export async function GetHttpHostAsync(httpHostName: string): Promise<EdgeProxyHost> {
+export async function GetHttpHostAsync(httpHostName: string): Promise<HttpHost> {
     const httpHostPath: string = path.join(DataPaths.HttpHost, `${httpHostName}.json`);
     const httpHostContent: string = await fs.readFile(httpHostPath, 'utf8');
-    const httpHost: EdgeProxyHost = JSON.parse(httpHostContent);
+    const httpHost: HttpHost = JSON.parse(httpHostContent);
     return httpHost;
 }
 
-export async function SaveHttpHostAsync(httpHost: EdgeProxyHost): Promise<void> {
-    const httpHostPath: string = path.join(DataPaths.HttpHost, `${httpHost.meta.label}.json`);
+export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost): Promise<void> {
+    const httpHostPath: string = path.join(DataPaths.HttpHost, `${httpHostName}.json`);
     await fs.writeFile(httpHostPath, JSON.stringify(httpHost, null, 2))
+    await SaveHttpHostMetaAsync(httpHostName, { label: httpHostName })
 }
 
 export async function DeleteHttpHostAsync(httpHostName: string): Promise<void> {
     const httpHostPath: string = path.join(DataPaths.HttpHost, `${httpHostName}.json`);
-    DisabledHttpHostAsync(httpHostName)
+    await DisabledHttpHostAsync(httpHostName)
     await fs.rm(httpHostPath)
 }
 
 export async function EnableHttpHostAsync(httpHostName: string): Promise<void> {
-    const httpHost: EdgeProxyHost = await GetHttpHostAsync(httpHostName)
+    const httpHost: HttpHost = await GetHttpHostAsync(httpHostName)
     const nHttpHostPath: string = path.join(NginxPaths.EnabledHttpHost, httpHostName)
-    const nginxConfig = BuildNginxConfig(httpHost.block);
+    const nginxConfig = BuildNginxConfig(httpHost);
     await fs.writeFile(nHttpHostPath, JSON.stringify(nginxConfig, null, 2));
 }
 
 export async function DisabledHttpHostAsync(httpHostName: string): Promise<void> {
     const nHttpHostPath: string = path.join(NginxPaths.EnabledHttpHost, httpHostName)
     await fs.rm(nHttpHostPath)
+}
+
+export async function GetHttpHostMetaListAsync(): Promise<HttpHostMeta[]> {
+    return await Promise.all(
+        (await fs.readdir(DataPaths.HttpHost))
+            .filter((f: string) => f.endsWith('.json'))
+            .map((f: string) => GetHttpHostMetaAsync(f.slice(0, -5)))
+    )
+}
+
+export async function GetHttpHostMetaAsync(httpHostName: string): Promise<HttpHostMeta> {
+    try {
+        const httpHostMetaPath: string = path.join(DataPaths.HttpHost, `${httpHostName}.meta`);
+        const httpHostMetaContent: string = await fs.readFile(httpHostMetaPath, 'utf8');
+        const httpHostMeta: HttpHostMeta = JSON.parse(httpHostMetaContent);
+        return httpHostMeta;
+    }
+    catch {
+        return {} as HttpHostMeta
+    }
+}
+
+async function SaveHttpHostMetaAsync(httpHostName: string, httpHostMeta: Partial<HttpHostMeta>): Promise<void> {
+    const httpHostMetaPath: string = path.join(DataPaths.HttpHost, `${httpHostName}.meta`);
+    const oldData = await GetHttpHostMetaAsync(httpHostName);
+    await fs.writeFile(httpHostMetaPath, JSON.stringify({
+        ...oldData,
+        ...httpHostMeta
+    }, null, 2))
 }
 //#endregion
 

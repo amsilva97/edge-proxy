@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { listProxies, deleteProxy, proxyExists, enableProxy, disableProxy } from './scripts';
-import { HttpProxyMeta } from '@/types/types';
+import { HttpHostMeta } from '@/types/types';
 import Toggle from '@/components/ui/toggle';
 import Toolbar from '@/components/toolbar';
 import Button from '@/components/ui/button';
@@ -66,7 +66,7 @@ function NewProxyDialog({ open, onClose }: { open: boolean; onClose: () => void 
 }
 
 export default function ProxiesPage() {
-    const [proxies, setProxies] = useState<HttpProxyMeta[] | null>(null);
+    const [proxies, setProxies] = useState<HttpHostMeta[] | null>(null);
     const [toggling, setToggling] = useState<Record<string, boolean>>({});
     const [creating, setCreating] = useState(false);
     const [deletingProxy, setDeletingProxy] = useState<string | null>(null);

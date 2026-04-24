@@ -1,6 +1,6 @@
 import path from 'path';
 import { FileSystem } from './fileSystem'
-import { EdgeProxyBlock, EdgeProxyHost, HttpProxyMeta, HttpProxyType } from '@/types/types';
+import { HttpHost, EdgeProxyHost, HttpHostMeta, HttpProxyType } from '@/types/types';
 import { EdgeBlockData } from '@/libs/edgeDirective';
 import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
 
@@ -11,12 +11,12 @@ export namespace AppData {
     const SSL_PATH = path.join(ROOT, 'ssl');
 
     //#region Https
-    const defaultHttpProxyMeta: Omit<HttpProxyMeta, 'label'> = {
+    const defaultHttpProxyMeta: Omit<HttpHostMeta, 'label'> = {
         isEnabled: false,
         type: HttpProxyType.Advanced
     }
 
-    export async function GetHttpProxyListAsync(): Promise<HttpProxyMeta[]> {
+    export async function GetHttpProxyListAsync(): Promise<HttpHostMeta[]> {
         try {
             const files = await FileSystem.ReadDirAsync(HTTP_PROXY_PATH);
             const labels = files
@@ -30,7 +30,7 @@ export namespace AppData {
         }
     }
 
-    export async function CreateHttpProxyAsync(proxy: string, block: EdgeProxyBlock): Promise<void> {
+    export async function CreateHttpProxyAsync(proxy: string, block: HttpHost): Promise<void> {
         const exists = await ExistsHttpProxyAsync(proxy);
         if (exists) {
             NotificationManager.addToast(
@@ -50,7 +50,7 @@ export namespace AppData {
         await FileSystem.WriteFileAsync(full_path, JSON.stringify(file, null, 2));
     }
 
-    export async function SaveHttpProxyAsync(proxy: string, block: EdgeProxyBlock): Promise<void> {
+    export async function SaveHttpProxyAsync(proxy: string, block: HttpHost): Promise<void> {
         const full_path = path.join(HTTP_PROXY_PATH, `${proxy}.json`);
         const raw = await FileSystem.TryReadFileAsync(full_path);
         const existing: EdgeProxyHost = raw ? JSON.parse(raw) : {
@@ -63,7 +63,7 @@ export namespace AppData {
         await FileSystem.WriteFileAsync(full_path, JSON.stringify({ ...existing, block }, null, 2));
     }
 
-    export async function LoadHttpProxyAsync(proxy: string): Promise<EdgeProxyBlock> {
+    export async function LoadHttpProxyAsync(proxy: string): Promise<HttpHost> {
         const full_path = path.join(HTTP_PROXY_PATH, `${proxy}.json`);
         const raw = await FileSystem.ReadFileAsync(full_path);
         return (JSON.parse(raw) as EdgeProxyHost).block;
@@ -77,7 +77,7 @@ export namespace AppData {
         return FileSystem.ExistsAsync(path.join(HTTP_PROXY_PATH, `${proxy}.json`));
     }
 
-    export async function GetHttpProxyMetaAsync(label: string): Promise<HttpProxyMeta> {
+    export async function GetHttpProxyMetaAsync(label: string): Promise<HttpHostMeta> {
         const full_path = path.join(HTTP_PROXY_PATH, `${label}.json`);
         const raw = await FileSystem.TryReadFileAsync(full_path);
         const file: Partial<EdgeProxyHost> = raw ? JSON.parse(raw) : {};
@@ -88,7 +88,7 @@ export namespace AppData {
         };
     }
 
-    export async function SaveHttpProxyMetaAsync(label: string, meta: Partial<HttpProxyMeta>): Promise<void> {
+    export async function SaveHttpProxyMetaAsync(label: string, meta: Partial<HttpHostMeta>): Promise<void> {
         const full_path = path.join(HTTP_PROXY_PATH, `${label}.json`);
         const raw = await FileSystem.TryReadFileAsync(full_path);
         const existing: Partial<EdgeProxyHost> = raw ? JSON.parse(raw) : {

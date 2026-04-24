@@ -1,9 +1,9 @@
 import { AppData } from "@/libs/appData";
 import { Nginx } from "@/libs/nginx";
 import { EdgeBlockData } from "@/libs/edgeDirective";
-import { HttpProxyMeta } from "@/types/types";
+import { HttpHostMeta } from "@/types/types";
 
-export async function listProxies(): Promise<HttpProxyMeta[]> {
+export async function listProxies(): Promise<HttpHostMeta[]> {
     return AppData.GetHttpProxyListAsync();
 }
 
