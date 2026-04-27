@@ -11,6 +11,7 @@ import Table from '@/components/ui/table';
 import Dialog from '@/components/dialog';
 import { Pencil, Trash2 } from 'lucide-react';
 import RowMenu from '@/components/ui/row-menu';
+import Chip from '@/components/ui/chip';
 
 function NewSnippetDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
     const [name, setName] = useState('');
@@ -110,12 +111,11 @@ export default function SnippetsPage() {
                             { key: 'label', label: 'Name' },
                             {
                                 key: 'attachedTo',
-                                label: 'Used By',
-                                render: (val: string[]) => (
-                                    <span className="text-sm text-zinc-500">
-                                        {val.length === 0 ? '—' : val.join(', ')}
-                                    </span>
-                                ),
+                                label: 'In Use',
+                                width: '1px',
+                                render: (_val, row) => row.attachedTo?.length
+                                    ? <Chip label="Used" color="brand" variant="solid" />
+                                    : <Chip label="Unused" color="zinc" variant="outline" />,
                             },
                         ]}
                         data={snippets}
