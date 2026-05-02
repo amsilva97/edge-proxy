@@ -120,9 +120,17 @@ export default function RolesPage() {
                             {
                                 key: 'inheritedBy',
                                 label: 'Inherited By',
-                                render: (_val, row) => row.inheritedBy.length > 0
+                                render: (_val, row) => (row.inheritedBy?.length ?? 0) > 0
                                     ? <Chip label={String(row.inheritedBy.length)} color="brand" />
                                     : <span className="text-zinc-400">—</span>,
+                            },
+                            {
+                                key: 'attachedTo',
+                                label: 'In Use',
+                                width: '1px',
+                                render: (_val, row) => row.attachedTo?.length
+                                    ? <Chip label="Used" color="brand" variant="solid" />
+                                    : <Chip label="Unused" color="zinc" variant="outline" />,
                             },
                         ]}
                         data={roles}

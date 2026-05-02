@@ -51,7 +51,7 @@ function GrantRoleDialog({ open, onClose, role, allRoles, onGrant, onRevoke, bus
                     {filtered.length === 0 ? (
                         <p className="text-sm text-zinc-500 py-3 text-center">No roles found.</p>
                     ) : filtered.map(r => {
-                        const granted = r.inheritedBy.includes(role.name);
+                        const granted = r.inheritedBy?.includes(role.name) ?? false;
                         return (
                             <div key={r.name} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
                                 <div className="flex items-center gap-2">
@@ -130,7 +130,7 @@ export default function RoleDetailPage() {
         <div className="flex items-center justify-center h-32 text-sm text-zinc-500">Loading…</div>
     );
 
-    const grantedRoles = allRoles.filter(r => r.inheritedBy.includes(role.name));
+    const grantedRoles = allRoles.filter(r => r.inheritedBy?.includes(role.name));
 
     return (
         <div className="flex flex-col h-full bg-zinc-50 text-zinc-900">
