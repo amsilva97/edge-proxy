@@ -4,8 +4,7 @@ import fs from 'fs/promises';
 import bcrypt from 'bcryptjs';
 import { HttpHost, HttpHostMeta, HttpProxyType, Role, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
 import { AppEnv } from "./appEnv";
-import { EdgeBlockData, EdgeDirectives } from "./edgeDirective";
-import { hostname } from "os";
+import { EdgeBlockData, EdgeDirectives, EdgePrimitive } from "./edgeDirective";
 
 namespace DataPaths {
     const Root = 'data';
@@ -34,10 +33,12 @@ export async function GetHttpHostAsync(httpHostName: string): Promise<HttpHost> 
 export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost): Promise<void> {
     const httpHostPath: string = path.join(DataPaths.HttpHosts, `${httpHostName}.json`);
     const oldHttpHostMeta = await TryGetHttpHostMetaAsync(httpHostName);
-    const oldUsedSsls = oldHttpHostMeta?.usedSsls
-    const newUsedSsls = FindUsedSsls(httpHost)
-    const oldUsedSnippets = oldHttpHostMeta?.usedSnippets
-    const newUsedSnippets = FindUsedSnippets(httpHost)
+    const oldUsedSsls = oldHttpHostMeta?.usedSsls ?? []
+    const newUsedSsls = FindUsedDirectiveValues(httpHost, 'ssl')
+    const oldUsedSnippets = oldHttpHostMeta?.usedSnippets ?? []
+    const newUsedSnippets = FindUsedDirectiveValues(httpHost, 'snippet')
+    const oldRoles = oldHttpHostMeta?.usedRoles ?? []
+    const newRoles = FindUsedDirectiveValues(httpHost, 'role')
 
     // Save HttpHost
     await fs.mkdir(path.dirname(httpHostPath), { recursive: true });
@@ -46,6 +47,7 @@ export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost
         label: httpHostName,
         usedSsls: newUsedSsls,
         usedSnippets: newUsedSnippets,
+        usedRoles: newRoles
         // type: // We dont set this because it will override previous type
     });
 
@@ -55,10 +57,12 @@ export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost
     }
 
     // Update Attachments
-    for (const oldUsedSsl of oldUsedSsls ?? []) await DetachSslCertKeyToHost(oldUsedSsl, httpHostName)
+    for (const oldUsedSsl of oldUsedSsls) await DetachSslCertKeyToHost(oldUsedSsl, httpHostName)
     for (const newUsedSsl of newUsedSsls) await AttachSslCertKeyToHost(newUsedSsl, httpHostName)
-    for (const oldUsedSnippet of oldUsedSnippets ?? []) await DetachSnippetFromHost(oldUsedSnippet, httpHostName)
+    for (const oldUsedSnippet of oldUsedSnippets) await DetachSnippetFromHost(oldUsedSnippet, httpHostName)
     for (const newUsedSnippet of newUsedSnippets) await AttachSnippetToHost(newUsedSnippet, httpHostName)
+    for (const oldRole of oldRoles) await DetachRoleFromHost(oldRole, httpHostName)
+    for (const newRole of newRoles) await AttachRoleToHost(newRole, httpHostName)
 }
 
 export async function DeleteHttpHostAsync(httpHostName: string): Promise<void> {
@@ -119,8 +123,8 @@ async function SaveHttpHostMetaAsync(httpHostName: string, httpHostMeta: Partial
     }, null, 2));
 }
 
-function FindUsedSsls(httpHost: HttpHost): string[] {
-    const sslSet: Set<string> = new Set()
+function FindUsedDirectiveValues(httpHost: HttpHost, primitiveKey: EdgePrimitive): string[] {
+    const values: Set<string> = new Set()
     function walk(blocks: EdgeBlockData[]) {
         for (const block of blocks) {
             const [name, ...rest] = block;
@@ -129,7 +133,7 @@ function FindUsedSsls(httpHost: HttpHost): string[] {
             const nonCtxParams = directive.params.filter(p => p.primitive !== 'context');
             const hasContext = directive.params.some(p => p.primitive === 'context');
             nonCtxParams.forEach((param, i) => {
-                if (param.primitive === 'ssl' && rest[i]) sslSet.add(String(rest[i]));
+                if (param.primitive === primitiveKey && rest[i]) values.add(String(rest[i]));
             });
             if (hasContext) {
                 const children = (rest[nonCtxParams.length] ?? []) as EdgeBlockData[];
@@ -138,29 +142,7 @@ function FindUsedSsls(httpHost: HttpHost): string[] {
         }
     }
     walk(httpHost)
-    return [...sslSet]
-}
-
-function FindUsedSnippets(httpHost: HttpHost): string[] {
-    const snippetSet: Set<string> = new Set()
-    function walk(blocks: EdgeBlockData[]) {
-        for (const block of blocks) {
-            const [name, ...rest] = block;
-            const directive = EdgeDirectives.find(d => d.key === name);
-            if (!directive) continue;
-            const nonCtxParams = directive.params.filter(p => p.primitive !== 'context');
-            const hasContext = directive.params.some(p => p.primitive === 'context');
-            nonCtxParams.forEach((param, i) => {
-                if (param.primitive === 'snippet' && rest[i]) snippetSet.add(String(rest[i]));
-            });
-            if (hasContext) {
-                const children = (rest[nonCtxParams.length] ?? []) as EdgeBlockData[];
-                walk(children);
-            }
-        }
-    }
-    walk(httpHost)
-    return [...snippetSet]
+    return [...values]
 }
 
 //#endregion
@@ -409,7 +391,7 @@ export async function SaveRoleAsync(role: Role): Promise<void> {
     const roleMap = new Map(allRoles.map(r => [r.name, r]));
 
     const toUpdate = bfsRoles(role.name, name =>
-        allRoles.filter(r => r.inheritedBy.includes(name)).map(r => r.name)
+        allRoles.filter(r => r.inheritedBy?.includes(name)).map(r => r.name)
     );
 
     await Promise.all([...toUpdate].map(name => WriteRoleHtpasswdAsync(roleMap.get(name)!, roleMap)));
@@ -454,17 +436,33 @@ export async function ClearRolePasswordAsync(role: Role): Promise<void> {
 }
 
 export async function GrantRoleAsync(role: Role, roleToGrant: Role): Promise<void> {
-    const inherits: Set<string> = new Set<string>(roleToGrant.inheritedBy)
+    const inherits: Set<string> = new Set<string>(roleToGrant.inheritedBy ?? [])
     inherits.add(role.name)
     roleToGrant.inheritedBy = [...inherits]
     await SaveRoleAsync(roleToGrant)
 }
 
 export async function RevokeRoleAsync(role: Role, roleToRevoke: Role): Promise<void> {
-    const inherits: Set<string> = new Set<string>(roleToRevoke.inheritedBy)
+    const inherits: Set<string> = new Set<string>(roleToRevoke.inheritedBy ?? [])
     inherits.delete(role.name)
     roleToRevoke.inheritedBy = [...inherits]
     await SaveRoleAsync(roleToRevoke)
+}
+
+async function AttachRoleToHost(roleName: string, hostName: string) {
+    const role = await GetRoleAsync(roleName)
+    const oldAttachments = new Set(role.attachedTo)
+    oldAttachments.add(hostName)
+    role.attachedTo = [...oldAttachments]
+    await SaveRoleAsync(role)
+}
+
+async function DetachRoleFromHost(roleName: string, hostName: string) {
+    const role = await GetRoleAsync(roleName)
+    const oldAttachments = new Set(role.attachedTo)
+    oldAttachments.delete(hostName)
+    role.attachedTo = [...oldAttachments]
+    await SaveRoleAsync(role)
 }
 //#endregion
 

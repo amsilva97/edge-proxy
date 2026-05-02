@@ -14,6 +14,7 @@ export type HttpHostMeta = {
     type: HttpProxyType;
     usedSsls: string[];
     usedSnippets: string[];
+    usedRoles: string[];
     quickSetup: Record<string, string | null>
 }
 
@@ -39,5 +40,6 @@ export type SnippetMeta = {
 export type Role = {
     name: string;
     pass: string | null;
-    inheritedBy: string[]
+    inheritedBy: string[];
+    attachedTo: string[];
 }
