@@ -399,6 +399,43 @@ export async function SaveRoleAsync(role: Role): Promise<void> {
     const rolePath: string = path.join(DataPaths.Roles, `${role.name}`);
     await fs.mkdir(path.dirname(rolePath), { recursive: true });
     await fs.writeFile(rolePath, JSON.stringify(role, null, 2));
+
+    const allRoles = (await GetRoleListAsync()).map(r => r.name === role.name ? role : r);
+    const roleMap = new Map(allRoles.map(r => [r.name, r]));
+
+    const toUpdate = bfsRoles(role.name, name =>
+        allRoles.filter(r => r.inheritedBy.includes(name)).map(r => r.name)
+    );
+
+    await Promise.all([...toUpdate].map(name => WriteRoleHtpasswdAsync(roleMap.get(name)!, roleMap)));
+}
+
+function bfsRoles(seed: string, neighbors: (name: string) => string[]): Set<string> {
+    const visited = new Set<string>([seed]);
+    const queue = [seed];
+    while (queue.length > 0) {
+        for (const name of neighbors(queue.shift()!)) {
+            if (!visited.has(name)) {
+                visited.add(name);
+                queue.push(name);
+            }
+        }
+    }
+    return visited;
+}
+
+async function WriteRoleHtpasswdAsync(role: Role, roleMap: Map<string, Role>): Promise<void> {
+    const nRolePath: string = path.join(NginxPaths.Roles, `${role.name}`);
+    await fs.mkdir(path.dirname(nRolePath), { recursive: true });
+
+    const members = bfsRoles(role.name, name => roleMap.get(name)?.inheritedBy ?? []);
+
+    const lines = [...members]
+        .map(name => roleMap.get(name))
+        .filter((r): r is Role => !!r?.pass)
+        .map(r => `${r.name}:${r.pass}`);
+
+    await fs.writeFile(nRolePath, lines.join('\n') + '\n');
 }
 
 export async function SetRolePasswordAsync(role: Role, password: string): Promise<void> {
