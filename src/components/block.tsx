@@ -23,7 +23,7 @@ function isContextDirective(d: EdgeDirective | undefined): boolean {
 // Slot value input — checkbox for flags, select for string[], number/text otherwise.
 // Flag values ARE the nginx token: 'ssl', 'backlog=512', etc. Empty string = absent.
 // active=true: param was explicitly added via the options picker — skip checkbox, × handles removal.
-function SlotInput({ slot, value, onChange, active, sslLabels, snippetLabels }: { slot: EdgeSlot; value: string; onChange: (v: string) => void; active?: boolean; sslLabels?: string[]; snippetLabels?: string[] }): JSX.Element {
+function SlotInput({ slot, value, onChange, active, sslLabels, snippetLabels, roleLabels }: { slot: EdgeSlot; value: string; onChange: (v: string) => void; active?: boolean; sslLabels?: string[]; snippetLabels?: string[]; roleLabels?: string[] }): JSX.Element {
     const { primitive, label, subSlot } = slot;
 
     if (primitive === 'flag') {
@@ -122,6 +122,16 @@ function SlotInput({ slot, value, onChange, active, sslLabels, snippetLabels }: 
         );
     }
 
+    if (primitive === 'role') {
+        return (
+            <select value={value} onChange={e => onChange(e.target.value)}
+                className="text-sm px-2 py-1 rounded-md border border-zinc-200 bg-white font-mono text-zinc-700">
+                <option value="" disabled>select role…</option>
+                {(roleLabels ?? []).map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+        );
+    }
+
     if (Array.isArray(primitive)) {
         return (
             <select value={value} onChange={e => onChange(e.target.value)}
@@ -151,9 +161,10 @@ interface ICard {
     onDelete?: () => void;
     sslLabels?: string[];
     snippetLabels?: string[];
+    roleLabels?: string[];
 }
 
-function Card({ data, depth = 0, onChange, onDelete, sslLabels, snippetLabels }: ICard): JSX.Element {
+function Card({ data, depth = 0, onChange, onDelete, sslLabels, snippetLabels, roleLabels }: ICard): JSX.Element {
     const name = data[0];
     const directive = findDirective(name);
     const isCtx = isContextDirective(directive);
@@ -244,11 +255,11 @@ function Card({ data, depth = 0, onChange, onDelete, sslLabels, snippetLabels }:
     const paramInputs = (
         <div className="flex flex-wrap items-center gap-1 flex-1">
             {required.map(({ s, j }) => (
-                <SlotInput key={j} slot={s} value={slotValues[j] ?? ''} onChange={v => handleSlotChange(j, v)} sslLabels={sslLabels} snippetLabels={snippetLabels} />
+                <SlotInput key={j} slot={s} value={slotValues[j] ?? ''} onChange={v => handleSlotChange(j, v)} sslLabels={sslLabels} snippetLabels={snippetLabels} roleLabels={roleLabels} />
             ))}
             {activeOptional.map(({ s, j }) => (
                 <div key={j} className="flex items-center gap-0.5">
-                    <SlotInput slot={s} value={slotValues[j] ?? ''} onChange={v => handleSlotChange(j, v)} active sslLabels={sslLabels} snippetLabels={snippetLabels} />
+                    <SlotInput slot={s} value={slotValues[j] ?? ''} onChange={v => handleSlotChange(j, v)} active sslLabels={sslLabels} snippetLabels={snippetLabels} roleLabels={roleLabels} />
                     <button onClick={() => deactivateOpt(j)}
                         className="text-zinc-300 hover:text-red-400 transition-colors leading-none px-0.5">×</button>
                 </div>
@@ -320,7 +331,7 @@ function Card({ data, depth = 0, onChange, onDelete, sslLabels, snippetLabels }:
                     <Card key={i} data={child} depth={depth + 1}
                         onChange={(u) => handleChildChange(i, u)}
                         onDelete={() => handleChildDelete(i)}
-                        sslLabels={sslLabels} snippetLabels={snippetLabels} />
+                        sslLabels={sslLabels} snippetLabels={snippetLabels} roleLabels={roleLabels} />
                 ))}
                 <div className="relative">
                     {adding ? (
@@ -364,9 +375,10 @@ interface IBlockProps {
     onChange?: (newData: EdgeBlockData[]) => void;
     sslLabels?: string[];
     snippetLabels?: string[];
+    roleLabels?: string[];
 }
 
-export default function Block({ data, context, onChange, sslLabels, snippetLabels }: IBlockProps): JSX.Element {
+export default function Block({ data, context, onChange, sslLabels, snippetLabels, roleLabels }: IBlockProps): JSX.Element {
     const [adding, setAdding] = useState(false);
     const [search, setSearch] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
@@ -405,6 +417,7 @@ export default function Block({ data, context, onChange, sslLabels, snippetLabel
                     onDelete={() => handleDelete(i)}
                     sslLabels={sslLabels}
                     snippetLabels={snippetLabels}
+                    roleLabels={roleLabels}
                 />
             ))}
 

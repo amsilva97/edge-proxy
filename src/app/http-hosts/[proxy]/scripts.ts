@@ -42,6 +42,11 @@ export async function listSnippets(): Promise<string[]> {
     return snippets.map(s => s.label);
 }
 
+export async function listRoles(): Promise<string[]> {
+    const roles = await EdgeProxy.GetRoleListAsync();
+    return roles.map(r => r.name);
+}
+
 export async function previewNginxConfig(blocks: EdgeBlockData[]): Promise<string> {
     return EdgeProxy.NginxConfigPreview(blocks);
 }

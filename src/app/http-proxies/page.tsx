@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { HttpHostMeta } from '@/types/types';
 import {
     listHttpProxies, proxyExists, saveHttpProxy,
-    deleteHttpProxy, enableHttpProxy, disableHttpProxy, listSslCerts,
+    deleteHttpProxy, enableHttpProxy, disableHttpProxy, listSslCerts, listRoles,
 } from './scripts';
 import Toggle from '@/components/ui/toggle';
 import Toolbar from '@/components/toolbar';
@@ -23,13 +23,15 @@ interface ProxyFormDialogProps {
     onSaved: (label: string) => void;
     editMeta: HttpHostMeta | null;
     sslOptions: string[];
+    roleOptions: string[];
 }
 
-function ProxyFormDialog({ open, onClose, onSaved, editMeta, sslOptions }: ProxyFormDialogProps) {
+function ProxyFormDialog({ open, onClose, onSaved, editMeta, sslOptions, roleOptions }: ProxyFormDialogProps) {
     const [name, setName] = useState('');
     const [source, setSource] = useState('');
     const [destination, setDestination] = useState('');
     const [ssl, setSsl] = useState('');
+    const [accessRole, setAccessRole] = useState('');
     const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
     const nameRef = useRef<HTMLInputElement>(null);
@@ -44,12 +46,14 @@ function ProxyFormDialog({ open, onClose, onSaved, editMeta, sslOptions }: Proxy
             setSource(editMeta.quickSetup?.source ?? '');
             setDestination(editMeta.quickSetup?.destination ?? '');
             setSsl(editMeta.quickSetup?.ssl ?? '');
+            setAccessRole(editMeta.quickSetup?.accessRole ?? '');
             setTimeout(() => sourceRef.current?.focus(), 50);
         } else {
             setName('');
             setSource('');
             setDestination('');
             setSsl('');
+            setAccessRole('');
             setTimeout(() => nameRef.current?.focus(), 50);
         }
     }, [open, editMeta]);
@@ -63,7 +67,7 @@ function ProxyFormDialog({ open, onClose, onSaved, editMeta, sslOptions }: Proxy
             setBusy(false);
             return;
         }
-        await saveHttpProxy(slug, source.trim(), destination.trim(), ssl.trim() || null);
+        await saveHttpProxy(slug, source.trim(), destination.trim(), ssl.trim() || null, accessRole.trim() || null);
         onSaved(slug);
         setBusy(false);
     }
@@ -124,6 +128,18 @@ function ProxyFormDialog({ open, onClose, onSaved, editMeta, sslOptions }: Proxy
                         ))}
                     </select>
                 </label>
+                <label className="flex flex-col gap-1.5">
+                    <span className="text-sm font-medium text-zinc-700">
+                        Access Role{' '}
+                        <span className="text-zinc-400 font-normal">(optional)</span>
+                    </span>
+                    <select value={accessRole} onChange={e => setAccessRole(e.target.value)} className={selectCls}>
+                        <option value="">None</option>
+                        {roleOptions.map(opt => (
+                            <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                    </select>
+                </label>
                 <div className="flex justify-end gap-2 pt-1">
                     <Button variant="outline" onClick={onClose} disabled={busy}>Cancel</Button>
                     <Button variant="solid" onClick={submit} disabled={!canSubmit}>
@@ -138,6 +154,7 @@ function ProxyFormDialog({ open, onClose, onSaved, editMeta, sslOptions }: Proxy
 export default function HttpProxiesPage() {
     const [proxies, setProxies] = useState<HttpHostMeta[] | null>(null);
     const [sslOptions, setSslOptions] = useState<string[]>([]);
+    const [roleOptions, setRoleOptions] = useState<string[]>([]);
     const [toggling, setToggling] = useState<Record<string, boolean>>({});
     const [formOpen, setFormOpen] = useState(false);
     const [editingProxy, setEditingProxy] = useState<string | null>(null);
@@ -149,6 +166,7 @@ export default function HttpProxiesPage() {
     useEffect(() => {
         refresh();
         listSslCerts().then(setSslOptions);
+        listRoles().then(setRoleOptions);
     }, []);
 
     async function handleToggle(label: string, next: boolean) {
@@ -183,6 +201,7 @@ export default function HttpProxiesPage() {
                 onSaved={() => { setFormOpen(false); refresh(); }}
                 editMeta={proxies?.find(p => p.label === editingProxy) ?? null}
                 sslOptions={sslOptions}
+                roleOptions={roleOptions}
             />
 
             <div className="flex-1 overflow-auto p-5">
@@ -223,6 +242,11 @@ export default function HttpProxiesPage() {
                                 key: 'quickSetup.ssl',
                                 label: 'SSL',
                                 render: (_val, row) => row.quickSetup?.ssl ?? '—',
+                            },
+                            {
+                                key: 'quickSetup.accessRole',
+                                label: 'Access Role',
+                                render: (_val, row) => row.quickSetup?.accessRole ?? '—',
                             },
                         ]}
                         data={proxies}

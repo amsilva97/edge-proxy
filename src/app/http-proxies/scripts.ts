@@ -21,8 +21,13 @@ export async function getHttpProxy(name: string): Promise<HttpHost> {
     return Array.isArray(result) ? result : [];
 }
 
-export async function saveHttpProxy(name: string, source: string, destination: string, ssl: string | null): Promise<void> {
-    return EdgeProxy.SaveHttpProxyHostAsync(name, source, destination, ssl);
+export async function saveHttpProxy(name: string, source: string, destination: string, ssl: string | null, accessRole: string | null): Promise<void> {
+    return EdgeProxy.SaveHttpProxyHostAsync(name, source, destination, ssl, accessRole);
+}
+
+export async function listRoles(): Promise<string[]> {
+    const roles = await EdgeProxy.GetRoleListAsync();
+    return roles.map(r => r.name);
 }
 
 export async function deleteHttpProxy(name: string): Promise<void> {
