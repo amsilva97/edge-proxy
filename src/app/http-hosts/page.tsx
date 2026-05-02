@@ -129,16 +129,7 @@ export default function ProxiesPage() {
                                     />
                                 ),
                             },
-                            { key: 'label', label: 'Name' },
-                            {
-                                key: 'type',
-                                label: 'Type',
-                                render: (val: HttpProxyType) => (
-                                    <span className="text-sm text-zinc-600">
-                                        {val === HttpProxyType.Proxy ? 'Proxy' : 'Advanced'}
-                                    </span>
-                                ),
-                            },
+                            { key: 'label', label: 'Name' }
                         ]}
                         data={proxies}
                         rowKey={row => row.label}

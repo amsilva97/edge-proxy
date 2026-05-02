@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Network, Settings, ShieldCheck, Scissors, PanelLeftClose, PanelLeftOpen, type LucideIcon } from "lucide-react";
+import { Network, Settings, ShieldCheck, Scissors, ArrowRightLeft, PanelLeftClose, PanelLeftOpen, type LucideIcon } from "lucide-react";
 
 interface NavLink {
     label: string;
@@ -12,10 +12,11 @@ interface NavLink {
 }
 
 const links: NavLink[] = [
-    { label: "Http Hosts",    href: "/http-hosts",    icon: Network      },
-    { label: "Snippets",   href: "/snippets",   icon: Scissors     },
-    { label: "SSLs",        href: "/ssls",        icon: ShieldCheck  },
-    { label: "App Config", href: "/app-config", icon: Settings     },
+    { label: "Http Hosts",    href: "/http-hosts",    icon: Network          },
+    { label: "Http Proxies",  href: "/http-proxies",  icon: ArrowRightLeft   },
+    { label: "Snippets",      href: "/snippets",      icon: Scissors         },
+    { label: "SSLs",          href: "/ssls",          icon: ShieldCheck      },
+    { label: "App Config",    href: "/app-config",    icon: Settings         },
 ];
 
 const EXPANDED_W = 200;

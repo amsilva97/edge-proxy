@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import { HttpHost, HttpHostMeta, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
 import { AppEnv } from "./appEnv";
 import { EdgeBlockData, EdgeDirectives } from "./edgeDirective";
+import { hostname } from "os";
 
 namespace DataPaths {
     const Root = 'data';
@@ -44,6 +45,11 @@ export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost
         usedSnippets: newUsedSnippets
     });
 
+    // Update Enabled Config
+    if (oldHttpHostMeta.isEnabled) {
+        await EnableHttpHostAsync(httpHostName)
+    }
+
     // Update Attachments
     for (const oldUsedSsl of oldUsedSsls ?? []) await DetachSslCertKeyToHost(oldUsedSsl, httpHostName)
     for (const newUsedSsl of newUsedSsls) await AttachSslCertKeyToHost(newUsedSsl, httpHostName)
@@ -61,7 +67,7 @@ export async function EnableHttpHostAsync(httpHostName: string): Promise<void> {
     const httpHost: HttpHost = await GetHttpHostAsync(httpHostName);
     const nHttpHostPath: string = path.join(NginxPaths.HttpHosts, httpHostName);
     const nginxConfig = BuildNginxConfig(httpHost);
-    await fs.writeFile(nHttpHostPath, JSON.stringify(nginxConfig, null, 2));
+    await fs.writeFile(nHttpHostPath, nginxConfig);
     await SaveHttpHostMetaAsync(httpHostName, { isEnabled: true });
 }
 
@@ -155,6 +161,38 @@ function FindUsedSnippets(httpHost: HttpHost): string[] {
 
 //#endregion
 
+//#region HttpHost Quick Host
+export async function SaveHttpProxyHostAsync(httpHostName: string, source: string,
+    destination: string, sslCertKeyName: string | null): Promise<void> {
+    const httpHost = []
+    const sslCertKey = sslCertKeyName ? await GetSslCertKeyAsync(sslCertKeyName) : null
+
+    // Redirect Server Context
+    if (sslCertKey) {
+        const redirectServerDirectives = [["listen", 80], ["server_name", source], ["return", "301 https://$host$request_uri"]]
+        httpHost.push(["server", redirectServerDirectives])
+    }
+
+    // Main Server Context
+    const location = ["location", "/", [["proxy_pass", destination]]]
+    const sslCertKeyDirectives = !sslCertKey
+        ? []
+        : [["ssl_certificate", sslCertKey.label], ["ssl_certificate_key", sslCertKey.label]]
+    const mainServerDirectives = [["listen", sslCertKey ? 443 : 80], ["server_name", source], ...sslCertKeyDirectives, location]
+    httpHost.push(["server", mainServerDirectives])
+
+    // Save Host
+    await SaveHttpHostAsync(httpHostName, httpHost as HttpHost)
+    await SaveHttpHostMetaAsync(httpHostName, {
+        quickSetup: {
+            source: source,
+            destination: destination,
+            ssl: sslCertKeyName
+        }
+    })
+}
+//#endregion
+
 //#region SslCertKey
 export async function GetSslCertKeyMetaListAsync(): Promise<SslCertKeyMeta[]> {
     try {
@@ -178,6 +216,7 @@ export async function GetSslCertKeyAsync(sslCertKeyName: string): Promise<SslCer
 
 export async function SaveSslCertKeyAsync(sslCertKeyName: string, sslCertKey: SslCertKey): Promise<void> {
     const sslCertKeyPath: string = path.join(DataPaths.SslCertKeys, `${sslCertKeyName}.json`);
+    await fs.mkdir(path.dirname(sslCertKeyPath), { recursive: true });
     await fs.writeFile(sslCertKeyPath, JSON.stringify(sslCertKey, null, 2));
     await SaveSslCertKeyMetaAsync(sslCertKeyName, { label: sslCertKeyName });
 }
@@ -277,7 +316,7 @@ export async function SaveSnippetAsync(snippetName: string, snippet: Snippet): P
     await fs.mkdir(path.dirname(snippetPath), { recursive: true });
     await fs.mkdir(path.dirname(nSnippetPath), { recursive: true });
     await fs.writeFile(snippetPath, JSON.stringify(snippet, null, 2));
-    await fs.writeFile(nSnippetPath, JSON.stringify(nginxConfig, null, 2));
+    await fs.writeFile(nSnippetPath, nginxConfig);
     console.log(nSnippetPath)
     await SaveSnippetMetaAsync(snippetName, { label: snippetName });
 }

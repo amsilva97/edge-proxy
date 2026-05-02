@@ -13,6 +13,7 @@ export type HttpHostMeta = {
     type: HttpProxyType;
     usedSsls: string[];
     usedSnippets: string[];
+    quickSetup: Record<string, string | null>
 }
 
 export type SslCertKey = {

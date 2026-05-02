@@ -49,6 +49,13 @@ export namespace EdgeProxy {
     }
     //#endregion
 
+    //#region HttpHost Quick Host
+    export async function SaveHttpProxyHostAsync(httpHostName: string, source: string,
+        destination: string, sslCertKeyName: string | null): Promise<void> {
+        await EdgeProxyActions.SaveHttpProxyHostAsync(httpHostName, source, destination, sslCertKeyName);
+    }
+    //#endregion
+
     //#region SslCertKey
     export async function GetSslCertKeyListAsync(): Promise<SslCertKeyMeta[]> {
         return await EdgeProxyActions.GetSslCertKeyMetaListAsync();
