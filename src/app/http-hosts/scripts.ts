@@ -24,10 +24,10 @@ export async function deleteProxy(name: string): Promise<void> {
     return EdgeProxy.DeleteHttpHostAsync(name);
 }
 
-export async function enableProxy(name: string): Promise<void> {
+export async function enableProxy(name: string): Promise<HttpHostMeta | null> {
     return EdgeProxy.EnableHttpHostAsync(name);
 }
 
-export async function disableProxy(name: string): Promise<void> {
+export async function disableProxy(name: string): Promise<HttpHostMeta> {
     return EdgeProxy.DisabledHttpHostAsync(name);
 }

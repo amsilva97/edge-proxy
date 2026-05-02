@@ -21,7 +21,7 @@ export async function getHttpProxy(name: string): Promise<HttpHost> {
     return Array.isArray(result) ? result : [];
 }
 
-export async function saveHttpProxy(name: string, source: string, destination: string, ssl: string | null, accessRole: string | null): Promise<void> {
+export async function saveHttpProxy(name: string, source: string, destination: string, ssl: string | null, accessRole: string | null): Promise<HttpHostMeta> {
     return EdgeProxy.SaveHttpProxyHostAsync(name, source, destination, ssl, accessRole);
 }
 
@@ -34,11 +34,11 @@ export async function deleteHttpProxy(name: string): Promise<void> {
     return EdgeProxy.DeleteHttpHostAsync(name);
 }
 
-export async function enableHttpProxy(name: string): Promise<void> {
+export async function enableHttpProxy(name: string): Promise<HttpHostMeta | null> {
     return EdgeProxy.EnableHttpHostAsync(name);
 }
 
-export async function disableHttpProxy(name: string): Promise<void> {
+export async function disableHttpProxy(name: string): Promise<HttpHostMeta> {
     return EdgeProxy.DisabledHttpHostAsync(name);
 }
 

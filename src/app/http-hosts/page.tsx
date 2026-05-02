@@ -79,18 +79,17 @@ export default function ProxiesPage() {
     }, []);
 
     async function handleToggle(label: string, next: boolean) {
-        setToggling(prev => ({ ...prev, [label]: true }));
-        if (next) await enableProxy(label);
-        else await disableProxy(label);
-        setProxies(prev => prev?.map(p => p.label === label ? { ...p, isEnabled: next } : p) ?? null);
-        setToggling(prev => ({ ...prev, [label]: false }));
+        setToggling((prev: Record<string, boolean>) => ({ ...prev, [label]: true }));
+        const meta = next ? await enableProxy(label) : await disableProxy(label);
+        if (meta) setProxies((prev: HttpHostMeta[] | null) => prev?.map((p: HttpHostMeta) => p.label === label ? meta : p) ?? null);
+        setToggling((prev: Record<string, boolean>) => ({ ...prev, [label]: false }));
     }
 
     async function confirmDelete() {
         if (!deletingProxy) return;
         setDeleting(true);
         await deleteProxy(deletingProxy);
-        setProxies(prev => prev?.filter(p => p.label !== deletingProxy) ?? null);
+        setProxies((prev: HttpHostMeta[] | null) => prev?.filter((p: HttpHostMeta) => p.label !== deletingProxy) ?? null);
         setDeletingProxy(null);
         setDeleting(false);
     }

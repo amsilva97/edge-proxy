@@ -56,9 +56,8 @@ function ProxyEditor({ proxy }: { proxy: string }) {
 
     function handleToggle(next: boolean) {
         startTransition(async () => {
-            if (next) await enableProxy(proxy);
-            else await disableProxy(proxy);
-            setEnabled(next);
+            const meta = next ? await enableProxy(proxy) : await disableProxy(proxy);
+            setEnabled(meta?.isEnabled ?? next);
         });
     }
 

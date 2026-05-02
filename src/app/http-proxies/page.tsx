@@ -20,7 +20,7 @@ const selectCls = 'h-9 w-full rounded-md border border-zinc-300 bg-white px-2.5 
 interface ProxyFormDialogProps {
     open: boolean;
     onClose: () => void;
-    onSaved: (label: string) => void;
+    onSaved: (meta: HttpHostMeta) => void;
     editMeta: HttpHostMeta | null;
     sslOptions: string[];
     roleOptions: string[];
@@ -67,8 +67,8 @@ function ProxyFormDialog({ open, onClose, onSaved, editMeta, sslOptions, roleOpt
             setBusy(false);
             return;
         }
-        await saveHttpProxy(slug, source.trim(), destination.trim(), ssl.trim() || null, accessRole.trim() || null);
-        onSaved(slug);
+        const meta = await saveHttpProxy(slug, source.trim(), destination.trim(), ssl.trim() || null, accessRole.trim() || null);
+        onSaved(meta);
         setBusy(false);
     }
 
@@ -108,13 +108,17 @@ function ProxyFormDialog({ open, onClose, onSaved, editMeta, sslOptions, roleOpt
                 </label>
                 <label className="flex flex-col gap-1.5">
                     <span className="text-sm font-medium text-zinc-700">Destination</span>
-                    <Input
-                        type="text"
-                        value={destination}
-                        onChange={e => setDestination(e.target.value)}
-                        onKeyDown={onKeyDown}
-                        placeholder="http://localhost:3000"
-                    />
+                    <div className="flex items-stretch rounded-md border border-zinc-300 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 overflow-hidden">
+                        <span className="flex items-center bg-zinc-50 px-2.5 text-sm text-zinc-500 border-r border-zinc-300 select-none whitespace-nowrap">http://</span>
+                        <input
+                            type="text"
+                            value={destination}
+                            onChange={e => setDestination(e.target.value)}
+                            onKeyDown={onKeyDown}
+                            placeholder="localhost:3000"
+                            className="flex-1 min-w-0 px-3 py-1.5 text-sm bg-white text-zinc-900 placeholder:text-zinc-400 outline-none"
+                        />
+                    </div>
                 </label>
                 <label className="flex flex-col gap-1.5">
                     <span className="text-sm font-medium text-zinc-700">
@@ -171,9 +175,8 @@ export default function HttpProxiesPage() {
 
     async function handleToggle(label: string, next: boolean) {
         setToggling(prev => ({ ...prev, [label]: true }));
-        if (next) await enableHttpProxy(label);
-        else await disableHttpProxy(label);
-        setProxies(prev => prev?.map(p => p.label === label ? { ...p, isEnabled: next } : p) ?? null);
+        const meta = next ? await enableHttpProxy(label) : await disableHttpProxy(label);
+        if (meta) setProxies((prev: HttpHostMeta[] | null) => prev?.map((p: HttpHostMeta) => p.label === label ? meta : p) ?? null);
         setToggling(prev => ({ ...prev, [label]: false }));
     }
 
@@ -198,7 +201,14 @@ export default function HttpProxiesPage() {
             <ProxyFormDialog
                 open={formOpen}
                 onClose={() => setFormOpen(false)}
-                onSaved={() => { setFormOpen(false); refresh(); }}
+                onSaved={meta => {
+                    setFormOpen(false);
+                    setProxies((prev: HttpHostMeta[] | null) => {
+                        if (!prev) return [meta];
+                        const idx = prev.findIndex((p: HttpHostMeta) => p.label === meta.label);
+                        return idx >= 0 ? prev.map((p: HttpHostMeta) => p.label === meta.label ? meta : p) : [...prev, meta];
+                    });
+                }}
                 editMeta={proxies?.find(p => p.label === editingProxy) ?? null}
                 sslOptions={sslOptions}
                 roleOptions={roleOptions}
