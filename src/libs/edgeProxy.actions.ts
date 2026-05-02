@@ -1,6 +1,7 @@
 'use server';
 import path from "path";
 import fs from 'fs/promises';
+import { exec } from 'child_process';
 import bcrypt from 'bcryptjs';
 import { HttpHost, HttpHostMeta, HttpProxyType, Role, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
 import { AppEnv } from "./appEnv";
@@ -77,12 +78,14 @@ export async function EnableHttpHostAsync(httpHostName: string): Promise<void> {
     const nginxConfig = BuildNginxConfig(httpHost);
     await fs.writeFile(nHttpHostPath, nginxConfig);
     await SaveHttpHostMetaAsync(httpHostName, { isEnabled: true });
+    await ReloadNginx();
 }
 
 export async function DisabledHttpHostAsync(httpHostName: string): Promise<void> {
     const nHttpHostPath: string = path.join(NginxPaths.HttpHosts, httpHostName);
     await fs.rm(nHttpHostPath, { force: true });
     await SaveHttpHostMetaAsync(httpHostName, { isEnabled: false });
+    await ReloadNginx();
 }
 
 export async function GetHttpHostMetaListAsync(): Promise<HttpHostMeta[]> {
@@ -224,6 +227,7 @@ export async function EnableSslCertKeyAsync(sslCertKeyName: string): Promise<voi
     await fs.writeFile(nSslCerPath, sslCertKey.cert);
     await fs.writeFile(nSslKeyPath, sslCertKey.key);
     await SaveSslCertKeyMetaAsync(sslCertKeyName, { isEnabled: true });
+    await ReloadNginx();
 }
 
 export async function DisabledSslCertKeyAsync(sslCertKeyName: string): Promise<void> {
@@ -232,6 +236,7 @@ export async function DisabledSslCertKeyAsync(sslCertKeyName: string): Promise<v
     await fs.rm(nSslCerPath, { force: true });
     await fs.rm(nSslKeyPath, { force: true });
     await SaveSslCertKeyMetaAsync(sslCertKeyName, { isEnabled: false });
+    await ReloadNginx();
 }
 
 export async function GetSslCertKeyMetaAsync(sslCertKeyName: string): Promise<SslCertKeyMeta> {
@@ -307,8 +312,8 @@ export async function SaveSnippetAsync(snippetName: string, snippet: Snippet): P
     await fs.mkdir(path.dirname(nSnippetPath), { recursive: true });
     await fs.writeFile(snippetPath, JSON.stringify(snippet, null, 2));
     await fs.writeFile(nSnippetPath, nginxConfig);
-    console.log(nSnippetPath)
     await SaveSnippetMetaAsync(snippetName, { label: snippetName });
+    await ReloadNginx();
 }
 
 export async function DeleteSnippetAsync(snippetName: string): Promise<void> {
@@ -423,6 +428,7 @@ async function WriteRoleHtpasswdAsync(role: Role, roleMap: Map<string, Role>): P
         .map(r => `${r.name}:${r.pass}`);
 
     await fs.writeFile(nRolePath, lines.join('\n') + '\n');
+    await ReloadNginx();
 }
 
 export async function SetRolePasswordAsync(role: Role, password: string): Promise<void> {
@@ -463,6 +469,26 @@ async function DetachRoleFromHost(roleName: string, hostName: string) {
     oldAttachments.delete(hostName)
     role.attachedTo = [...oldAttachments]
     await SaveRoleAsync(role)
+}
+//#endregion
+
+//#region Nginx Commands
+let _nginxReloadTimer: ReturnType<typeof setTimeout> | null = null;
+let _nginxReloadPending: Array<{ resolve: () => void; reject: (err: unknown) => void }> = [];
+
+function ReloadNginx(): Promise<void> {
+    return new Promise((resolve, reject) => {
+        _nginxReloadPending.push({ resolve, reject });
+        if (_nginxReloadTimer) clearTimeout(_nginxReloadTimer);
+        _nginxReloadTimer = setTimeout(() => {
+            _nginxReloadTimer = null;
+            const pending = _nginxReloadPending.splice(0);
+            exec('nginx -s reload', (err) => {
+                if (err) pending.forEach(p => p.reject(err));
+                else pending.forEach(p => p.resolve());
+            });
+        }, 500);
+    });
 }
 //#endregion
 
