@@ -30,6 +30,7 @@ export enum EdgeDirectiveContext {
 }
 
 export interface EdgeDirective {
+    module: string;
     key: string;
     params: EdgeSlot[];
     context: EdgeDirectiveContext;
@@ -40,36 +41,43 @@ export type EdgeBlockData = [EdgeDirective['key'], ...EdgeBlockData[]];
 export const EdgeDirectives: EdgeDirective[] = [
     // Core functionality
     {
+        module: 'core_functionality',
         key: 'accept_mutex',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.events
     },
     {
+        module: 'core_functionality',
         key: 'accept_mutex_delay',
         params: [{ primitive: 'number', suffix: 'ms' }],
         context: EdgeDirectiveContext.events
     },
     {
+        module: 'core_functionality',
         key: 'daemon',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'debug_connection',
         params: [{ primitive: 'string', label: 'address | CIDR | unix:' }],
         context: EdgeDirectiveContext.events
     },
     {
+        module: 'core_functionality',
         key: 'debug_points',
         params: [{ primitive: ['abort', 'stop'] }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'env',
         params: [{ primitive: 'string', subSlot: { primitive: 'string', prefix: '=' } }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'error_log',
         params: [
             { primitive: 'string', label: 'file' },
@@ -79,61 +87,73 @@ export const EdgeDirectives: EdgeDirective[] = [
             | EdgeDirectiveContext.stream | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'core_functionality',
         key: 'events',
         params: [{ primitive: 'context' }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'include',
         params: [{ primitive: 'snippet' }],
         context: EdgeDirectiveContext.any
     },
     {
+        module: 'core_functionality',
         key: 'load_module',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'lock_file',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'master_process',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'multi_accept',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.events
     },
     {
+        module: 'core_functionality',
         key: 'pcre_jit',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'pid',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'ssl_engine',
         params: [{ primitive: 'string', label: 'device' }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'ssl_object_cache_inheritable',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'stall_threshold',
         params: [{ primitive: 'number', suffix: 'ms' }],
         context: EdgeDirectiveContext.events
     },
     {
+        module: 'core_functionality',
         key: 'thread_pool',
         params: [
             { primitive: 'string', label: 'name' },
@@ -143,16 +163,19 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'timer_resolution',
         params: [{ primitive: 'number', label: 'interval', suffix: 'ms' }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'use',
         params: [{ primitive: 'string', label: 'method' }],
         context: EdgeDirectiveContext.events
     },
     {
+        module: 'core_functionality',
         key: 'user',
         params: [
             { primitive: 'string', label: 'user' },
@@ -161,97 +184,116 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'worker_aio_requests',
         params: [{ primitive: 'string', label: 'number' }],
         context: EdgeDirectiveContext.events
     },
     {
+        module: 'core_functionality',
         key: 'worker_connections',
         params: [{ primitive: 'string', label: 'number' }],
         context: EdgeDirectiveContext.events
     },
     {
+        module: 'core_functionality',
         key: 'worker_cpu_affinity',
         params: [{ primitive: 'string', label: 'cpumask... | auto [cpumask]' }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'worker_priority',
         params: [{ primitive: 'string', label: 'number' }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'worker_processes',
         params: [{ primitive: 'string', label: 'number | auto' }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'worker_rlimit_core',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'worker_rlimit_nofile',
         params: [{ primitive: 'string', label: 'number' }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'worker_shutdown_timeout',
         params: [{ primitive: 'number', label: 'time', suffix: 'ms' }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'core_functionality',
         key: 'working_directory',
         params: [{ primitive: 'string', label: 'directory' }],
         context: EdgeDirectiveContext.main
     },
     // ngx_http_core_module
     {
+        module: 'ngx_http_core_module',
         key: 'absolute_redirect',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'aio',
         params: [{ primitive: ['on', 'off', 'threads'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'aio_write',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'alias',
         params: [{ primitive: 'string', label: 'path' }],
         context: EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'auth_delay',
         params: [{ primitive: 'number', suffix: 's' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'chunked_transfer_encoding',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'client_body_buffer_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'client_body_in_file_only',
         params: [{ primitive: ['on', 'clean', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'client_body_in_single_buffer',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'client_body_temp_path',
         params: [
             { primitive: 'string', label: 'path' },
@@ -262,46 +304,55 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'client_body_timeout',
         params: [{ primitive: 'number', suffix: 's' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'client_header_buffer_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_core_module',
         key: 'client_header_timeout',
         params: [{ primitive: 'number', suffix: 's' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_core_module',
         key: 'client_max_body_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'connection_pool_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_core_module',
         key: 'default_type',
         params: [{ primitive: 'string', label: 'mime-type' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'directio',
         params: [{ primitive: 'string', label: 'size | off' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'directio_alignment',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'disable_symlinks',
         params: [
             { primitive: ['off', 'on', 'if_not_owner'] },
@@ -310,11 +361,13 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'early_hints',
         params: [{ primitive: 'string', label: 'string ...' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'error_page',
         params: [
             { primitive: 'string', label: 'code ...' },
@@ -323,51 +376,61 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'etag',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'http',
         params: [{ primitive: 'context' }],
         context: EdgeDirectiveContext.main
     },
     {
+        module: 'ngx_http_core_module',
         key: 'if_modified_since',
         params: [{ primitive: ['off', 'exact', 'before'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'ignore_invalid_headers',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_core_module',
         key: 'internal',
         params: [],
         context: EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'keepalive_disable',
         params: [{ primitive: ['none', 'msie6', 'safari'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'keepalive_min_timeout',
         params: [{ primitive: 'number', suffix: 's' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'keepalive_requests',
         params: [{ primitive: 'number' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'keepalive_time',
         params: [{ primitive: 'number', suffix: 'h' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'keepalive_timeout',
         params: [
             { primitive: 'number', suffix: 's' },
@@ -376,6 +439,7 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'large_client_header_buffers',
         params: [
             { primitive: 'number', label: 'number' },
@@ -384,6 +448,7 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_core_module',
         key: 'limit_except',
         params: [
             { primitive: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'MKCOL', 'COPY', 'MOVE', 'OPTIONS', 'PROPFIND', 'PROPPATCH', 'LOCK', 'UNLOCK', 'PATCH'] },
@@ -392,31 +457,37 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'limit_rate',
         params: [{ primitive: 'string', label: 'rate' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'limit_rate_after',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'lingering_close',
         params: [{ primitive: ['off', 'on', 'always'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'lingering_time',
         params: [{ primitive: 'number', suffix: 's' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'lingering_timeout',
         params: [{ primitive: 'number', suffix: 's' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'listen',
         params: [
             { primitive: 'string', label: 'address[:port] | port | unix:path' },
@@ -440,6 +511,7 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_core_module',
         key: 'location',
         params: [
             { primitive: 'string', label: '[ = | ~ | ~* | ^~ ] uri' },
@@ -448,41 +520,49 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'log_not_found',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'log_subrequest',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'max_headers',
         params: [{ primitive: 'number' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_core_module',
         key: 'max_ranges',
         params: [{ primitive: 'number' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'merge_slashes',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_core_module',
         key: 'msie_padding',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'msie_refresh',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'open_file_cache',
         params: [
             { primitive: ['off', 'max'], label: 'mode' },
@@ -492,21 +572,25 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'open_file_cache_errors',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'open_file_cache_min_uses',
         params: [{ primitive: 'number' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'open_file_cache_valid',
         params: [{ primitive: 'number', suffix: 's' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'output_buffers',
         params: [
             { primitive: 'number', label: 'number' },
@@ -515,36 +599,43 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'port_in_redirect',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'postpone_output',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'read_ahead',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'recursive_error_pages',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'request_pool_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_core_module',
         key: 'reset_timedout_connection',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'resolver',
         params: [
             { primitive: 'string', label: 'address ...' },
@@ -556,127 +647,152 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'resolver_timeout',
         params: [{ primitive: 'number', suffix: 's' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'root',
         params: [{ primitive: 'string', label: 'path' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'satisfy',
         params: [{ primitive: ['all', 'any'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'send_lowat',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'send_timeout',
         params: [{ primitive: 'number', suffix: 's' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'sendfile',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'sendfile_max_chunk',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'server',
         params: [{ primitive: 'context' }],
         context: EdgeDirectiveContext.http
     },
     {
+        module: 'ngx_http_core_module',
         key: 'server_name',
         params: [{ primitive: 'string', label: 'name ...' }],
         context: EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_core_module',
         key: 'server_name_in_redirect',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'server_names_hash_bucket_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http
     },
     {
+        module: 'ngx_http_core_module',
         key: 'server_names_hash_max_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http
     },
     {
+        module: 'ngx_http_core_module',
         key: 'server_tokens',
         params: [{ primitive: ['on', 'off', 'build'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'subrequest_output_buffer_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'tcp_nodelay',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'tcp_nopush',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'try_files',
         params: [{ primitive: 'string', label: 'file ... uri | =code' }],
         context: EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'types',
         params: [{ primitive: 'context' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'types_hash_bucket_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'types_hash_max_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_core_module',
         key: 'underscores_in_headers',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_core_module',
         key: 'variables_hash_bucket_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http
     },
     {
+        module: 'ngx_http_core_module',
         key: 'variables_hash_max_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http
     },
     // ngx_http_rewrite_module
     {
+        module: 'ngx_http_rewrite_module',
         key: 'break',
         params: [],
         context: EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_rewrite_module',
         key: 'if',
         params: [
             { primitive: 'string', label: 'condition' },
@@ -685,6 +801,7 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_rewrite_module',
         key: 'return',
         params: [
             { primitive: 'string', label: 'code | URL' },
@@ -693,6 +810,7 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_rewrite_module',
         key: 'rewrite',
         params: [
             { primitive: 'string', label: 'regex' },
@@ -702,11 +820,13 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_rewrite_module',
         key: 'rewrite_log',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_rewrite_module',
         key: 'set',
         params: [
             { primitive: 'string', label: '$variable' },
@@ -715,27 +835,32 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_rewrite_module',
         key: 'uninitialized_variable_warn',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     // ngx_http_ssl_module
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_buffer_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_certificate',
         params: [{ primitive: 'ssl' }], //[{ primitive: 'string', label: 'file' }], // Overriding the params to use the user save ssls
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_certificate_cache',
         params: [
             { primitive: ['off', 'max'], label: 'mode' },
@@ -746,26 +871,31 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_certificate_compression',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_certificate_key',
         params: [{ primitive: 'ssl' }], //[{ primitive: 'string', label: 'file' }], // Overriding the params to use the user save ssls
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_ciphers',
         params: [{ primitive: 'string', label: 'ciphers' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_client_certificate',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_conf_command',
         params: [
             { primitive: 'string', label: 'name' },
@@ -774,61 +904,73 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_crl',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_dhparam',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_early_data',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_ecdh_curve',
         params: [{ primitive: 'string', label: 'curve' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_ech_file',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_key_log',
         params: [{ primitive: 'string', label: 'path' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_ocsp',
         params: [{ primitive: ['on', 'off', 'leaf'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_ocsp_cache',
         params: [{ primitive: 'string', label: 'off | shared:name:size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_ocsp_responder',
         params: [{ primitive: 'string', label: 'url' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_password_file',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_prefer_server_ciphers',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_protocols',
         params: [
             { primitive: 'flag', label: 'SSLv2', optional: true },
@@ -841,61 +983,73 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_reject_handshake',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_session_cache',
         params: [{ primitive: 'string', label: 'off|none|builtin[:size]|shared:name:size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_session_ticket_key',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_session_tickets',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_session_timeout',
         params: [{ primitive: 'string', label: 'time' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_stapling',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_stapling_file',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_stapling_responder',
         params: [{ primitive: 'string', label: 'url' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_stapling_verify',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_trusted_certificate',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_verify_client',
         params: [{ primitive: ['on', 'off', 'optional', 'optional_no_ca'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
     },
     {
+        module: 'ngx_http_ssl_module',
         key: 'ssl_verify_depth',
         params: [{ primitive: 'number', label: 'number' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server
@@ -905,11 +1059,13 @@ export const EdgeDirectives: EdgeDirective[] = [
     // ngx_http_api_module
     // ngx_http_auth_basic_module
     {
+        module: 'ngx_http_auth_basic_module',
         key: 'auth_basic',
         params: [{ primitive: 'string', label: 'realm | off' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_auth_basic_module',
         key: 'auth_basic_user_file',
         params: [{ primitive: 'role' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
@@ -950,11 +1106,13 @@ export const EdgeDirectives: EdgeDirective[] = [
     // ngx_http_perl_module
     // ngx_http_proxy_module
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_allow_upstream',
         params: [{ primitive: 'string', label: 'string ...' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_bind',
         params: [
             { primitive: 'string', label: 'address | off' },
@@ -963,21 +1121,25 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_bind_dynamic',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_buffer_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_buffering',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_buffers',
         params: [
             { primitive: 'number', label: 'number' },
@@ -986,66 +1148,79 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_busy_buffers_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache',
         params: [{ primitive: 'string', label: 'zone | off' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_background_update',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_bypass',
         params: [{ primitive: 'string', label: 'string ...' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_convert_head',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_key',
         params: [{ primitive: 'string', label: 'string' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_lock',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_lock_age',
         params: [{ primitive: 'string', label: 'time' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_lock_timeout',
         params: [{ primitive: 'string', label: 'time' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_max_range_offset',
         params: [{ primitive: 'number', label: 'number' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_methods',
         params: [{ primitive: 'string', label: 'GET | HEAD | POST ...' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_min_uses',
         params: [{ primitive: 'number' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_path',
         params: [
             { primitive: 'string', label: 'path' },
@@ -1069,21 +1244,25 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_purge',
         params: [{ primitive: 'string', label: 'string ...' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_revalidate',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_use_stale',
         params: [{ primitive: 'string', label: 'error | timeout | invalid_header | updating | http_500 | http_502 | http_503 | http_504 | http_403 | http_404 | http_429 | off ...' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cache_valid',
         params: [
             { primitive: 'string', label: '[code ...] time' }
@@ -1091,11 +1270,13 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_connect_timeout',
         params: [{ primitive: 'string', label: 'time' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cookie_domain',
         params: [
             { primitive: 'string', label: 'domain | off' },
@@ -1104,6 +1285,7 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cookie_flags',
         params: [
             { primitive: 'string', label: 'cookie | off' },
@@ -1112,6 +1294,7 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_cookie_path',
         params: [
             { primitive: 'string', label: 'path | off' },
@@ -1120,111 +1303,133 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_force_ranges',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_headers_hash_bucket_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_headers_hash_max_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_hide_header',
         params: [{ primitive: 'string', label: 'field' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_http_version',
         params: [{ primitive: ['1.0', '1.1', '2'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ignore_client_abort',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ignore_headers',
         params: [{ primitive: 'string', label: 'field ...' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_intercept_errors',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_limit_rate',
         params: [{ primitive: 'string', label: 'rate' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_max_temp_file_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_method',
         params: [{ primitive: 'string', label: 'method' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_next_upstream',
         params: [{ primitive: 'string', label: 'error | timeout | denied | invalid_header | http_500 | http_502 | http_503 | http_504 | http_403 | http_404 | http_429 | non_idempotent | off ...' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_next_upstream_timeout',
         params: [{ primitive: 'string', label: 'time' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_next_upstream_tries',
         params: [{ primitive: 'number' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_no_cache',
         params: [{ primitive: 'string', label: 'string ...' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_pass',
         params: [{ primitive: 'string', label: 'URL' }],
         context: EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_pass_header',
         params: [{ primitive: 'string', label: 'field' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_pass_request_body',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_pass_request_headers',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_pass_trailers',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_read_timeout',
         params: [{ primitive: 'string', label: 'time' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_redirect',
         params: [
             { primitive: 'string', label: 'default | off | redirect' },
@@ -1233,31 +1438,37 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_request_buffering',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_request_dynamic',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_send_lowat',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_send_timeout',
         params: [{ primitive: 'string', label: 'time' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_set_body',
         params: [{ primitive: 'string', label: 'value' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_set_header',
         params: [
             { primitive: 'string', label: 'field' },
@@ -1266,16 +1477,19 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_socket_keepalive',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_certificate',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_certificate_cache',
         params: [
             { primitive: ['off', 'max'], label: 'mode' },
@@ -1286,16 +1500,19 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_certificate_key',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_ciphers',
         params: [{ primitive: 'string', label: 'ciphers' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_conf_command',
         params: [
             { primitive: 'string', label: 'name' },
@@ -1304,26 +1521,31 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_crl',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_key_log',
         params: [{ primitive: 'string', label: 'path' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_name',
         params: [{ primitive: 'string', label: 'name' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_password_file',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_protocols',
         params: [
             { primitive: 'flag', label: 'SSLv2', optional: true },
@@ -1336,46 +1558,55 @@ export const EdgeDirectives: EdgeDirective[] = [
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_server_name',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_session_reuse',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_trusted_certificate',
         params: [{ primitive: 'string', label: 'file' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_verify',
         params: [{ primitive: ['on', 'off'] }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_ssl_verify_depth',
         params: [{ primitive: 'number' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_store',
         params: [{ primitive: 'string', label: 'on | off | string' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_store_access',
         params: [{ primitive: 'string', label: 'users:permissions ...' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_temp_file_write_size',
         params: [{ primitive: 'string', label: 'size' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     {
+        module: 'ngx_http_proxy_module',
         key: 'proxy_temp_path',
         params: [
             { primitive: 'string', label: 'path' },
