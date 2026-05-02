@@ -1,6 +1,7 @@
 'use server';
 import path from "path";
 import fs from 'fs/promises';
+import bcrypt from 'bcryptjs';
 import { HttpHost, HttpHostMeta, Role, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
 import { AppEnv } from "./appEnv";
 import { EdgeBlockData, EdgeDirectives } from "./edgeDirective";
@@ -398,6 +399,16 @@ export async function SaveRoleAsync(role: Role): Promise<void> {
     const rolePath: string = path.join(DataPaths.Roles, `${role.name}`);
     await fs.mkdir(path.dirname(rolePath), { recursive: true });
     await fs.writeFile(rolePath, JSON.stringify(role, null, 2));
+}
+
+export async function SetRolePasswordAsync(role: Role, password: string): Promise<void> {
+    role.pass = await bcrypt.hash(password, 10);
+    await SaveRoleAsync(role);
+}
+
+export async function ClearRolePasswordAsync(role: Role): Promise<void> {
+    role.pass = null;
+    await SaveRoleAsync(role);
 }
 
 export async function GrantRoleAsync(role: Role, roleToGrant: Role): Promise<void> {

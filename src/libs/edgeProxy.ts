@@ -121,6 +121,14 @@ export namespace EdgeProxy {
         return await EdgeProxyActions.SaveRoleAsync(role);
     }
 
+    export async function SetRolePasswordAsync(role: Role, password: string): Promise<void> {
+        return await EdgeProxyActions.SetRolePasswordAsync(role, password);
+    }
+
+    export async function ClearRolePasswordAsync(role: Role): Promise<void> {
+        return await EdgeProxyActions.ClearRolePasswordAsync(role);
+    }
+
     export async function GrantRoleAsync(role: Role, roleToGrant: Role): Promise<void> {
         return await EdgeProxyActions.GrantRoleAsync(role, roleToGrant);
     }
