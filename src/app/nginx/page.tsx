@@ -101,7 +101,7 @@ export default function NginxPage() {
                         <Table
                             columns={[
                                 { key: 'pid', label: 'PID', width: '1px' },
-                                { key: 'user', label: 'User', width: '1px' },
+                                { key: 'user', label: 'User', width: '8rem' },
                                 { key: 'cpu', label: 'CPU%', width: '1px' },
                                 { key: 'mem', label: 'MEM%', width: '1px' },
                                 { key: 'stat', label: 'Stat', width: '1px' },
