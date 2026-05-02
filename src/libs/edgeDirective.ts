@@ -903,6 +903,16 @@ export const EdgeDirectives: EdgeDirective[] = [
     // ngx_http_addition_module
     // ngx_http_api_module
     // ngx_http_auth_basic_module
+    {
+        key: 'auth_basic',
+        params: [{ primitive: 'string', label: 'realm | off' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
+    {
+        key: 'auth_basic_user_file',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
+    },
     // ngx_http_auth_jwt_module
     // ngx_http_auth_request_module
     // ngx_http_auth_require_module
