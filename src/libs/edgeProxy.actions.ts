@@ -378,12 +378,11 @@ async function DetachSnippetFromHost(snippetName: string, hostName: string) {
 export async function GetRoleListAsync(): Promise<Role[]> {
     try {
         return await Promise.all(
-            (await fs.readdir(DataPaths.HttpHosts))
-                .filter((f: string) => f.endsWith('.json'))
+            (await fs.readdir(DataPaths.Roles))
                 .map((f: string) => GetRoleAsync(f))
         );
     } catch (err: any) {
-        if (err?.code == 'ENOENT' && err?.path == DataPaths.HttpHosts) return []
+        if (err?.code == 'ENOENT' && err?.path == DataPaths.Roles) return []
         throw err
     }
 }
