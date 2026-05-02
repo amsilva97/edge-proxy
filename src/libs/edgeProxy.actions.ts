@@ -2,7 +2,7 @@
 import path from "path";
 import fs from 'fs/promises';
 import bcrypt from 'bcryptjs';
-import { HttpHost, HttpHostMeta, Role, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
+import { HttpHost, HttpHostMeta, HttpProxyType, Role, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
 import { AppEnv } from "./appEnv";
 import { EdgeBlockData, EdgeDirectives } from "./edgeDirective";
 import { hostname } from "os";
@@ -45,7 +45,8 @@ export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost
     await SaveHttpHostMetaAsync(httpHostName, {
         label: httpHostName,
         usedSsls: newUsedSsls,
-        usedSnippets: newUsedSnippets
+        usedSnippets: newUsedSnippets,
+        // type: // We dont set this because it will override previous type
     });
 
     // Update Enabled Config
@@ -189,6 +190,7 @@ export async function SaveHttpProxyHostAsync(httpHostName: string, source: strin
     // Save Host
     await SaveHttpHostAsync(httpHostName, httpHost as HttpHost)
     await SaveHttpHostMetaAsync(httpHostName, {
+        type: HttpProxyType.Proxy,
         quickSetup: {
             source: source,
             destination: destination,

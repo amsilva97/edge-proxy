@@ -1,10 +1,10 @@
 'use client';
 import { EdgeProxy } from "@/libs/edgeProxy";
-import { HttpHost, HttpHostMeta } from "@/types/types";
+import { HttpHost, HttpHostMeta, HttpProxyType } from "@/types/types";
 
 export async function listHttpProxies(): Promise<HttpHostMeta[]> {
     const all = await EdgeProxy.GetHttpHostMetaListAsync();
-    return all;
+    return all.filter(m => m.type === HttpProxyType.Proxy);
 }
 
 export async function proxyExists(name: string): Promise<boolean> {
