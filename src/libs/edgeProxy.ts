@@ -1,7 +1,7 @@
 'use client';
 import * as EdgeProxyActions from './edgeProxy.actions';
 import path from "path";
-import { HttpHost, HttpHostMeta, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
+import { HttpHost, HttpHostMeta, Role, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
 import { AppEnv } from "./appEnv";
 import { EdgeBlockData } from "./edgeDirective";
 
@@ -105,6 +105,28 @@ export namespace EdgeProxy {
 
     export async function GetSnippetMetaAsync(snippetName: string): Promise<SnippetMeta> {
         return await EdgeProxyActions.GetSnippetMetaAsync(snippetName);
+    }
+    //#endregion
+
+    //#region Roles
+    export async function GetRoleListAsync(): Promise<Role[]> {
+        return await EdgeProxyActions.GetRoleListAsync();
+    }
+
+    export async function GetRoleAsync(roleName: string): Promise<Role> {
+        return await EdgeProxyActions.GetRoleAsync(roleName);
+    }
+
+    export async function SaveRoleAsync(role: Role): Promise<void> {
+        return await EdgeProxyActions.SaveRoleAsync(role);
+    }
+
+    export async function GrantRoleAsync(role: Role, roleToGrant: Role): Promise<void> {
+        return await EdgeProxyActions.GrantRoleAsync(role, roleToGrant);
+    }
+
+    export async function RevokeRoleAsync(role: Role, roleToRevoke: Role): Promise<void> {
+        return await EdgeProxyActions.RevokeRoleAsync(role, roleToRevoke);
     }
     //#endregion
 

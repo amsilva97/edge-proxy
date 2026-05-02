@@ -1,4 +1,5 @@
 import { EdgeBlockData } from '@/libs/edgeDirective';
+import { inherits } from 'util';
 
 export enum HttpProxyType {
     Advanced,
@@ -33,4 +34,10 @@ export type Snippet = EdgeBlockData[];
 export type SnippetMeta = {
     label: string;
     attachedTo: string[];
+}
+
+export type Role = {
+    name: string;
+    pass: string | null;
+    inheritedBy: string[]
 }

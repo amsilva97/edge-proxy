@@ -1,7 +1,7 @@
 'use server';
 import path from "path";
 import fs from 'fs/promises';
-import { HttpHost, HttpHostMeta, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
+import { HttpHost, HttpHostMeta, Role, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
 import { AppEnv } from "./appEnv";
 import { EdgeBlockData, EdgeDirectives } from "./edgeDirective";
 import { hostname } from "os";
@@ -11,6 +11,7 @@ namespace DataPaths {
     export const HttpHosts = path.join(Root, 'http-hosts');
     export const Snippets = path.join(Root, 'snippets');
     export const SslCertKeys = path.join(Root, 'ssl');
+    export const Roles = path.join(Root, 'roles')
 }
 
 namespace NginxPaths {
@@ -18,6 +19,7 @@ namespace NginxPaths {
     export const HttpHosts = path.join(Root, 'sites-enabled');
     export const Snippets = path.join(Root, 'snippets');
     export const SslCertKeys = path.join(Root, 'ssl');
+    export const Roles = path.join(Root, 'roles')
 }
 
 //#region HttpHost
@@ -369,6 +371,48 @@ async function DetachSnippetFromHost(snippetName: string, hostName: string) {
     await SaveSnippetMetaAsync(snippetName, {
         attachedTo: [...oldAttachments]
     })
+}
+//#endregion
+
+//#region Roles
+export async function GetRoleListAsync(): Promise<Role[]> {
+    try {
+        return await Promise.all(
+            (await fs.readdir(DataPaths.HttpHosts))
+                .filter((f: string) => f.endsWith('.json'))
+                .map((f: string) => GetRoleAsync(f))
+        );
+    } catch (err: any) {
+        if (err?.code == 'ENOENT' && err?.path == DataPaths.HttpHosts) return []
+        throw err
+    }
+}
+
+export async function GetRoleAsync(roleName: string): Promise<Role> {
+    const rolePath: string = path.join(DataPaths.Roles, `${roleName}`);
+    const roleContent: string = await fs.readFile(rolePath, 'utf8');
+    const role: Role = JSON.parse(roleContent);
+    return role;
+}
+
+export async function SaveRoleAsync(role: Role): Promise<void> {
+    const rolePath: string = path.join(DataPaths.Roles, `${role.name}`);
+    await fs.mkdir(path.dirname(rolePath), { recursive: true });
+    await fs.writeFile(rolePath, JSON.stringify(role, null, 2));
+}
+
+export async function GrantRoleAsync(role: Role, roleToGrant: Role): Promise<void> {
+    const inherits: Set<string> = new Set<string>(roleToGrant.inheritedBy)
+    inherits.add(role.name)
+    roleToGrant.inheritedBy = [...inherits]
+    await SaveRoleAsync(roleToGrant)
+}
+
+export async function RevokeRoleAsync(role: Role, roleToRevoke: Role): Promise<void> {
+    const inherits: Set<string> = new Set<string>(roleToRevoke.inheritedBy)
+    inherits.delete(role.name)
+    roleToRevoke.inheritedBy = [...inherits]
+    await SaveRoleAsync(roleToRevoke)
 }
 //#endregion
 
