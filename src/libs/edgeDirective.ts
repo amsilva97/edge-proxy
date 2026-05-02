@@ -7,6 +7,7 @@ export type EdgePrimitive =
     // Non-directive primitives
     | 'ssl' // will use the apps saved ssl
     | 'snippet' // will use the apps saved snippets
+    | 'role' // will use the apps saved roles
 
 export type EdgeSlot = {
     primitive: EdgePrimitive;
@@ -910,7 +911,7 @@ export const EdgeDirectives: EdgeDirective[] = [
     },
     {
         key: 'auth_basic_user_file',
-        params: [{ primitive: 'string', label: 'file' }],
+        params: [{ primitive: 'role' }],
         context: EdgeDirectiveContext.http | EdgeDirectiveContext.server | EdgeDirectiveContext.location
     },
     // ngx_http_auth_jwt_module

@@ -166,22 +166,24 @@ function FindUsedSnippets(httpHost: HttpHost): string[] {
 
 //#region HttpHost Quick Host
 export async function SaveHttpProxyHostAsync(httpHostName: string, source: string,
-    destination: string, sslCertKeyName: string | null): Promise<void> {
+    destination: string, sslCertKeyName: string | null, accessRole: string | null): Promise<void> {
     const httpHost = []
-    const sslCertKey = sslCertKeyName ? await GetSslCertKeyAsync(sslCertKeyName) : null
 
     // Redirect Server Context
-    if (sslCertKey) {
+    if (sslCertKeyName) {
         const redirectServerDirectives = [["listen", 80], ["server_name", source], ["return", "301 https://$host$request_uri"]]
         httpHost.push(["server", redirectServerDirectives])
     }
 
     // Main Server Context
     const location = ["location", "/", [["proxy_pass", destination]]]
-    const sslCertKeyDirectives = !sslCertKey
-        ? []
-        : [["ssl_certificate", sslCertKey.label], ["ssl_certificate_key", sslCertKey.label]]
-    const mainServerDirectives = [["listen", sslCertKey ? 443 : 80], ["server_name", source], ...sslCertKeyDirectives, location]
+    const basicAuth = accessRole
+        ? [["auth_basic", '"Authorization Required"'], ["auth_basic_user_file", accessRole]]
+        : []
+    const sslCertKeyDirectives = sslCertKeyName
+        ? [["ssl_certificate", sslCertKeyName], ["ssl_certificate_key", sslCertKeyName]]
+        : []
+    const mainServerDirectives = [["listen", sslCertKeyName ? 443 : 80, "", sslCertKeyName ? "ssl" : ""], ["server_name", source], ...basicAuth, ...sslCertKeyDirectives, location]
     httpHost.push(["server", mainServerDirectives])
 
     // Save Host
@@ -190,7 +192,8 @@ export async function SaveHttpProxyHostAsync(httpHostName: string, source: strin
         quickSetup: {
             source: source,
             destination: destination,
-            ssl: sslCertKeyName
+            ssl: sslCertKeyName,
+            accessRole: accessRole
         }
     })
 }
@@ -485,6 +488,9 @@ function BuildNginxConfig(blocks: EdgeBlockData[]): string {
                 }
                 if (slot?.primitive === 'snippet') {
                     return path.join(NginxPaths.Snippets, String(v));
+                }
+                if (slot?.primitive === 'role') {
+                    return path.join(NginxPaths.Roles, String(v));
                 }
                 const suffix = slot?.suffix ?? slot?.subSlot?.suffix;
                 return suffix ? `${v}${suffix}` : String(v);
