@@ -1,7 +1,7 @@
 'use server';
+import * as NginxActions from './nginx.actions';
 import path from "path";
 import fs from 'fs/promises';
-import { exec } from 'child_process';
 import bcrypt from 'bcryptjs';
 import { HttpHost, HttpHostMeta, HttpProxyType, Role, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
 import { AppEnv } from "./appEnv";
@@ -31,7 +31,7 @@ export async function GetHttpHostAsync(httpHostName: string): Promise<HttpHost> 
     return httpHost;
 }
 
-export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost): Promise<void> {
+export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost): Promise<HttpHostMeta> {
     const httpHostPath: string = path.join(DataPaths.HttpHosts, `${httpHostName}.json`);
     const oldHttpHostMeta = await TryGetHttpHostMetaAsync(httpHostName);
     const oldUsedSsls = oldHttpHostMeta?.usedSsls ?? []
@@ -64,6 +64,7 @@ export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost
     for (const newUsedSnippet of newUsedSnippets) await AttachSnippetToHost(newUsedSnippet, httpHostName)
     for (const oldRole of oldRoles) await DetachRoleFromHost(oldRole, httpHostName)
     for (const newRole of newRoles) await AttachRoleToHost(newRole, httpHostName)
+    return await GetHttpHostMetaAsync(httpHostName)
 }
 
 export async function DeleteHttpHostAsync(httpHostName: string): Promise<void> {
@@ -72,20 +73,28 @@ export async function DeleteHttpHostAsync(httpHostName: string): Promise<void> {
     await fs.rm(httpHostPath, { force: true });
 }
 
-export async function EnableHttpHostAsync(httpHostName: string): Promise<void> {
-    const httpHost: HttpHost = await GetHttpHostAsync(httpHostName);
-    const nHttpHostPath: string = path.join(NginxPaths.HttpHosts, httpHostName);
-    const nginxConfig = BuildNginxConfig(httpHost);
-    await fs.writeFile(nHttpHostPath, nginxConfig);
-    await SaveHttpHostMetaAsync(httpHostName, { isEnabled: true });
-    await ReloadNginx();
+export async function EnableHttpHostAsync(httpHostName: string): Promise<HttpHostMeta> {
+    try {
+        const httpHost: HttpHost = await GetHttpHostAsync(httpHostName);
+        const nHttpHostPath: string = path.join(NginxPaths.HttpHosts, httpHostName);
+        const nginxConfig = BuildNginxConfig(httpHost);
+        await fs.writeFile(nHttpHostPath, nginxConfig);
+        await SaveHttpHostMetaAsync(httpHostName, { isEnabled: true });
+        await NginxActions.ReloadNginxAsync();
+        return await GetHttpHostMetaAsync(httpHostName)
+    }
+    catch (err: any) {
+        await DisabledHttpHostAsync(httpHostName)
+        throw err
+    }
 }
 
-export async function DisabledHttpHostAsync(httpHostName: string): Promise<void> {
+export async function DisabledHttpHostAsync(httpHostName: string): Promise<HttpHostMeta> {
     const nHttpHostPath: string = path.join(NginxPaths.HttpHosts, httpHostName);
     await fs.rm(nHttpHostPath, { force: true });
     await SaveHttpHostMetaAsync(httpHostName, { isEnabled: false });
-    await ReloadNginx();
+    await NginxActions.ReloadNginxAsync();
+    return await GetHttpHostMetaAsync(httpHostName)
 }
 
 export async function GetHttpHostMetaListAsync(): Promise<HttpHostMeta[]> {
@@ -117,13 +126,15 @@ export async function TryGetHttpHostMetaAsync(httpHostName: string): Promise<Htt
     }
 }
 
-async function SaveHttpHostMetaAsync(httpHostName: string, httpHostMeta: Partial<HttpHostMeta>): Promise<void> {
+async function SaveHttpHostMetaAsync(httpHostName: string, httpHostMeta: Partial<HttpHostMeta>): Promise<HttpHostMeta> {
     const httpHostMetaPath: string = path.join(DataPaths.HttpHosts, `${httpHostName}.meta`);
     const oldData = await TryGetHttpHostMetaAsync(httpHostName);
-    await fs.writeFile(httpHostMetaPath, JSON.stringify({
+    const newData = {
         ...oldData,
         ...httpHostMeta
-    }, null, 2));
+    }
+    await fs.writeFile(httpHostMetaPath, JSON.stringify(newData, null, 2));
+    return newData
 }
 
 function FindUsedDirectiveValues(httpHost: HttpHost, primitiveKey: EdgePrimitive): string[] {
@@ -152,8 +163,9 @@ function FindUsedDirectiveValues(httpHost: HttpHost, primitiveKey: EdgePrimitive
 
 //#region HttpHost Quick Host
 export async function SaveHttpProxyHostAsync(httpHostName: string, source: string,
-    destination: string, sslCertKeyName: string | null, accessRole: string | null): Promise<void> {
+    destination: string, sslCertKeyName: string | null, accessRole: string | null): Promise<HttpHostMeta> {
     const httpHost = []
+    const normalizedDestination = destination.replace(/^https?:\/\//, '');
 
     // Redirect Server Context
     if (sslCertKeyName) {
@@ -162,7 +174,7 @@ export async function SaveHttpProxyHostAsync(httpHostName: string, source: strin
     }
 
     // Main Server Context
-    const location = ["location", "/", [["proxy_pass", destination]]]
+    const location = ["location", "/", [["proxy_pass", 'http://' + normalizedDestination]]]
     const basicAuth = accessRole
         ? [["auth_basic", '"Authorization Required"'], ["auth_basic_user_file", accessRole]]
         : []
@@ -174,11 +186,11 @@ export async function SaveHttpProxyHostAsync(httpHostName: string, source: strin
 
     // Save Host
     await SaveHttpHostAsync(httpHostName, httpHost as HttpHost)
-    await SaveHttpHostMetaAsync(httpHostName, {
+    return await SaveHttpHostMetaAsync(httpHostName, {
         type: HttpProxyType.Proxy,
         quickSetup: {
             source: source,
-            destination: destination,
+            destination: normalizedDestination,
             ssl: sslCertKeyName,
             accessRole: accessRole
         }
@@ -227,7 +239,7 @@ export async function EnableSslCertKeyAsync(sslCertKeyName: string): Promise<voi
     await fs.writeFile(nSslCerPath, sslCertKey.cert);
     await fs.writeFile(nSslKeyPath, sslCertKey.key);
     await SaveSslCertKeyMetaAsync(sslCertKeyName, { isEnabled: true });
-    await ReloadNginx();
+    await NginxActions.ReloadNginxAsync();
 }
 
 export async function DisabledSslCertKeyAsync(sslCertKeyName: string): Promise<void> {
@@ -236,7 +248,7 @@ export async function DisabledSslCertKeyAsync(sslCertKeyName: string): Promise<v
     await fs.rm(nSslCerPath, { force: true });
     await fs.rm(nSslKeyPath, { force: true });
     await SaveSslCertKeyMetaAsync(sslCertKeyName, { isEnabled: false });
-    await ReloadNginx();
+    await NginxActions.ReloadNginxAsync();
 }
 
 export async function GetSslCertKeyMetaAsync(sslCertKeyName: string): Promise<SslCertKeyMeta> {
@@ -313,7 +325,7 @@ export async function SaveSnippetAsync(snippetName: string, snippet: Snippet): P
     await fs.writeFile(snippetPath, JSON.stringify(snippet, null, 2));
     await fs.writeFile(nSnippetPath, nginxConfig);
     await SaveSnippetMetaAsync(snippetName, { label: snippetName });
-    await ReloadNginx();
+    await NginxActions.ReloadNginxAsync();
 }
 
 export async function DeleteSnippetAsync(snippetName: string): Promise<void> {
@@ -428,7 +440,7 @@ async function WriteRoleHtpasswdAsync(role: Role, roleMap: Map<string, Role>): P
         .map(r => `${r.name}:${r.pass}`);
 
     await fs.writeFile(nRolePath, lines.join('\n') + '\n');
-    await ReloadNginx();
+    await NginxActions.ReloadNginxAsync();
 }
 
 export async function SetRolePasswordAsync(role: Role, password: string): Promise<void> {
@@ -469,26 +481,6 @@ async function DetachRoleFromHost(roleName: string, hostName: string) {
     oldAttachments.delete(hostName)
     role.attachedTo = [...oldAttachments]
     await SaveRoleAsync(role)
-}
-//#endregion
-
-//#region Nginx Commands
-let _nginxReloadTimer: ReturnType<typeof setTimeout> | null = null;
-let _nginxReloadPending: Array<{ resolve: () => void; reject: (err: unknown) => void }> = [];
-
-function ReloadNginx(): Promise<void> {
-    return new Promise((resolve, reject) => {
-        _nginxReloadPending.push({ resolve, reject });
-        if (_nginxReloadTimer) clearTimeout(_nginxReloadTimer);
-        _nginxReloadTimer = setTimeout(() => {
-            _nginxReloadTimer = null;
-            const pending = _nginxReloadPending.splice(0);
-            exec('nginx -s reload', (err) => {
-                if (err) pending.forEach(p => p.reject(err));
-                else pending.forEach(p => p.resolve());
-            });
-        }, 500);
-    });
 }
 //#endregion
 

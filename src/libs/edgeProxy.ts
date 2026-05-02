@@ -4,6 +4,7 @@ import path from "path";
 import { HttpHost, HttpHostMeta, Role, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
 import { AppEnv } from "./appEnv";
 import { EdgeBlockData } from "./edgeDirective";
+import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
 
 export namespace EdgeProxy {
 
@@ -24,7 +25,7 @@ export namespace EdgeProxy {
         return await EdgeProxyActions.GetHttpHostAsync(httpHostName);
     }
 
-    export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost): Promise<void> {
+    export async function SaveHttpHostAsync(httpHostName: string, httpHost: HttpHost): Promise<HttpHostMeta> {
         return await EdgeProxyActions.SaveHttpHostAsync(httpHostName, httpHost);
     }
 
@@ -32,11 +33,20 @@ export namespace EdgeProxy {
         return await EdgeProxyActions.DeleteHttpHostAsync(httpHostName);
     }
 
-    export async function EnableHttpHostAsync(httpHostName: string): Promise<void> {
-        return await EdgeProxyActions.EnableHttpHostAsync(httpHostName);
+    export async function EnableHttpHostAsync(httpHostName: string): Promise<HttpHostMeta | null> {
+        try {
+            return await EdgeProxyActions.EnableHttpHostAsync(httpHostName);
+        }
+        catch (err: any) {
+            NotificationManager.addToast(
+                String(err),
+                ToastNotificationStatus.Error
+            )
+            return await GetHttpHostMetaAsync(httpHostName)
+        }
     }
 
-    export async function DisabledHttpHostAsync(httpHostName: string): Promise<void> {
+    export async function DisabledHttpHostAsync(httpHostName: string): Promise<HttpHostMeta> {
         return await EdgeProxyActions.DisabledHttpHostAsync(httpHostName);
     }
 
@@ -51,8 +61,8 @@ export namespace EdgeProxy {
 
     //#region HttpHost Quick Host
     export async function SaveHttpProxyHostAsync(httpHostName: string, source: string,
-        destination: string, sslCertKeyName: string | null, accessRole: string | null): Promise<void> {
-        await EdgeProxyActions.SaveHttpProxyHostAsync(httpHostName, source, destination, sslCertKeyName, accessRole);
+        destination: string, sslCertKeyName: string | null, accessRole: string | null): Promise<HttpHostMeta> {
+        return await EdgeProxyActions.SaveHttpProxyHostAsync(httpHostName, source, destination, sslCertKeyName, accessRole);
     }
     //#endregion
 
