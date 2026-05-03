@@ -196,6 +196,43 @@ export async function SaveHttpProxyHostAsync(httpHostName: string, source: strin
         }
     })
 }
+
+export async function SaveHttpLoadbalancerHostAsync(httpHostName: string, source: string,
+    serverList: string[], sslCertKeyName: string | null, accessRole: string | null): Promise<HttpHostMeta> {
+    const httpHost = []
+
+    // Upstream block
+    const upstreamServers = serverList.map(s => ["server", s])
+    httpHost.push(["upstream", "backends", upstreamServers])
+
+    // SSL redirect server
+    if (sslCertKeyName) {
+        const redirectServerDirectives = [["listen", 80], ["server_name", source], ["return", "301 https://$host$request_uri"]]
+        httpHost.push(["server", redirectServerDirectives])
+    }
+
+    // Main server
+    const location = ["location", "/", [["proxy_pass", "http://backends"]]]
+    const basicAuth = accessRole
+        ? [["auth_basic", '"Authorization Required"'], ["auth_basic_user_file", accessRole]]
+        : []
+    const sslCertKeyDirectives = sslCertKeyName
+        ? [["ssl_certificate", sslCertKeyName], ["ssl_certificate_key", sslCertKeyName]]
+        : []
+    const mainServerDirectives = [["listen", sslCertKeyName ? 443 : 80, "", sslCertKeyName ? "ssl" : ""], ["server_name", source], ...basicAuth, ...sslCertKeyDirectives, location]
+    httpHost.push(["server", mainServerDirectives])
+
+    await SaveHttpHostAsync(httpHostName, httpHost as HttpHost)
+    return await SaveHttpHostMetaAsync(httpHostName, {
+        type: HttpProxyType.Loadbalancer,
+        quickSetup: {
+            source: source,
+            servers: serverList.join(','),
+            ssl: sslCertKeyName,
+            accessRole: accessRole
+        }
+    })
+}
 //#endregion
 
 //#region SslCertKey

@@ -3,7 +3,8 @@ import { inherits } from 'util';
 
 export enum HttpProxyType {
     Advanced,
-    Proxy
+    Proxy,
+    Loadbalancer
 }
 
 export type HttpHost = EdgeBlockData[];
