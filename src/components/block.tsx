@@ -12,7 +12,11 @@ function insideContext(name: string): EdgeDirectiveContext {
     return EdgeDirectiveContext.any;
 }
 
-function findDirective(name: string): EdgeDirective | undefined {
+function findDirective(name: string, context?: EdgeDirectiveContext): EdgeDirective | undefined {
+    if (context !== undefined) {
+        const match = EdgeDirectives.find(d => d.key === name && (d.context & context) !== 0);
+        if (match) return match;
+    }
     return EdgeDirectives.find(d => d.key === name);
 }
 
@@ -157,6 +161,7 @@ function SlotInput({ slot, value, onChange, active, sslLabels, snippetLabels, ro
 interface ICard {
     data: EdgeBlockData;
     depth?: number;
+    context?: EdgeDirectiveContext;
     onChange?: (newData: EdgeBlockData) => void;
     onDelete?: () => void;
     sslLabels?: string[];
@@ -164,9 +169,9 @@ interface ICard {
     roleLabels?: string[];
 }
 
-function Card({ data, depth = 0, onChange, onDelete, sslLabels, snippetLabels, roleLabels }: ICard): JSX.Element {
+function Card({ data, depth = 0, context, onChange, onDelete, sslLabels, snippetLabels, roleLabels }: ICard): JSX.Element {
     const name = data[0];
-    const directive = findDirective(name);
+    const directive = findDirective(name, context);
     const isCtx = isContextDirective(directive);
 
     // Non-context params (slot values) vs the single context param (children block).
@@ -328,7 +333,7 @@ function Card({ data, depth = 0, onChange, onDelete, sslLabels, snippetLabels, r
 
             <div className="flex flex-col gap-2 p-3">
                 {children.map((child, i) => (
-                    <Card key={i} data={child} depth={depth + 1}
+                    <Card key={i} data={child} depth={depth + 1} context={ctx}
                         onChange={(u) => handleChildChange(i, u)}
                         onDelete={() => handleChildDelete(i)}
                         sslLabels={sslLabels} snippetLabels={snippetLabels} roleLabels={roleLabels} />
@@ -413,6 +418,7 @@ export default function Block({ data, context, onChange, sslLabels, snippetLabel
                     key={i}
                     data={child}
                     depth={0}
+                    context={context}
                     onChange={(u) => handleChange(i, u)}
                     onDelete={() => handleDelete(i)}
                     sslLabels={sslLabels}

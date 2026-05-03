@@ -5,7 +5,7 @@ import fs from 'fs/promises';
 import bcrypt from 'bcryptjs';
 import { HttpHost, HttpHostMeta, HttpProxyType, Role, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
 import { AppEnv } from "./appEnv";
-import { EdgeBlockData, EdgeDirectives, EdgePrimitive } from "./edgeDirective";
+import { EdgeBlockData, EdgeDirectiveContext, EdgeDirectives, EdgePrimitive } from "./edgeDirective";
 
 namespace DataPaths {
     const Root = 'data';
@@ -489,10 +489,17 @@ export async function NginxConfigPreview(blocks: EdgeBlockData[]): Promise<strin
 }
 
 function BuildNginxConfig(blocks: EdgeBlockData[]): string {
-    function _build(block: EdgeBlockData, indent: number): string {
+    function childContext(name: string): EdgeDirectiveContext {
+        const val = (EdgeDirectiveContext as Record<string, unknown>)[name];
+        if (typeof val === 'number') return val as EdgeDirectiveContext;
+        return EdgeDirectiveContext.any;
+    }
+
+    function _build(block: EdgeBlockData, indent: number, context: EdgeDirectiveContext = EdgeDirectiveContext.any): string {
         const [name, ...rest] = block;
         const pad = '    '.repeat(indent);
-        const directive = EdgeDirectives.find(d => d.key === name);
+        const directive = EdgeDirectives.find(d => d.key === name && (d.context & context) !== 0)
+            ?? EdgeDirectives.find(d => d.key === name);
         const nonCtxParams = directive?.params.filter(p => p.primitive !== 'context') ?? [];
         const hasContext = directive?.params.some(p => p.primitive === 'context') ?? false;
 
@@ -514,10 +521,11 @@ function BuildNginxConfig(blocks: EdgeBlockData[]): string {
                 return suffix ? `${v}${suffix}` : String(v);
             }).filter(Boolean);
 
+        const nextCtx = childContext(name);
         if (hasContext) {
             const slotVals = rest.slice(0, nonCtxParams.length);
             const children = (rest[nonCtxParams.length] ?? []) as EdgeBlockData[];
-            const inner = children.map(c => _build(c, indent + 1)).filter(Boolean).join('\n');
+            const inner = children.map(c => _build(c, indent + 1, nextCtx)).filter(Boolean).join('\n');
             const params = applySlots(slotVals);
             const header = params.length ? `${name} ${params.join(' ')}` : name;
             return `${pad}${header} {\n${inner}\n${pad}}`;
