@@ -27,6 +27,7 @@ export enum EdgeDirectiveContext {
     stream = 1 << 4,
     server = 1 << 5,
     location = 1 << 6,
+    upstream = 1 << 7,
 }
 
 export interface EdgeDirective {
@@ -1633,6 +1634,154 @@ export const EdgeDirectives: EdgeDirective[] = [
     // ngx_http_sub_module
     // ngx_http_tunnel_module
     // ngx_http_upstream_module
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'upstream',
+        params: [
+            { primitive: 'string', label: 'name' },
+            { primitive: 'context' }
+        ],
+        context: EdgeDirectiveContext.http
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'server',
+        params: [
+            { primitive: 'string', label: 'address' },
+            { primitive: 'flag', label: 'weight', optional: true, subSlot: { primitive: 'number', prefix: '=' } },
+            { primitive: 'flag', label: 'max_conns', optional: true, subSlot: { primitive: 'number', prefix: '=' } },
+            { primitive: 'flag', label: 'max_fails', optional: true, subSlot: { primitive: 'number', prefix: '=' } },
+            { primitive: 'flag', label: 'fail_timeout', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'backup', optional: true },
+            { primitive: 'flag', label: 'down', optional: true },
+            { primitive: 'flag', label: 'resolve', optional: true },
+            { primitive: 'flag', label: 'service', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'route', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'drain', optional: true },
+            { primitive: 'flag', label: 'slow_start', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+        ],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'zone',
+        params: [
+            { primitive: 'string', label: 'name' },
+            { primitive: 'string', label: 'size', optional: true }
+        ],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'state',
+        params: [{ primitive: 'string', label: 'file' }],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'hash',
+        params: [
+            { primitive: 'string', label: 'key' },
+            { primitive: 'flag', label: 'consistent', optional: true }
+        ],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'ip_hash',
+        params: [],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'keepalive',
+        params: [
+            { primitive: 'number', label: 'connections' },
+            { primitive: 'flag', label: 'local', optional: true }
+        ],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'keepalive_requests',
+        params: [{ primitive: 'number' }],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'keepalive_time',
+        params: [{ primitive: 'string', label: 'time' }],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'keepalive_timeout',
+        params: [{ primitive: 'string', label: 'timeout' }],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'ntlm',
+        params: [],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'least_conn',
+        params: [],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'least_time',
+        params: [
+            { primitive: ['header', 'last_byte'] },
+            { primitive: 'flag', label: 'inflight', optional: true }
+        ],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'queue',
+        params: [
+            { primitive: 'number', label: 'number' },
+            { primitive: 'flag', label: 'timeout', optional: true, subSlot: { primitive: 'string', prefix: '=' } }
+        ],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'random',
+        params: [
+            { primitive: 'flag', label: 'two', optional: true },
+            { primitive: ['least_conn', 'least_time=header', 'least_time=last_byte'], label: 'method', optional: true }
+        ],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'resolver',
+        params: [
+            { primitive: 'string', label: 'address ...' },
+            { primitive: 'flag', label: 'valid', optional: true, subSlot: { primitive: 'string', prefix: '=' } },
+            { primitive: 'flag', label: 'ipv4', optional: true, subSlot: { primitive: ['on', 'off'], prefix: '=' } },
+            { primitive: 'flag', label: 'ipv6', optional: true, subSlot: { primitive: ['on', 'off'], prefix: '=' } },
+            { primitive: 'flag', label: 'status_zone', optional: true, subSlot: { primitive: 'string', prefix: '=' } }
+        ],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'resolver_timeout',
+        params: [{ primitive: 'string', label: 'time' }],
+        context: EdgeDirectiveContext.upstream
+    },
+    {
+        module: 'ngx_http_upstream_module',
+        key: 'sticky',
+        params: [{ primitive: 'string', label: 'cookie name [...] | route $variable ... | learn create=$variable lookup=$variable zone=name:size [...]' }],
+        context: EdgeDirectiveContext.upstream
+    },
     // ngx_http_upstream_conf_module
     // ngx_http_upstream_hc_module
     // ngx_http_userid_module
