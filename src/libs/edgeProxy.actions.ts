@@ -233,6 +233,29 @@ export async function SaveHttpLoadbalancerHostAsync(httpHostName: string, source
         }
     })
 }
+
+export async function SaveHttpRedirectAsync(httpHostName: string, source: string,
+    destination: string, isPermanent: boolean): Promise<HttpHostMeta> {
+    const statusCode = isPermanent ? 301 : 302
+    const normalizedDestination = destination.replace(/^https?:\/\//, '')
+    const httpHost = [
+        ["server", [
+            ["listen", 80],
+            ["server_name", source],
+            ["return", `${statusCode} https://${normalizedDestination}`]
+        ]]
+    ]
+
+    await SaveHttpHostAsync(httpHostName, httpHost as HttpHost)
+    return await SaveHttpHostMetaAsync(httpHostName, {
+        type: HttpProxyType.Redirect,
+        quickSetup: {
+            source,
+            destination: normalizedDestination,
+            isPermanent: String(isPermanent)
+        }
+    })
+}
 //#endregion
 
 //#region SslCertKey
