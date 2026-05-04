@@ -234,7 +234,7 @@ export async function SaveHttpLoadbalancerHostAsync(httpHostName: string, source
     })
 }
 
-export async function SaveHttpRedirectAsync(httpHostName: string, source: string,
+export async function SaveHttpRedirectHostAsync(httpHostName: string, source: string,
     destination: string, isPermanent: boolean): Promise<HttpHostMeta> {
     const statusCode = isPermanent ? 301 : 302
     const normalizedDestination = destination.replace(/^https?:\/\//, '')

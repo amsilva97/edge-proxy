@@ -70,9 +70,9 @@ export namespace EdgeProxy {
         return await EdgeProxyActions.SaveHttpLoadbalancerHostAsync(httpHostName, source, serverList, sslCertKeyName, accessRole);
     }
 
-    export async function SaveHttpRedirectAsync(httpHostName: string, source: string,
+    export async function SaveHttpRedirectHostAsync(httpHostName: string, source: string,
         destination: string, isPermanent: boolean): Promise<HttpHostMeta> {
-        return await EdgeProxyActions.SaveHttpRedirectAsync(httpHostName, source, destination, isPermanent);
+        return await EdgeProxyActions.SaveHttpRedirectHostAsync(httpHostName, source, destination, isPermanent);
     }
     //#endregion
 

@@ -19,7 +19,7 @@ export async function redirectExists(name: string): Promise<boolean> {
 export async function saveHttpRedirect(
     name: string, source: string, destination: string, isPermanent: boolean
 ): Promise<HttpHostMeta> {
-    return EdgeProxy.SaveHttpRedirectAsync(name, source, destination, isPermanent);
+    return EdgeProxy.SaveHttpRedirectHostAsync(name, source, destination, isPermanent);
 }
 
 export async function deleteHttpRedirect(name: string): Promise<void> {
