@@ -37,7 +37,7 @@ const nav: (NavLink | NavGroup | NavDivider)[] = [
     { label: "SSLs", href: "/ssls", icon: ShieldCheck },
     { label: "Roles", href: "/roles", icon: Users },
     { divider: true },
-    { label: "Nginx", href: "/nginx", icon: Server },
+    // { label: "Nginx", href: "/nginx", icon: Server },
     { label: "App Config", href: "/app-config", icon: Settings },
 ];
 
