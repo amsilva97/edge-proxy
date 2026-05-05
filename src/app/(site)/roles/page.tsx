@@ -44,7 +44,7 @@ function NewRoleDialog({ open, onClose, onSaved }: NewRoleDialogProps) {
             setBusy(false);
             return;
         }
-        await saveRole({ name: slug, pass: password.trim() || null, inheritedBy: [] });
+        await saveRole({ name: slug, pass: password.trim() || null, inheritedBy: [], attachedTo: [] });
         onSaved();
         setBusy(false);
     }

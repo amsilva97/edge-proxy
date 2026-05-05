@@ -2,6 +2,11 @@
 
 A self-hosted nginx configuration manager with a web UI. Create and manage HTTP proxies, load balancers, redirects, static hosts, SSL certificates, and reusable snippets — all without touching config files directly.
 
+## Screenshots
+
+<img src="screenshots/login-page.png" width="420" alt="Login page" />
+<img src="screenshots/http-host-page.png" alt="HTTP Hosts" />
+
 ## Features
 
 - **HTTP Hosts** — manage virtual host configurations
