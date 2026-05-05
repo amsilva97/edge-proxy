@@ -38,6 +38,24 @@ export default function AppConfigPage() {
                     <div className="max-w-lg flex flex-col gap-6">
 
                         <section className="flex flex-col gap-3">
+                            <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Server</h2>
+
+                            <label className="flex flex-col gap-1.5">
+                                <span className="text-sm font-medium text-zinc-700">Port</span>
+                                <Input
+                                    type="number"
+                                    value={config['NEXT_PUBLIC_PORT'] ?? ''}
+                                    onChange={(e) => setConfig({ ...config, NEXT_PUBLIC_PORT: e.target.value })}
+                                    placeholder="3000"
+                                    className="w-full"
+                                />
+                                <span className="text-xs text-zinc-400">
+                                    Port the server listens on. Requires a restart to take effect.
+                                </span>
+                            </label>
+                        </section>
+
+                        <section className="flex flex-col gap-3">
                             <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Nginx</h2>
 
                             <label className="flex flex-col gap-1.5">

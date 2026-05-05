@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "PORT=$(grep -sh '^NEXT_PUBLIC_PORT=' .env.local .env | head -1 | cut -d= -f2) && next dev -H 0.0.0.0 -p ${PORT:-3000}",
     "build": "next build",
-    "start": "next start",
+    "start": "PORT=$(grep -sh '^NEXT_PUBLIC_PORT=' .env.local .env | head -1 | cut -d= -f2) && next start -p ${PORT:-3000}",
     "lint": "eslint"
   },
   "dependencies": {
