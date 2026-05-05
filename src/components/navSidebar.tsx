@@ -11,21 +11,60 @@ interface NavLink {
     icon: LucideIcon;
 }
 
-const links: NavLink[] = [
-    { label: "Http Hosts",    href: "/http-hosts",    icon: Network          },
-    { label: "Http Proxies",  href: "/http-proxies",      icon: ArrowRightLeft   },
-    { label: "Http Load Balancers", href: "/http-loadbalancer", icon: Layers           },
-    { label: "Http Redirects",   href: "/http-redirects",   icon: CornerDownRight  },
-    { label: "Http Static",      href: "/http-static",      icon: FolderOpen       },
-    { label: "Snippets",      href: "/snippets",      icon: Scissors         },
-    { label: "SSLs",          href: "/ssls",          icon: ShieldCheck      },
-    { label: "Roles",         href: "/roles",         icon: Users            },
-    { label: "Nginx",         href: "/nginx",          icon: Server           },
-    { label: "App Config",    href: "/app-config",    icon: Settings         },
+interface NavGroup {
+    group: string;
+    links: NavLink[];
+}
+
+interface NavDivider {
+    divider: true;
+}
+
+const nav: (NavLink | NavGroup | NavDivider)[] = [
+    {
+        group: 'Http',
+        links: [
+            { label: "Hosts", href: "/http-hosts", icon: Network },
+            { label: "Proxies", href: "/http-proxies", icon: ArrowRightLeft },
+            { label: "Load Balancers", href: "/http-loadbalancer", icon: Layers },
+            { label: "Redirects", href: "/http-redirects", icon: CornerDownRight },
+            { label: "Static", href: "/http-static", icon: FolderOpen },
+        ],
+    },
+    { divider: true },
+    { label: "Snippets", href: "/snippets", icon: Scissors },
+    { label: "SSLs", href: "/ssls", icon: ShieldCheck },
+    { label: "Roles", href: "/roles", icon: Users },
+    { divider: true },
+    { label: "Nginx", href: "/nginx", icon: Server },
+    { label: "App Config", href: "/app-config", icon: Settings },
 ];
 
 const EXPANDED_W = 200;
 const COLLAPSED_W = 52;
+
+function NavItem({ href, label, icon: Icon, collapsed, pathname }: NavLink & { collapsed: boolean; pathname: string }) {
+    const active = pathname === href || pathname.startsWith(href + "/");
+    return (
+        <li>
+            <Link
+                href={href}
+                title={collapsed ? label : undefined}
+                className={`flex items-center h-9 px-3 w-full text-sm transition-colors cursor-pointer ${active
+                        ? "bg-brand/10 text-brand font-medium border-l-2 border-brand"
+                        : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 border-l-2 border-transparent"
+                    }`}
+            >
+                <div className="flex items-center justify-center w-5 shrink-0">
+                    <Icon size={15} strokeWidth={1.75} />
+                </div>
+                {!collapsed && (
+                    <span className="ml-2 whitespace-nowrap overflow-hidden">{label}</span>
+                )}
+            </Link>
+        </li>
+    );
+}
 
 export default function NavSidebar() {
     const [collapsed, setCollapsed] = useState(false);
@@ -53,29 +92,29 @@ export default function NavSidebar() {
             </div>
 
             {/* nav links */}
-            <ul className="flex-1 py-3 space-y-0.5">
-                {links.map(({ href, label, icon: Icon }) => {
-                    const active = pathname === href || pathname.startsWith(href + "/");
-                    return (
-                        <li key={href}>
-                            <Link
-                                href={href}
-                                title={collapsed ? label : undefined}
-                                className={`flex items-center h-9 px-3 w-full text-sm transition-colors cursor-pointer ${
-                                    active
-                                        ? "bg-brand/10 text-brand font-medium border-l-2 border-brand"
-                                        : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 border-l-2 border-transparent"
-                                }`}
-                            >
-                                <div className="flex items-center justify-center w-5 shrink-0">
-                                    <Icon size={15} strokeWidth={1.75} />
-                                </div>
+            <ul className="flex-1 py-3 space-y-0.5 overflow-y-auto">
+                {nav.map((item, i) => {
+                    if ('group' in item) {
+                        return (
+                            <li key={item.group}>
                                 {!collapsed && (
-                                    <span className="ml-2 whitespace-nowrap overflow-hidden">{label}</span>
+                                    <span className="block px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-400 select-none">
+                                        {item.group}
+                                    </span>
                                 )}
-                            </Link>
-                        </li>
-                    );
+                                {collapsed && <div className="mt-2 mb-1 mx-3 border-t border-zinc-200" />}
+                                <ul className="space-y-0.5">
+                                    {item.links.map(link => (
+                                        <NavItem key={link.href} {...link} collapsed={collapsed} pathname={pathname} />
+                                    ))}
+                                </ul>
+                            </li>
+                        );
+                    }
+                    if ('divider' in item) {
+                        return <li key={`divider-${i}`} className="mx-3 my-2 border-t border-zinc-200" />;
+                    }
+                    return <NavItem key={item.href} {...item} collapsed={collapsed} pathname={pathname} />;
                 })}
             </ul>
 
