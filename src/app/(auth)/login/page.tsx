@@ -1,24 +1,44 @@
 'use client'
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Input from '@/components/ui/input';
 import Button from '@/components/ui/button';
+import { checkIsSetup, signIn, getSessionValid } from './scripts';
 
 export default function LoginPage() {
+    const router = useRouter();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
+    const [checking, setChecking] = useState(true);
+
+    useEffect(() => {
+        getSessionValid().then(valid => {
+            if (valid) { router.replace('/http-hosts'); return; }
+            checkIsSetup().then(needsSetup => {
+                if (needsSetup) router.replace('/setup');
+                else setChecking(false);
+            });
+        });
+    }, [router]);
+
+    const canSubmit = !busy && !!username.trim() && !!password;
 
     async function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault();
-        if (!username.trim() || !password) return;
+        if (!canSubmit) return;
         setBusy(true);
-        // TODO: wire up auth
-        await new Promise(r => setTimeout(r, 800));
-        setBusy(false);
+        setError('');
+        const result = await signIn(username.trim(), password);
+        if (result?.error) {
+            setError(result.error);
+            setBusy(false);
+        }
     }
 
-    const canSubmit = !busy && !!username.trim() && !!password;
+    if (checking) return null;
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-zinc-50">
@@ -52,6 +72,8 @@ export default function LoginPage() {
                                 className="w-full"
                             />
                         </label>
+
+                        {error && <p className="text-xs text-red-500">{error}</p>}
 
                         <Button
                             type="submit"

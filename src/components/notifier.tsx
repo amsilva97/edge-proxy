@@ -1,3 +1,4 @@
+'use client'
 import { useEffect, useState } from "react";
 import { Info, CheckCircle, AlertTriangle, XCircle, X } from "lucide-react";
 import "./notifier.css";

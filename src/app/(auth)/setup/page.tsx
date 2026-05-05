@@ -1,14 +1,29 @@
 'use client'
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Input from '@/components/ui/input';
 import Button from '@/components/ui/button';
+import { checkIsSetup, registerAdmin, getSessionValid } from './scripts';
 
 export default function SetupPage() {
+    const router = useRouter();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
+    const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
+    const [checking, setChecking] = useState(true);
+
+    useEffect(() => {
+        getSessionValid().then(valid => {
+            if (valid) { router.replace('/http-hosts'); return; }
+            checkIsSetup().then(needsSetup => {
+                if (!needsSetup) router.replace('/login');
+                else setChecking(false);
+            });
+        });
+    }, [router]);
 
     const mismatch = confirm.length > 0 && confirm !== password;
     const canSubmit = !busy && !!username.trim() && !!password && password === confirm;
@@ -17,10 +32,15 @@ export default function SetupPage() {
         e.preventDefault();
         if (!canSubmit) return;
         setBusy(true);
-        // TODO: wire up account creation
-        await new Promise(r => setTimeout(r, 800));
-        setBusy(false);
+        setError('');
+        const result = await registerAdmin(username.trim(), password);
+        if (result?.error) {
+            setError(result.error);
+            setBusy(false);
+        }
     }
+
+    if (checking) return null;
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-zinc-50">
@@ -69,6 +89,8 @@ export default function SetupPage() {
                                 <span className="text-xs text-red-500">Passwords do not match</span>
                             )}
                         </label>
+
+                        {error && <p className="text-xs text-red-500">{error}</p>}
 
                         <Button
                             type="submit"

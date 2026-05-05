@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Network, Settings, ShieldCheck, Scissors, ArrowRightLeft, Users, Server, Layers, CornerDownRight, FolderOpen, PanelLeftClose, PanelLeftOpen, type LucideIcon } from "lucide-react";
+import { Network, Settings, ShieldCheck, Scissors, ArrowRightLeft, Users, Server, Layers, CornerDownRight, FolderOpen, PanelLeftClose, PanelLeftOpen, LogOut, type LucideIcon } from "lucide-react";
+import { logout } from "@/libs/auth.actions";
 
 interface NavLink {
     label: string;
@@ -92,7 +93,7 @@ export default function NavSidebar() {
             </div>
 
             {/* nav links */}
-            <ul className="flex-1 py-3 space-y-0.5 overflow-y-auto">
+            <ul className="py-3 space-y-0.5 overflow-y-auto">
                 {nav.map((item, i) => {
                     if ('group' in item) {
                         return (
@@ -118,8 +119,19 @@ export default function NavSidebar() {
                 })}
             </ul>
 
-            {/* collapse button */}
-            <div className="px-2 pb-3 shrink-0">
+            {/* spacer */}
+            <div className="flex-1" />
+
+            {/* logout + collapse */}
+            <div className="px-2 pb-3 shrink-0 flex flex-col gap-1">
+                <button
+                    onClick={() => logout()}
+                    title="Log out"
+                    className="flex items-center justify-center w-full h-9 rounded-md text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                >
+                    <LogOut size={15} strokeWidth={1.75} />
+                    {!collapsed && <span className="ml-2 text-sm">Log out</span>}
+                </button>
                 <button
                     onClick={() => setCollapsed(c => !c)}
                     title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
