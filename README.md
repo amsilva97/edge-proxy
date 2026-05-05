@@ -4,7 +4,7 @@ A self-hosted nginx configuration manager with a web UI. Create and manage HTTP 
 
 ## Screenshots
 
-<img src="screenshots/login-page.png" width="420" alt="Login page" />
+<img src="screenshots/login-page.png" alt="Login page" />
 <img src="screenshots/http-host-page.png" alt="HTTP Hosts" />
 
 ## Features
