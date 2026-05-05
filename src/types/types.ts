@@ -5,7 +5,8 @@ export enum HttpProxyType {
     Advanced,
     Proxy,
     Loadbalancer,
-    Redirect
+    Redirect,
+    Static
 }
 
 export type HttpHost = EdgeBlockData[];

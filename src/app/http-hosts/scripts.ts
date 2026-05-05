@@ -2,13 +2,13 @@
 import { EdgeProxy } from "@/libs/edgeProxy";
 import { HttpHost, HttpHostMeta, HttpProxyType } from "@/types/types";
 
-export async function createProxy(name: string): Promise<void> {
+export async function createProxy(name: string): Promise<HttpHostMeta> {
     return EdgeProxy.SaveHttpHostAsync(name, [] as HttpHost);
 }
 
 export async function listProxies(): Promise<HttpHostMeta[]> {
     const all = await EdgeProxy.GetHttpHostMetaListAsync();
-    return all.filter(m => m.type !== HttpProxyType.Proxy);
+    return all.filter(m => m.type == null || m.type === HttpProxyType.Advanced);
 }
 
 export async function proxyExists(name: string): Promise<boolean> {

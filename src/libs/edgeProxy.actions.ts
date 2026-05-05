@@ -242,7 +242,7 @@ export async function SaveHttpRedirectHostAsync(httpHostName: string, source: st
         ["server", [
             ["listen", 80],
             ["server_name", source],
-            ["return", `${statusCode} https://${normalizedDestination}`]
+            ["return", `${statusCode} http://${normalizedDestination}`]
         ]]
     ]
 
@@ -253,6 +253,48 @@ export async function SaveHttpRedirectHostAsync(httpHostName: string, source: st
             source,
             destination: normalizedDestination,
             isPermanent: String(isPermanent)
+        }
+    })
+}
+
+export async function SaveHttpStaticHostAsync(httpHostName: string, source: string,
+    pathToFile: string, isSpa: boolean, sslCertKeyName: string | null, accessRole: string | null): Promise<HttpHostMeta> {
+    const httpHost = []
+
+    // SSL redirect server
+    if (sslCertKeyName) {
+        const redirectServerDirectives = [["listen", 80], ["server_name", source], ["return", "301 https://$host$request_uri"]]
+        httpHost.push(["server", redirectServerDirectives])
+    }
+
+    // Main server
+    const location = ["location", "/", [["try_files", "$uri", "$uri/", isSpa ? "/index.html" : "=404"]]]
+    const basicAuth = accessRole
+        ? [["auth_basic", '"Authorization Required"'], ["auth_basic_user_file", accessRole]]
+        : []
+    const sslCertKeyDirectives = sslCertKeyName
+        ? [["ssl_certificate", sslCertKeyName], ["ssl_certificate_key", sslCertKeyName]]
+        : []
+    const mainServerDirectives = [
+        ["listen", sslCertKeyName ? 443 : 80, "", sslCertKeyName ? "ssl" : ""],
+        ["server_name", source],
+        ["root", pathToFile],
+        ["index", "index.html"],
+        ...basicAuth,
+        ...sslCertKeyDirectives,
+        location
+    ]
+    httpHost.push(["server", mainServerDirectives])
+
+    await SaveHttpHostAsync(httpHostName, httpHost as HttpHost)
+    return await SaveHttpHostMetaAsync(httpHostName, {
+        type: HttpProxyType.Static,
+        quickSetup: {
+            source,
+            pathToFile,
+            isSpa: String(isSpa),
+            ssl: sslCertKeyName,
+            accessRole
         }
     })
 }

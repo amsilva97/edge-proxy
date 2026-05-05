@@ -74,6 +74,11 @@ export namespace EdgeProxy {
         destination: string, isPermanent: boolean): Promise<HttpHostMeta> {
         return await EdgeProxyActions.SaveHttpRedirectHostAsync(httpHostName, source, destination, isPermanent);
     }
+
+    export async function SaveHttpStaticHostAsync(httpHostName: string, source: string,
+        pathToFile: string, isSpa: boolean, sslCertKeyName: string | null, accessRole: string | null): Promise<HttpHostMeta> {
+        return await EdgeProxyActions.SaveHttpStaticHostAsync(httpHostName, source, pathToFile, isSpa, sslCertKeyName, accessRole);
+    }
     //#endregion
 
     //#region SslCertKey

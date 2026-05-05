@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Network, Settings, ShieldCheck, Scissors, ArrowRightLeft, Users, Server, Layers, CornerDownRight, PanelLeftClose, PanelLeftOpen, type LucideIcon } from "lucide-react";
+import { Network, Settings, ShieldCheck, Scissors, ArrowRightLeft, Users, Server, Layers, CornerDownRight, FolderOpen, PanelLeftClose, PanelLeftOpen, type LucideIcon } from "lucide-react";
 
 interface NavLink {
     label: string;
@@ -16,6 +16,7 @@ const links: NavLink[] = [
     { label: "Http Proxies",  href: "/http-proxies",      icon: ArrowRightLeft   },
     { label: "Http Load Balancers", href: "/http-loadbalancer", icon: Layers           },
     { label: "Http Redirects",   href: "/http-redirects",   icon: CornerDownRight  },
+    { label: "Http Static",      href: "/http-static",      icon: FolderOpen       },
     { label: "Snippets",      href: "/snippets",      icon: Scissors         },
     { label: "SSLs",          href: "/ssls",          icon: ShieldCheck      },
     { label: "Roles",         href: "/roles",         icon: Users            },
