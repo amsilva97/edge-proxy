@@ -40,7 +40,27 @@ export interface EdgeDirective {
 export type EdgeBlockData = [EdgeDirective['key'], ...EdgeBlockData[]];
 
 export const EdgeDirectives: EdgeDirective[] = [
-    // Core functionality
+    // custom_functionality
+    {
+        module: 'custom_functionality',
+        key: 'custom_directive',
+        params: [
+            { primitive: 'string', label: 'key' },
+            { primitive: 'string', label: 'value' }
+        ],
+        context: EdgeDirectiveContext.any
+    },
+    {
+        module: 'custom_functionality',
+        key: 'custom_context',
+        params: [
+            { primitive: 'string', label: 'name' },
+            { primitive: 'string', label: 'data', optional: true },
+            { primitive: 'context' }
+        ],
+        context: EdgeDirectiveContext.any
+    },
+    // core_functionality
     {
         module: 'core_functionality',
         key: 'accept_mutex',

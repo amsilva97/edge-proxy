@@ -586,6 +586,7 @@ async function DetachRoleFromHost(roleName: string, hostName: string) {
 }
 //#endregion
 
+//#region Utils
 export async function NginxConfigPreview(blocks: EdgeBlockData[]): Promise<string> {
     return BuildNginxConfig(blocks)
 }
@@ -623,6 +624,22 @@ function BuildNginxConfig(blocks: EdgeBlockData[]): string {
                 return suffix ? `${v}${suffix}` : String(v);
             }).filter(Boolean);
 
+        if (name === 'custom_directive') {
+            const [customKey, customValue] = rest as unknown as string[];
+            if (!customKey) return '';
+            return customValue ? `${pad}${customKey} ${customValue};` : `${pad}${customKey};`;
+        }
+
+        if (name === 'custom_context') {
+            const slotVals = rest.slice(0, nonCtxParams.length) as unknown as string[];
+            const children = (rest[nonCtxParams.length] ?? []) as EdgeBlockData[];
+            const [contextName, ...extraData] = slotVals;
+            if (!contextName) return '';
+            const inner = children.map(c => _build(c, indent + 1, EdgeDirectiveContext.any)).filter(Boolean).join('\n');
+            const parts = [contextName, ...extraData.filter(Boolean)];
+            return `${pad}${parts.join(' ')} {\n${inner}\n${pad}}`;
+        }
+
         const nextCtx = childContext(name);
         if (hasContext) {
             const slotVals = rest.slice(0, nonCtxParams.length);
@@ -640,3 +657,4 @@ function BuildNginxConfig(blocks: EdgeBlockData[]): string {
 
     return blocks.map(b => _build(b, 0)).filter(Boolean).join('\n') + '\n';
 }
+//#endregion
