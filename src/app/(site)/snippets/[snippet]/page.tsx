@@ -68,7 +68,7 @@ function SnippetEditor({ snippet }: { snippet: string }) {
             <div className="flex-1 overflow-hidden flex gap-4 p-4">
                 <div className="flex-1 overflow-auto">
                     {data
-                        ? <Block data={data} context={EdgeDirectiveContext.location} onChange={setData} sslLabels={[]} snippetLabels={snippetLabels} />
+                        ? <Block data={data} context={EdgeDirectiveContext.any} onChange={setData} sslLabels={[]} snippetLabels={snippetLabels} />
                         : <div className="flex items-center justify-center h-32 text-sm text-zinc-400">Loading…</div>
                     }
                 </div>
