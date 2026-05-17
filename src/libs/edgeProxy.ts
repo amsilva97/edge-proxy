@@ -5,21 +5,9 @@ import { HttpHost, HttpHostMeta, Role, Snippet, SnippetMeta, SslCertKey, SslCert
 import { AppEnv } from "./appEnv";
 import { EdgeBlockData } from "./edgeDirective";
 import { NotificationManager, ToastNotificationStatus } from '@/components/notifier';
+import { promises } from 'dns';
 
 export namespace EdgeProxy {
-
-    namespace DataPaths {
-        const Root = 'data';
-        export const HttpHost = path.join(Root, 'http-hosts');
-        export const SslCertKey = path.join(Root, 'ssl');
-    }
-
-    namespace NginxPaths {
-        const Root = AppEnv.nginxBasePath;
-        export const EnabledHttpHost = path.join(Root, 'sites-enabled');
-        export const SslCertKey = path.join(Root, 'ssl');
-    }
-
     //#region HttpHost
     export async function GetHttpHostAsync(httpHostName: string): Promise<HttpHost> {
         return await EdgeProxyActions.GetHttpHostAsync(httpHostName);
@@ -56,6 +44,14 @@ export namespace EdgeProxy {
 
     export async function GetHttpHostMetaAsync(httpHostName: string): Promise<HttpHostMeta> {
         return await EdgeProxyActions.GetHttpHostMetaAsync(httpHostName);
+    }
+
+    export async function FindOrphanHttpHost(): Promise<string[]> {
+        return await EdgeProxyActions.FindOrphanHttpHost();
+    }
+
+    export async function ImportOrphanHttpHost(httpHostName: string): Promise<HttpHostMeta> {
+        return await EdgeProxyActions.ImportOrphanHttpHost(httpHostName);
     }
     //#endregion
 

@@ -5,7 +5,7 @@ import fs from 'fs/promises';
 import bcrypt from 'bcryptjs';
 import { HttpHost, HttpHostMeta, HttpProxyType, Role, Snippet, SnippetMeta, SslCertKey, SslCertKeyMeta } from "@/types/types";
 import { AppEnv } from "./appEnv";
-import { EdgeBlockData, EdgeDirectiveContext, EdgeDirectives, EdgePrimitive } from "./edgeDirective";
+import { EdgeBlockData, EdgeDirectiveContext, EdgeDirectives, EdgePrimitive, EdgeSlot } from "./edgeDirective";
 
 namespace DataPaths {
     const Root = 'data';
@@ -126,6 +126,40 @@ export async function TryGetHttpHostMetaAsync(httpHostName: string): Promise<Htt
     }
 }
 
+export async function FindOrphanHttpHost(): Promise<string[]> {
+    try {
+        const nginxFiles = await fs.readdir(NginxPaths.HttpHosts);
+        const dataFiles = new Set(
+            (await fs.readdir(DataPaths.HttpHosts).catch(() => [] as string[]))
+                .filter((f: string) => f.endsWith('.json'))
+                .map((f: string) => f.slice(0, -5))
+        );
+        return nginxFiles.filter(f => !dataFiles.has(f));
+    } catch (err: any) {
+        if (err?.code === 'ENOENT') return [];
+        throw err;
+    }
+}
+
+export async function ImportOrphanHttpHost(httpHostName: string): Promise<HttpHostMeta> {
+    // double-check it's actually orphaned before we do anything destructive
+    const dataPath = path.join(DataPaths.HttpHosts, `${httpHostName}.json`);
+    const isOrphaned = await fs.access(dataPath).then(() => false).catch(() => true);
+    if (!isOrphaned) throw new Error(`${httpHostName} already exists`);
+
+    // read and parse whatever nginx had — could be .conf, no ext, anything
+    const nginxFilePath = path.join(NginxPaths.HttpHosts, httpHostName);
+    const nginxConfig = await fs.readFile(nginxFilePath, 'utf8');
+    const httpHost: HttpHost = ParseNginxConfig(nginxConfig);
+
+    // SaveHttpHostAsync handles the json, meta, and ssl/snippet/role attachments
+    // it won't auto-enable since there's no old meta with isEnabled: true
+    await SaveHttpHostAsync(httpHostName, httpHost);
+
+    // EnableHttpHostAsync rewrites the nginx file in our convention — naturally overwrites the orphan
+    return await EnableHttpHostAsync(httpHostName);
+}
+
 async function SaveHttpHostMetaAsync(httpHostName: string, httpHostMeta: Partial<HttpHostMeta>): Promise<HttpHostMeta> {
     const httpHostMetaPath: string = path.join(DataPaths.HttpHosts, `${httpHostName}.meta`);
     const oldData = await TryGetHttpHostMetaAsync(httpHostName);
@@ -158,7 +192,6 @@ function FindUsedDirectiveValues(httpHost: HttpHost, primitiveKey: EdgePrimitive
     walk(httpHost)
     return [...values]
 }
-
 //#endregion
 
 //#region HttpHost Quick Host
@@ -591,6 +624,7 @@ export async function NginxConfigPreview(blocks: EdgeBlockData[]): Promise<strin
     return BuildNginxConfig(blocks)
 }
 
+/** Converts edge block data to Nginx configuration */
 function BuildNginxConfig(blocks: EdgeBlockData[]): string {
     function childContext(name: string): EdgeDirectiveContext {
         const val = (EdgeDirectiveContext as Record<string, unknown>)[name];
@@ -657,4 +691,108 @@ function BuildNginxConfig(blocks: EdgeBlockData[]): string {
 
     return blocks.map(b => _build(b, 0)).filter(Boolean).join('\n') + '\n';
 }
+
+/** Parses Nginx configuration into edge block data */
+function ParseNginxConfig(nginxConfig: string): EdgeBlockData[] {
+    type Token = { type: 'word' | '{' | '}' | ';'; value: string };
+
+    function tokenize(input: string): Token[] {
+        const tokens: Token[] = [];
+        let i = 0;
+        while (i < input.length) {
+            if (/\s/.test(input[i])) { i++; continue; }
+            if (input[i] === '#') { while (i < input.length && input[i] !== '\n') i++; continue; }
+            if (input[i] === '"' || input[i] === "'") {
+                const quote = input[i++];
+                let val = '';
+                while (i < input.length && input[i] !== quote) {
+                    if (input[i] === '\\') i++; // escaped quote inside string
+                    val += input[i++];
+                }
+                i++; // closing quote
+                tokens.push({ type: 'word', value: val });
+                continue;
+            }
+            if (input[i] === '{') { tokens.push({ type: '{', value: '{' }); i++; continue; }
+            if (input[i] === '}') { tokens.push({ type: '}', value: '}' }); i++; continue; }
+            if (input[i] === ';') { tokens.push({ type: ';', value: ';' }); i++; continue; }
+            // anything else is part of a word — stop at whitespace or special chars
+            let word = '';
+            while (i < input.length && !/[\s{};#"']/.test(input[i])) word += input[i++];
+            if (word) tokens.push({ type: 'word', value: word });
+        }
+        return tokens;
+    }
+
+    // BuildNginxConfig transforms certain slot values into full paths, have to undo that here
+    function reverseSlot(value: string, slot: EdgeSlot | undefined): unknown {
+        if (!slot) return value; // extra values (e.g. server_name with multiple names) just pass through
+        // ssl slots get written as full paths with .cert/.key — strip both
+        if (slot.primitive === 'ssl') return path.relative(NginxPaths.SslCertKeys, value).replace(/\.(cert|key)$/, '');
+        if (slot.primitive === 'snippet') return path.relative(NginxPaths.Snippets, value);
+        if (slot.primitive === 'role') return path.relative(NginxPaths.Roles, value);
+        // some slots have a suffix baked in (e.g. "ms", "s") — strip it so the value round-trips cleanly
+        const suffix = slot.suffix ?? slot.subSlot?.suffix;
+        if (suffix && value.endsWith(suffix)) return value.slice(0, -suffix.length);
+        // tried leaving numbers as strings but the block data comparison broke
+        if (slot.primitive === 'number') { const n = Number(value); return isNaN(n) ? value : n; }
+        return value;
+    }
+
+    const tokens = tokenize(nginxConfig);
+    let pos = 0;
+
+    function peek(): Token | undefined { return tokens[pos]; }
+    function consume(): Token { return tokens[pos++]; }
+
+    function parseBlocks(): EdgeBlockData[] {
+        const blocks: EdgeBlockData[] = [];
+        // stop at } so the caller can consume it — don't consume it here or nesting breaks
+        while (pos < tokens.length && peek()?.type !== '}') {
+            const block = parseStatement();
+            if (block) blocks.push(block);
+        }
+        return blocks;
+    }
+
+    function parseStatement(): EdgeBlockData | null {
+        const keyToken = consume();
+        if (!keyToken || keyToken.type !== 'word') return null; // garbage token, skip
+        const key = keyToken.value;
+
+        // collect all value tokens before we hit a { or ;
+        const vals: string[] = [];
+        while (pos < tokens.length && peek()!.type === 'word') vals.push(consume().value);
+
+        const next = peek();
+
+        if (next?.type === ';') {
+            consume();
+            const directive = EdgeDirectives.find(d => d.key === key);
+            // unrecognized directive — wrap it so BuildNginxConfig can reproduce it
+            if (!directive) return ['custom_directive', key as any, vals[0] as any];
+            const nonCtxParams = directive.params.filter(p => p.primitive !== 'context');
+            const reversed = vals.map((v, i) => reverseSlot(v, nonCtxParams[i]));
+            return [key, ...reversed] as unknown as EdgeBlockData;
+        }
+
+        if (next?.type === '{') {
+            consume();
+            const children = parseBlocks();
+            if (peek()?.type === '}') consume(); // eat the closing brace
+            const directive = EdgeDirectives.find(d => d.key === key);
+            // unknown block context (geo, map, etc.) — custom_context takes [name, extraData?, children]
+            if (!directive) return ['custom_context', key as any, vals[0] as any, children as any];
+            const nonCtxParams = directive.params.filter(p => p.primitive !== 'context');
+            const reversed = vals.map((v, i) => reverseSlot(v, nonCtxParams[i]));
+            // children always go at the end, after the slot values — matches how BuildNginxConfig reads them
+            return [key, ...reversed, children] as unknown as EdgeBlockData;
+        }
+
+        return null;
+    }
+
+    return parseBlocks();
+}
+
 //#endregion
