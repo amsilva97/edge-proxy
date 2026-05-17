@@ -53,6 +53,10 @@ export namespace EdgeProxy {
     export async function ImportOrphanHttpHost(httpHostName: string): Promise<HttpHostMeta> {
         return await EdgeProxyActions.ImportOrphanHttpHost(httpHostName);
     }
+
+    export async function ImportRawHttpHost(httpHostName: string, rawNginxConfig: string): Promise<HttpHostMeta> {
+        return await EdgeProxyActions.ImportRawHttpHostAsync(httpHostName, rawNginxConfig);
+    }
     //#endregion
 
     //#region HttpHost Quick Host

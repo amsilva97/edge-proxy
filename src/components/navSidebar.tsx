@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Network, Settings, ShieldCheck, Scissors, ArrowRightLeft, Users, Server, Layers, CornerDownRight, FolderOpen, PanelLeftClose, PanelLeftOpen, LogOut, type LucideIcon } from "lucide-react";
+import { Network, Settings, ShieldCheck, Scissors, ArrowRightLeft, Users, Server, Layers, CornerDownRight, FolderOpen, Download, PanelLeftClose, PanelLeftOpen, LogOut, type LucideIcon } from "lucide-react";
 import { logout } from "@/libs/auth.actions";
 
 interface NavLink {
@@ -38,6 +38,7 @@ const nav: (NavLink | NavGroup | NavDivider)[] = [
     { label: "Roles", href: "/roles", icon: Users },
     { divider: true },
     // { label: "Nginx", href: "/nginx", icon: Server },
+    { label: "Import", href: "/import", icon: Download },
     { label: "App Config", href: "/app-config", icon: Settings },
 ];
 

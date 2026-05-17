@@ -134,30 +134,45 @@ export async function FindOrphanHttpHost(): Promise<string[]> {
                 .filter((f: string) => f.endsWith('.json'))
                 .map((f: string) => f.slice(0, -5))
         );
-        return nginxFiles.filter(f => !dataFiles.has(f));
+        // compare by base name so files like "myhost.conf" match data entry "myhost"
+        return nginxFiles.filter(f => !dataFiles.has(path.parse(f).name));
     } catch (err: any) {
         if (err?.code === 'ENOENT') return [];
         throw err;
     }
 }
 
-export async function ImportOrphanHttpHost(httpHostName: string): Promise<HttpHostMeta> {
-    // double-check it's actually orphaned before we do anything destructive
+export async function ImportOrphanHttpHost(httpHostFileName: string): Promise<HttpHostMeta> {
+    // strip extension (.conf etc.) to get the canonical host name used for data storage
+    const httpHostName = path.parse(httpHostFileName).name;
+
     const dataPath = path.join(DataPaths.HttpHosts, `${httpHostName}.json`);
     const isOrphaned = await fs.access(dataPath).then(() => false).catch(() => true);
     if (!isOrphaned) throw new Error(`${httpHostName} already exists`);
 
-    // read and parse whatever nginx had — could be .conf, no ext, anything
-    const nginxFilePath = path.join(NginxPaths.HttpHosts, httpHostName);
+    const nginxFilePath = path.join(NginxPaths.HttpHosts, httpHostFileName);
     const nginxConfig = await fs.readFile(nginxFilePath, 'utf8');
     const httpHost: HttpHost = ParseNginxConfig(nginxConfig);
 
-    // SaveHttpHostAsync handles the json, meta, and ssl/snippet/role attachments
-    // it won't auto-enable since there's no old meta with isEnabled: true
-    await SaveHttpHostAsync(httpHostName, httpHost);
+    // Remove the original file when it has an extension — EnableHttpHostAsync will
+    // write the canonical extensionless version, so this prevents leftover .conf files
+    if (httpHostFileName !== httpHostName) {
+        await fs.rm(nginxFilePath, { force: true });
+    }
 
-    // EnableHttpHostAsync rewrites the nginx file in our convention — naturally overwrites the orphan
+    await SaveHttpHostAsync(httpHostName, httpHost);
     return await EnableHttpHostAsync(httpHostName);
+}
+
+export async function ImportRawHttpHostAsync(httpHostName: string, rawNginxConfig: string): Promise<HttpHostMeta> {
+    const dataPath = path.join(DataPaths.HttpHosts, `${httpHostName}.json`);
+    const isManaged = await fs.access(dataPath).then(() => true).catch(() => false);
+    if (isManaged) throw new Error(`${httpHostName} already exists`);
+
+    const nginxFilePath = path.join(NginxPaths.HttpHosts, httpHostName);
+    await fs.mkdir(path.dirname(nginxFilePath), { recursive: true });
+    await fs.writeFile(nginxFilePath, rawNginxConfig, 'utf8');
+    return ImportOrphanHttpHost(httpHostName);
 }
 
 async function SaveHttpHostMetaAsync(httpHostName: string, httpHostMeta: Partial<HttpHostMeta>): Promise<HttpHostMeta> {
