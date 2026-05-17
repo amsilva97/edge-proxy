@@ -222,7 +222,13 @@ export async function SaveHttpProxyHostAsync(httpHostName: string, source: strin
     }
 
     // Main Server Context
-    const location = ["location", "/", [["proxy_pass", 'http://' + normalizedDestination]]]
+    const location = ["location", "/", [
+        ["proxy_pass", 'http://' + normalizedDestination],
+        ["proxy_set_header", "Host", "$host"],
+        ["proxy_set_header", "X-Real-IP", "$remote_addr"],
+        ["proxy_set_header", "X-Forwarded-For", "$proxy_add_x_forwarded_for"],
+        ["proxy_set_header", "X-Forwarded-Proto", "$scheme"],
+    ]]
     const basicAuth = accessRole
         ? [["auth_basic", '"Authorization Required"'], ["auth_basic_user_file", accessRole]]
         : []
