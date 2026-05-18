@@ -74,27 +74,21 @@ export async function DeleteHttpHostAsync(httpHostName: string): Promise<void> {
 }
 
 export async function EnableHttpHostAsync(httpHostName: string): Promise<HttpHostMeta> {
-    try {
-        const httpHost: HttpHost = await GetHttpHostAsync(httpHostName);
-        const nHttpHostPath: string = path.join(NginxPaths.HttpHosts, httpHostName);
-        const nginxConfig = BuildNginxConfig(httpHost);
-        await fs.writeFile(nHttpHostPath, nginxConfig);
-        await SaveHttpHostMetaAsync(httpHostName, { isEnabled: true });
-        await NginxActions.ReloadNginxAsync();
-        return await GetHttpHostMetaAsync(httpHostName)
-    }
-    catch (err: any) {
-        await DisabledHttpHostAsync(httpHostName)
-        throw err
-    }
+    const httpHost: HttpHost = await GetHttpHostAsync(httpHostName);
+    const nHttpHostPath: string = path.join(NginxPaths.HttpHosts, httpHostName);
+    const nginxConfig = BuildNginxConfig(httpHost);
+    await fs.writeFile(nHttpHostPath, nginxConfig);
+    await SaveHttpHostMetaAsync(httpHostName, { isEnabled: true });
+    await NginxActions.ReloadNginxAsync().catch(() => {});
+    return await GetHttpHostMetaAsync(httpHostName);
 }
 
 export async function DisabledHttpHostAsync(httpHostName: string): Promise<HttpHostMeta> {
     const nHttpHostPath: string = path.join(NginxPaths.HttpHosts, httpHostName);
     await fs.rm(nHttpHostPath, { force: true });
     await SaveHttpHostMetaAsync(httpHostName, { isEnabled: false });
-    await NginxActions.ReloadNginxAsync();
-    return await GetHttpHostMetaAsync(httpHostName)
+    await NginxActions.ReloadNginxAsync().catch(() => {});
+    return await GetHttpHostMetaAsync(httpHostName);
 }
 
 export async function GetHttpHostMetaListAsync(): Promise<HttpHostMeta[]> {
